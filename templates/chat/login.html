@@ -1,0 +1,298 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Login - Odnix{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-header">
+            <h1 class="auth-logo">Odnix</h1>
+            <h2 class="auth-title">Sign in to your Odnix account</h2>
+            <p class="auth-subtitle">Welcome back! Please sign in to continue</p>
+        </div>
+
+        {% if messages %}
+        <div class="auth-messages">
+            {% for message in messages %}
+            <div class="auth-message auth-message--{{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" id="loginForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--full-width">Sign In</button>
+        </form>
+
+        <div class="auth-links">
+            <p class="auth-link-text">Don't have an account? <a href="{% url 'register' %}" class="auth-link">Register here</a></p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* AUTH CONTAINER STYLES */
+.auth-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    padding: 1rem;
+}
+
+.auth-card {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    width: 100%;
+    animation: slideInUp 0.5s ease;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-logo {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 1rem 0;
+}
+
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0 0 0.5rem 0;
+}
+
+.auth-subtitle {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+/* AUTH MESSAGES */
+.auth-messages {
+    margin-bottom: 1.5rem;
+}
+
+.auth-message {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-message--error {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.auth-message--success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.auth-message--info {
+    background: #dbeafe;
+    color: #2563eb;
+    border: 1px solid #bfdbfe;
+}
+
+.auth-message--warning {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+/* FORM STYLES */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: var(--color-surface);
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+/* BUTTON STYLES */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.btn--primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn--full-width {
+    width: 100%;
+}
+
+/* AUTH LINKS */
+.auth-links {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.auth-link-text {
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
+.auth-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.auth-link:hover {
+    color: var(--color-secondary);
+    text-decoration: underline;
+}
+
+/* CSS VARIABLES */
+:root {
+    --color-primary: #667eea;
+    --color-secondary: #764ba2;
+    --color-surface: #ffffff;
+    --color-background: #f8f9fa;
+    --color-border: #e1e5e9;
+    --color-text: #2c3e50;
+    --color-text-secondary: #6c757d;
+}
+
+/* RESPONSIVE */
+@media (max-width: 480px) {
+    .auth-container {
+        padding: 0.5rem;
+    }
+    
+    .auth-card {
+        padding: 1.5rem;
+    }
+    
+    .auth-logo {
+        font-size: 2rem;
+    }
+    
+    .auth-title {
+        font-size: 1.3rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing In...';
+            
+            // Re-enable button after 3 seconds if form doesn't submit
+            setTimeout(() => {
+                if (submitBtn.disabled) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            }, 3000);
+        });
+    }
+});
+</script>
+{% endblock %}

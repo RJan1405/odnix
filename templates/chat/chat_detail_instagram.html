@@ -1,0 +1,4230 @@
+{% extends 'chat/base.html' %}
+
+{% block navbar %}{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="chat-id" content="{{ chat.id }}">
+<meta name="user-id" content="{{ request.user.id }}">
+<style>
+/* CSS Animations for P2P and loading states */
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Chat detail page specific fixes */
+.ig-direct {
+    margin-top: 0 !important;
+    height: 100vh !important;
+    border: none !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden;
+}
+
+/* Prevent horizontal scroll */
+.ig-chat-messages {
+    overflow-x: hidden !important;
+    overflow-y: auto;
+    max-width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.ig-messages-list {
+    {% comment %} overflow-x: hidden !important; {% endcomment %}
+    max-width: 100%;
+    margin-top: auto; /* Push messages to bottom */
+}
+
+.ig-message.sent {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+
+.ig-message.received {
+    align-self: flex-start;
+}
+
+.ig-message.sent .ig-message-bubble {
+    background: var(--color-primary);
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+.ig-message.received .ig-message-bubble {
+    background: var(--ig-bg);
+    color: var(--ig-text-primary);
+    border-bottom-left-radius: 4px;
+}
+
+.ig-message-menu {
+    display: none;
+    position: absolute;
+    right: 40px;
+    bottom: 100%;
+    margin-bottom: 4px;
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    flex-direction: column;
+    z-index: 1000;
+    min-width: 140px;
+    overflow: hidden;
+}
+
+.ig-message.sent .ig-message-menu {
+    right: 10px;
+    left: 0px;
+}
+
+.ig-message-menu button {
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 14px;
+    color: var(--ig-text-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    transition: background 0.15s;
+}
+
+.ig-message-menu button i,
+.ig-message-menu button svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.ig-message-menu button:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-message-menu button.danger {
+    color: var(--ig-error, #e74c3c);
+}
+
+.ig-message-reactions {
+    position: absolute;
+    bottom: -10px;
+    right: 8px;
+    background: var(--ig-surface);
+    border-radius: 12px;
+    padding: 2px 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    font-size: 14px;
+    border: 1px solid var(--ig-border-light);
+}
+
+.ig-message.sent .ig-message-reactions {
+    right: auto;
+    left: 8px;
+}
+
+/* Pinned message indicator */
+.ig-message.pinned {
+    position: relative;
+}
+
+.ig-message.pinned::before {
+    content: '📌';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    z-index: 1;
+}
+
+.ig-message.pinned .ig-message-bubble {
+    box-shadow: 0 0 0 2px var(--color-primary, #6366f1);
+}
+
+/* Pinned Message Banner */
+.ig-pinned-banner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: var(--ig-surface);
+    border-bottom: 1px solid var(--ig-border);
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.ig-pinned-banner:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-pinned-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.ig-pinned-icon i, .ig-pinned-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ig-pinned-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ig-pinned-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.ig-pinned-text {
+    font-size: 13px;
+    color: var(--ig-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ig-pinned-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ig-text-secondary);
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.ig-pinned-close:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-message.pinned .ig-message-bubble {
+    box-shadow: 0 0 0 2px var(--color-primary, #6366f1);
+}
+
+/* Animation for highlighting pinned message when scrolled to */
+@keyframes pulseHighlight {
+    0% { background: transparent; }
+    25% { background: rgba(99, 102, 241, 0.3); }
+    50% { background: rgba(99, 102, 241, 0.15); }
+    75% { background: rgba(99, 102, 241, 0.3); }
+    100% { background: transparent; }
+}
+
+@keyframes toastSlideUp {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.ig-message {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding: 4px 8px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.ig-message-menu-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    opacity: 0;
+    transition: opacity 0.2s, background 0.2s;
+    flex-shrink: 0;
+    color: var(--ig-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+
+.ig-message-menu-btn i,
+.ig-message-menu-btn svg {
+    width: 18px;
+    height: 18px;
+    color: inherit;
+}
+
+.ig-message:hover .ig-message-menu-btn,
+.ig-message-menu-btn:focus,
+.ig-message-menu-btn.active {
+    opacity: 1;
+}
+
+.ig-message-menu-btn:hover {
+    background: var(--ig-surface-hover);
+}
+
+/* Make menu buttons always visible on touch devices */
+@media (hover: none) {
+    .ig-message-menu-btn {
+        opacity: 0.7;
+    }
+}
+
+.ig-chat-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.ig-chat-welcome-avatar {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 16px;
+}
+
+.ig-chat-welcome-avatar.placeholder {
+    background: var(--brand-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.ig-chat-welcome-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.ig-chat-welcome-meta {
+    color: var(--ig-text-secondary);
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.ig-chat-welcome-btn {
+    background: var(--ig-surface-hover);
+    color: var(--ig-text-primary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.ig-typing-indicator {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    gap: 8px;
+    background: var(--ig-surface);
+    border-radius: 16px;
+    margin: 4px 16px;
+    max-width: calc(100% - 32px);
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.ig-typing-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.ig-typing-text {
+    font-size: 12px;
+    color: var(--ig-text-secondary);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+.ig-typing-dots {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.ig-typing-dots span {
+    width: 5px;
+    height: 5px;
+    background: var(--ig-text-secondary);
+    border-radius: 50%;
+    animation: typingPulse 1.4s ease-in-out infinite;
+}
+
+.ig-typing-dots span:nth-child(1) { animation-delay: 0s; }
+.ig-typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ig-typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingPulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* Chat Header Actions */
+.ig-chat-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.ig-chat-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--ig-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s;
+}
+
+.ig-chat-action:hover {
+    background: var(--ig-surface-hover);
+    color: var(--color-primary);
+}
+
+.ig-chat-action i,
+.ig-chat-action svg {
+    width: 24px;
+    height: 24px;
+}
+
+.ig-chat-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.ig-chat-input {
+    flex: 1;
+    border: 1px solid var(--ig-border);
+    border-radius: 22px;
+    padding: 10px 16px;
+    font-size: 14px;
+    background: var(--ig-bg);
+    color: var(--ig-text-primary);
+    outline: none;
+}
+
+.ig-chat-input:focus {
+    border-color: var(--color-primary);
+}
+
+.ig-chat-input-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ig-chat-attachment,
+.ig-chat-like,
+.ig-chat-send,
+.ig-chat-emoji,
+.ig-chat-viewonce {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: var(--ig-text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.ig-chat-attachment:hover,
+.ig-chat-like:hover,
+.ig-chat-emoji:hover,
+.ig-chat-viewonce:hover {
+    background: var(--ig-surface-hover);
+    color: var(--color-primary);
+}
+
+.ig-chat-viewonce.active {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    transform: scale(1.1);
+}
+
+.ig-chat-viewonce.active:hover {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.ig-chat-send {
+    color: var(--color-primary);
+}
+
+.ig-chat-send:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-image-preview {
+    position: relative;
+    padding: 12px;
+    background: var(--ig-surface-hover);
+    border-top: 1px solid var(--ig-border);
+}
+
+.ig-image-preview img {
+    max-height: 150px;
+    border-radius: 8px;
+}
+
+.ig-image-preview button {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ig-online-dot {
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 50%;
+    border: 2px solid var(--ig-surface);
+    margin-left: auto;
+}
+
+.ig-direct-back {
+    color: var(--ig-text-primary);
+}
+
+.ig-chat-back {
+    color: var(--ig-text-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+}
+
+.mobile-only {
+    display: none;
+}
+
+/* ===== CHAT RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    .ig-direct-sidebar {
+        display: none;
+    }
+    
+    .mobile-only {
+        display: flex;
+    }
+    
+    .ig-chat {
+        width: 100%;
+    }
+    
+    .ig-chat-header {
+        padding: 12px 16px;
+    }
+    
+    .ig-chat-info h3 {
+        font-size: 15px;
+    }
+    
+    .ig-chat-body {
+        padding: 12px;
+    }
+    
+    .ig-message {
+        max-width: 85%;
+    }
+    
+    .ig-chat-footer {
+        padding: 12px;
+    }
+    
+    .ig-chat-footer form {
+        gap: 8px;
+    }
+    
+    .ig-chat-input {
+        font-size: 15px;
+        padding: 10px 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .ig-chat-header {
+        padding: 10px 12px;
+    }
+    
+    .ig-chat-avatar {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .ig-chat-info h3 {
+        font-size: 14px;
+    }
+    
+    .ig-chat-status {
+        font-size: 11px;
+    }
+    
+    .ig-chat-body {
+        padding: 8px;
+    }
+    
+    .ig-message {
+        max-width: 88%;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+    
+    .ig-message-time {
+        font-size: 10px;
+    }
+    
+    .ig-chat-footer {
+        padding: 10px 12px;
+        padding-bottom: calc(10px + env(safe-area-inset-bottom, 0));
+    }
+    
+    .ig-chat-input {
+        font-size: 14px;
+        padding: 10px 12px;
+    }
+    
+    .ig-chat-action svg {
+        width: 22px;
+        height: 22px;
+    }
+    
+    .ig-chat-send svg {
+        width: 22px;
+        height: 22px;
+    }
+}
+
+@media (max-width: 374px) {
+    .ig-chat-header {
+        padding: 8px 10px;
+    }
+    
+    .ig-chat-avatar {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .ig-chat-info h3 {
+        font-size: 13px;
+    }
+    
+    .ig-message {
+        max-width: 90%;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+    
+    .ig-chat-footer {
+        padding: 8px 10px;
+    }
+    
+    .ig-chat-input {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+}
+
+.ig-direct-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ig-text-secondary);
+}
+
+.ig-members-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.ig-member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--ig-border-light);
+}
+
+.ig-settings-list {
+    margin-top: 16px;
+}
+
+.ig-settings-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    font-size: 14px;
+    color: var(--ig-text-primary);
+    border-radius: 8px;
+}
+
+.ig-settings-item:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-settings-item.danger {
+    color: var(--ig-error);
+}
+
+/* Read Receipt Checkmarks - WhatsApp Style */
+.ig-read-receipt {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    font-size: 12px;
+    vertical-align: middle;
+}
+
+.ig-read-receipt .checkmark {
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+    letter-spacing: -2px;
+    font-size: 11px;
+}
+
+.ig-read-receipt .checkmark.sent {
+    color: rgba(255,255,255,0.5);
+}
+
+.ig-read-receipt .checkmark.delivered {
+    color: rgba(255,255,255,0.7);
+}
+
+.ig-read-receipt .checkmark.read {
+    color: #53bdeb; /* WhatsApp blue tick color */
+}
+
+/* For received messages - hide read receipts */
+.ig-message.received .ig-read-receipt {
+    display: none;
+}
+
+.ig-message-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ig-reply-context {
+    background: rgba(0,0,0,0.05);
+    border-left: 4px solid var(--color-primary);
+    padding: 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ig-message.sent .ig-reply-context {
+    background: rgba(255,255,255,0.2);
+    border-left-color: rgba(255,255,255,0.8);
+}
+
+.ig-reply-context-name {
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.ig-message.sent .ig-reply-context-name {
+    color: white;
+}
+
+.ig-reply-context-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.8;
+}
+
+.ig-reply-preview {
+    padding: 12px 16px;
+    background: var(--ig-surface-hover);
+    border-top: 1px solid var(--ig-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ig-reply-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow: hidden;
+}
+
+.ig-reply-title {
+    font-size: 12px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.ig-reply-text {
+    font-size: 14px;
+    color: var(--ig-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ig-reply-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ig-text-secondary);
+    padding: 4px;
+}
+
+/* Emoji Picker Popup - Fixed styling */
+.ig-emoji-picker {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 8px;
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+    z-index: 1000;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 4px;
+    max-width: 420px;
+    min-width: 280px;
+}
+
+.ig-emoji-picker button {
+    font-size: 22px;
+    padding: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ig-emoji-picker button:hover {
+    background: var(--ig-surface-hover);
+    transform: scale(1.15);
+}
+
+/* WhatsApp-style View Once Message */
+.ig-viewonce-message {
+    position: relative;
+    cursor: pointer;
+}
+
+.ig-viewonce-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    color: white;
+    text-align: center;
+    min-width: 180px;
+}
+
+.ig-viewonce-placeholder.photo {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+}
+
+.ig-viewonce-placeholder.opened {
+    background: linear-gradient(135deg, #434343 0%, #000000 100%);
+    opacity: 0.7;
+}
+
+.ig-viewonce-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+    opacity: 0.9;
+}
+
+.ig-viewonce-text {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.ig-viewonce-subtext {
+    font-size: 11px;
+    opacity: 0.8;
+}
+
+/* View Once Modal */
+.ig-viewonce-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.ig-viewonce-modal-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    color: white;
+    z-index: 10;
+}
+
+.ig-viewonce-modal-close {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 500;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.ig-viewonce-modal-close:hover {
+    background: rgba(0, 0, 0, 0.7);
+    transform: scale(1.02);
+}
+
+.ig-viewonce-modal-close svg {
+    width: 20px;
+    height: 20px;
+}
+
+.ig-viewonce-hint {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 12px 20px;
+    border-radius: 24px;
+    color: white;
+    font-size: 14px;
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.3s ease;
+}
+
+.ig-viewonce-hint svg {
+    width: 18px;
+    height: 18px;
+    opacity: 0.8;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.ig-viewonce-content {
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+}
+
+.ig-viewonce-content img,
+.ig-viewonce-content video {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 8px;
+}
+
+.ig-viewonce-text-content {
+    color: white;
+    font-size: 24px;
+    text-align: center;
+    padding: 40px;
+    max-width: 600px;
+}
+
+/* Online Status Indicator */
+.ig-online-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+}
+
+.ig-online-dot-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+}
+
+.ig-online-dot-indicator.online {
+    background: #22c55e;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.ig-chat-footer {
+    position: relative;
+}
+
+/* New Messages Button */
+.ig-new-messages-btn {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.4);
+    animation: bounceIn 0.3s ease;
+    z-index: 100;
+}
+
+.ig-new-messages-btn i,
+.ig-new-messages-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ig-new-messages-btn:hover {
+    background: var(--color-primary-dark, #4f46e5);
+    transform: translateX(-50%) scale(1.02);
+}
+
+@keyframes bounceIn {
+    0% { opacity: 0; transform: translateX(-50%) translateY(10px); }
+    60% { transform: translateX(-50%) translateY(-3px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Delete Modal Styles */
+.ig-delete-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.ig-delete-modal-overlay.show {
+    display: flex;
+}
+
+.ig-delete-modal {
+    background: var(--ig-surface);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 320px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.ig-delete-modal-header {
+    padding: 24px 24px 12px;
+    text-align: center;
+}
+
+.ig-delete-modal-icon {
+    width: 40px;
+    height: 40px;
+    color: #ef4444;
+    margin-bottom: 8px;
+}
+
+.ig-delete-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+}
+
+.ig-delete-modal-body {
+    padding: 0 24px 16px;
+    text-align: center;
+}
+
+.ig-delete-modal-body p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--ig-text-secondary);
+}
+
+.ig-delete-modal-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 16px 16px;
+}
+
+.ig-delete-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ig-delete-btn i, .ig-delete-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ig-delete-for-me {
+    background: var(--ig-surface-hover);
+    color: var(--ig-text-primary);
+}
+
+.ig-delete-for-me:hover {
+    background: var(--ig-border);
+}
+
+.ig-delete-for-everyone {
+    background: #ef4444;
+    color: white;
+}
+
+.ig-delete-for-everyone:hover {
+    background: #dc2626;
+}
+
+.ig-delete-cancel {
+    background: transparent;
+    color: var(--ig-text-secondary);
+    border: 1px solid var(--ig-border);
+}
+
+.ig-delete-cancel:hover {
+    background: var(--ig-surface-hover);
+}
+
+/* Edit Modal Styles */
+.ig-edit-modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.ig-edit-modal-overlay.show {
+    display: flex;
+}
+
+.ig-edit-modal {
+    background: var(--ig-surface);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.ig-edit-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ig-border);
+}
+
+.ig-edit-modal-header h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.ig-edit-modal-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ig-text-secondary);
+}
+
+.ig-edit-modal-close:hover {
+    color: var(--ig-text-primary);
+}
+
+.ig-edit-modal-body {
+    padding: 16px 20px;
+}
+
+.ig-edit-input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--ig-border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    resize: none;
+    background: var(--ig-bg);
+    color: var(--ig-text-primary);
+}
+
+.ig-edit-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.ig-edit-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 20px 16px;
+}
+
+.ig-edit-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ig-edit-cancel {
+    background: var(--ig-surface-hover);
+    color: var(--ig-text-primary);
+}
+
+.ig-edit-save {
+    background: var(--color-primary);
+    color: white;
+}
+
+.ig-edit-save:hover {
+    background: var(--color-primary-dark, #4f46e5);
+}
+</style>
+{% endblock %}
+
+{% block title %}
+{% if chat.chat_type == 'group' %}{{ chat.name }}{% else %}Chat{% endif %} - Odnix
+{% endblock %}
+
+{% block content %}
+<!-- Instagram Direct Message Style Chat -->
+<div class="ig-direct">
+    <!-- Left Sidebar - Conversations List (Desktop) -->
+    <div class="ig-direct-sidebar">
+        <header class="ig-direct-header">
+            <a href="{% url 'dashboard' %}" class="ig-direct-back" title="Back to Feed">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            <h2 class="ig-direct-title">{{ request.user.username }}</h2>
+            <button class="ig-direct-new" onclick="openNewMessageModal()" title="New Message">
+                <i data-lucide="edit"></i>
+            </button>
+        </header>
+        
+        <div class="ig-direct-list">
+            {% for user_chat in request.user.chats.all %}
+            <a href="{% url 'chat_detail' user_chat.id %}" class="ig-direct-item {% if user_chat.id == chat.id %}active{% endif %}">
+                {% if user_chat.chat_type == 'group' %}
+                <div class="ig-direct-item-avatar group">
+                    <i data-lucide="users"></i>
+                </div>
+                <div class="ig-direct-item-info">
+                    <div class="ig-direct-item-name">{{ user_chat.name }}</div>
+                    <div class="ig-direct-item-preview">{{ user_chat.participant_count }} members</div>
+                </div>
+                {% else %}
+                    {% for participant in user_chat.participants.all %}
+                        {% if participant != request.user %}
+                        <img src="{{ participant.profile_picture_url }}" alt="" class="ig-direct-item-avatar" onerror="this.outerHTML='<div class=\'ig-direct-item-avatar placeholder\'>{{ participant.initials }}</div>'">
+                        <div class="ig-direct-item-info">
+                            <div class="ig-direct-item-name">{{ participant.full_name }}</div>
+                            <div class="ig-direct-item-preview">@{{ participant.username }}</div>
+                        </div>
+                        {% if participant.is_online %}
+                        <div class="ig-online-dot"></div>
+                        {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </a>
+            {% empty %}
+            <div class="ig-direct-empty">
+                <p>No conversations yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Right Side - Chat Area -->
+    <div class="ig-chat">
+        <!-- Chat Header -->
+        <header class="ig-chat-header">
+            <a href="{% url 'dashboard' %}" class="ig-chat-back mobile-only">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            
+            {% if chat.chat_type == 'group' %}
+            <div class="ig-chat-user" onclick="openGroupInfo()">
+                <div class="ig-chat-avatar group">
+                    <i data-lucide="users"></i>
+                </div>
+                <div class="ig-chat-user-info">
+                    <span class="ig-chat-username">{{ chat.name }}</span>
+                    <span class="ig-chat-status">{{ chat.participant_count }} members</span>
+                </div>
+            </div>
+            {% else %}
+                {% for participant in other_participants %}
+                <a href="{% url 'user_profile' participant.username %}" class="ig-chat-user">
+                    <img src="{{ participant.profile_picture_url }}" alt="" class="ig-chat-avatar" onerror="this.outerHTML='<div class=\'ig-chat-avatar placeholder\'>{{ participant.initials }}</div>'">
+                    <div class="ig-chat-user-info">
+                        <span class="ig-chat-username">{{ participant.full_name }}</span>
+                        <span class="ig-chat-status">
+                            {% if participant.is_online %}Active now{% else %}{{ participant.last_seen|timesince }} ago{% endif %}
+                        </span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="ig-chat-actions">
+                <button class="ig-chat-action" onclick="startVideoCall()" title="Video Call">
+                    <i data-lucide="video"></i>
+                </button>
+                <button class="ig-chat-action" onclick="startVoiceCall()" title="Voice Call">
+                    <i data-lucide="phone"></i>
+                </button>
+                <button class="ig-chat-action" onclick="openP2PModal()" title="Share File (P2P)">
+                    <i data-lucide="share-2"></i>
+                </button>
+                <button class="ig-chat-action" onclick="openChatInfo()" title="Info">
+                    <i data-lucide="info"></i>
+                </button>
+            </div>
+        </header>
+        
+        <!-- Pinned Message Banner -->
+        <div class="ig-pinned-banner" id="pinnedBanner" style="display: none;">
+            <div class="ig-pinned-icon">
+                <i data-lucide="pin"></i>
+            </div>
+            <div class="ig-pinned-content" onclick="scrollToPinnedMessage()">
+                <span class="ig-pinned-label">Pinned Message</span>
+                <span class="ig-pinned-text" id="pinnedMessageText"></span>
+            </div>
+            <button class="ig-pinned-close" onclick="closePinnedBanner()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        
+        <!-- Messages Area -->
+        <div class="ig-chat-messages" id="messagesContainer">
+            <!-- Messages List - Full scrollable area -->
+            <div class="ig-messages-list" id="messagesList">
+                {% for message in messages %}
+                <div class="ig-message {% if message.sender == request.user %}sent{% else %}received{% endif %}" data-message-id="{{ message.id }}" data-one-time="{{ message.one_time|yesno:'true,false' }}" data-consumed="{{ message.consumed_at|yesno:'true,false' }}">
+                    {% if message.sender != request.user %}
+                    <img src="{{ message.sender.profile_picture_url }}" alt="" class="ig-message-avatar" onerror="this.outerHTML='<div class=\'ig-message-avatar placeholder\'>{{ message.sender.initials }}</div>'">
+                    {% endif %}
+                    
+                    <div class="ig-message-bubble">
+                        {% if message.one_time %}
+                            {# View-once message handling #}
+                            {% if message.consumed_at %}
+                                {# Already consumed/opened #}
+                                <div class="ig-viewonce-placeholder opened">
+                                    <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M12 6v6l4 2"></path>
+                                    </svg>
+                                    <span class="ig-viewonce-text">Opened</span>
+                                    <span class="ig-viewonce-subtext">{% if message.media_url %}Photo{% else %}Message{% endif %}</span>
+                                </div>
+                            {% elif message.sender == request.user %}
+                                {# Sender's own view-once message - show as pending #}
+                                <div class="ig-viewonce-placeholder {% if message.media_url %}photo{% endif %}">
+                                    <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                    <span class="ig-viewonce-text">View once {% if message.media_url %}photo{% else %}message{% endif %}</span>
+                                    <span class="ig-viewonce-subtext">Waiting to be opened</span>
+                                </div>
+                            {% else %}
+                                {# Receiver can tap to view #}
+                                <div class="ig-viewonce-message" onclick="openViewOnceMessage({{ message.id }}, '{{ message.media_url|default:'' }}', '{{ message.content|escapejs }}', '{% if message.media_url %}photo{% else %}text{% endif %}')">
+                                    <div class="ig-viewonce-placeholder {% if message.media_url %}photo{% endif %}">
+                                        <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        <span class="ig-viewonce-text">{% if message.media_url %}Photo{% else %}Message{% endif %}</span>
+                                        <span class="ig-viewonce-subtext">Tap to view</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            {# Regular message content #}
+                            {% if message.reply_to %}
+                            <div class="ig-reply-context" onclick="scrollToMessage('{{ message.reply_to.id }}')">
+                                <span class="ig-reply-context-name">{{ message.reply_to.sender.full_name }}</span>
+                                <span class="ig-reply-context-text">
+                                    {% if message.reply_to.media_url %}📷 Photo{% else %}{{ message.reply_to.content|truncatechars:50 }}{% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+
+                            {% if message.sender != request.user and chat.chat_type == 'group' %}
+                            <span class="ig-message-sender">{{ message.sender.full_name }}</span>
+                            {% endif %}
+                            
+                            {% if message.media_url and message.media_type == 'image' %}
+                            <div class="ig-message-media" onclick="openImageModal('{{ message.media_url }}')">
+                                <img src="{{ message.media_url }}" alt="Image" onload="if(typeof forceScrollToBottom==='function')forceScrollToBottom();">
+                            </div>
+                            {% elif message.media_url and message.media_type == 'video' %}
+                            <div class="ig-message-media">
+                                <video src="{{ message.media_url }}" controls style="max-width: 100%; border-radius: 8px;"></video>
+                            </div>
+                            {% elif message.media_url %}
+                            <div class="ig-message-media">
+                                <a href="{{ message.media_url }}" target="_blank" style="color: var(--color-primary);">
+                                    <i data-lucide="file"></i> {{ message.media_filename|default:"Download file" }}
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if message.content %}
+                            <p class="ig-message-text">{{ message.content }}</p>
+                            {% endif %}
+                        {% endif %}
+                        
+                        <span class="ig-message-time">
+                            {{ message.timestamp|time:"g:i A" }}
+                            {% if message.is_edited %}<span class="edited">(edited)</span>{% endif %}
+                            {% if message.sender == request.user %}
+                            <span class="ig-read-receipt" data-message-id="{{ message.id }}">
+                                {% if message.is_read_by_recipient %}
+                                <span class="checkmark read" title="Read">✓✓</span>
+                                {% else %}
+                                <span class="checkmark delivered" title="Delivered">✓✓</span>
+                                {% endif %}
+                            </span>
+                            {% endif %}
+                        </span>
+                        
+                        {% if message.message_reactions.exists and not message.one_time %}
+                        <div class="ig-message-reactions">
+                            {% for reaction in message.message_reactions.all %}
+                                {{ reaction.emoji }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    {% if not message.one_time %}
+                    <!-- Message menu button - only for regular messages -->
+                    <button class="ig-message-menu-btn" onclick="toggleMessageMenu({{ message.id }}, event)" title="More options">
+                        <i data-lucide="more-vertical"></i>
+                    </button>
+                    <div class="ig-message-menu" id="menu-{{ message.id }}">
+                        {% if message.sender == request.user %}
+                        <button onclick="editMessage({{ message.id }})"><i data-lucide="edit-2"></i> Edit</button>
+                        <button onclick="pinMessage({{ message.id }})"><i data-lucide="pin"></i> {% if message.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+                        <button onclick="deleteMessage({{ message.id }}, true)" class="danger"><i data-lucide="trash-2"></i> Delete</button>
+                        {% else %}
+                        <button onclick="reactToMessage({{ message.id }}, '❤️')"><i data-lucide="heart"></i> Like</button>
+                        <button onclick="replyToMessage({{ message.id }}, '{{ message.sender.username }}', '{{ message.content|escapejs }}')"><i data-lucide="corner-up-left"></i> Reply</button>
+                        <button onclick="pinMessage({{ message.id }})"><i data-lucide="pin"></i> {% if message.is_pinned %}Unpin{% else %}Pin{% endif %}</button>
+                        <button onclick="deleteMessage({{ message.id }}, false)" class="danger"><i data-lucide="trash-2"></i> Delete</button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Typing Indicator -->
+            <div class="ig-typing-indicator" id="typingIndicator" style="display: none;">
+                <div class="ig-typing-content">
+                    <div class="ig-typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <span class="ig-typing-text" id="typingText">typing</span>
+                </div>
+            </div>
+            
+            <!-- Immediate scroll to bottom - runs as soon as messages are in DOM -->
+            <script>
+                (function() {
+                    var c = document.getElementById('messagesContainer');
+                    var l = document.getElementById('messagesList');
+                    if (c) {
+                        c.scrollTop = c.scrollHeight + 99999;
+                    }
+                    if (l && l.lastElementChild) {
+                        l.lastElementChild.scrollIntoView({ behavior: 'instant', block: 'end' });
+                    }
+                })();
+            </script>
+        </div>
+        
+        <!-- Reply Preview -->
+        <div id="replyPreview" class="ig-reply-preview" style="display: none;">
+            <div class="ig-reply-info">
+                <span class="ig-reply-title">Replying to <span id="replyUsername"></span></span>
+                <span class="ig-reply-text" id="replyText"></span>
+            </div>
+            <button onclick="cancelReply()" class="ig-reply-close">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <!-- New Messages Button (shows when scrolled up and new messages arrive) -->
+        <button id="newMessagesBtn" class="ig-new-messages-btn" onclick="scrollToNewMessages()" style="display: none;">
+            <i data-lucide="chevron-down"></i>
+            <span id="newMessagesCount">New messages</span>
+        </button>
+
+        <!-- Message Input -->
+        <footer class="ig-chat-footer">
+            <form class="ig-chat-form" id="messageForm" onsubmit="sendMessage(event)">
+                <button type="button" class="ig-chat-emoji" onclick="toggleEmojiPicker()">
+                    <i data-lucide="smile"></i>
+                </button>
+                
+                <input type="text" class="ig-chat-input" id="messageInput" placeholder="Message..." autocomplete="off" maxlength="5000">
+                
+                <div class="ig-chat-input-actions">
+                    <label class="ig-chat-attachment">
+                        <i data-lucide="image"></i>
+                        <input type="file" accept="image/*" id="imageInput" style="display: none;" onchange="handleImageSelect(event)">
+                    </label>
+                    <button type="button" class="ig-chat-viewonce" id="viewOnceToggleBtn" onclick="toggleOneTimeMode()" title="View once message">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="1"></circle>
+                            <path d="M1 12s4-8 11-8 11 8 11 8"></path>
+                            <path d="M1 12s4 8 11 8 11-8 11-8"></path>
+                        </svg>
+                    </button>
+                    <button type="submit" class="ig-chat-send" id="sendBtn" style="display: none;">
+                        <i data-lucide="send"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Image Preview -->
+            <div class="ig-image-preview" id="imagePreview" style="display: none;">
+                <img id="previewImg" src="" alt="Preview">
+                <button type="button" onclick="clearImagePreview()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<!-- Chat Info Modal (for private chats) -->
+<div id="chatInfoModal" class="ig-modal-overlay" style="display: none;" onclick="closeChatInfo(event)">
+    <div class="ig-modal" onclick="event.stopPropagation()" style="max-width: 400px;">
+        <header class="ig-modal-header">
+            <h2 class="ig-modal-title">Details</h2>
+            <button class="ig-modal-close" onclick="closeChatInfo()">
+                <i data-lucide="x"></i>
+            </button>
+        </header>
+        <div class="ig-modal-body">
+            {% if chat.chat_type == 'private' %}
+                {% for participant in other_participants %}
+                <div style="text-align: center; padding: 24px 0;">
+                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 96px; height: 96px; border-radius: 50%; margin-bottom: 12px;">
+                    <h3 style="font-size: 20px; margin-bottom: 4px;">{{ participant.full_name }}</h3>
+                    <p style="color: var(--ig-text-secondary);">@{{ participant.username }}</p>
+                    <a href="{% url 'user_profile' participant.username %}" class="ig-auth-btn" style="margin-top: 16px; width: auto; display: inline-block; padding: 8px 24px;">View Profile</a>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <div class="ig-settings-list" style="margin-top: 16px;">
+                <button class="ig-settings-item">
+                    <i data-lucide="bell-off"></i>
+                    <span>Mute Messages</span>
+                </button>
+                <button class="ig-settings-item danger" onclick="deleteChat()">
+                    <i data-lucide="trash-2"></i>
+                    <span>Delete Chat</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Group Info Modal -->
+<div id="groupInfoModal" class="ig-modal-overlay" style="display: none;" onclick="closeGroupInfo(event)">
+    <div class="ig-modal" onclick="event.stopPropagation()">
+        <header class="ig-modal-header">
+            <h2 class="ig-modal-title">{{ chat.name }}</h2>
+            <button class="ig-modal-close" onclick="closeGroupInfo()">
+                <i data-lucide="x"></i>
+            </button>
+        </header>
+        <div class="ig-modal-body">
+            <div style="padding: 16px 0; border-bottom: 1px solid var(--ig-border-light);">
+                <h4 style="font-size: 14px; color: var(--ig-text-secondary); margin-bottom: 8px;">Members · {{ chat.participant_count }}</h4>
+            </div>
+            
+            <div class="ig-members-list">
+                {% for participant in chat.participants.all %}
+                <div class="ig-member-item">
+                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <div style="flex: 1;">
+                        <a href="{% url 'user_profile' participant.username %}" style="font-weight: 600; font-size: 14px;">{{ participant.full_name }}</a>
+                        {% if participant == chat.admin %}
+                        <span style="font-size: 12px; color: var(--ig-text-secondary);">Admin</span>
+                        {% endif %}
+                    </div>
+                    {% if is_admin and participant != request.user %}
+                    <button onclick="removeMember({{ participant.id }})" style="color: var(--ig-error); background: none; border: none; cursor: pointer; font-size: 14px;">Remove</button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            {% if is_admin %}
+            <div style="padding: 16px 0; border-top: 1px solid var(--ig-border-light); margin-top: 16px;">
+                <button class="ig-auth-btn" onclick="openInviteLink()" style="margin-bottom: 12px;">
+                    <i data-lucide="link" style="width: 16px; height: 16px; margin-right: 8px;"></i>
+                    Copy Invite Link
+                </button>
+            </div>
+            {% endif %}
+            
+            <div class="ig-settings-list">
+                <button class="ig-settings-item danger" onclick="leaveGroup()">
+                    <i data-lucide="log-out"></i>
+                    <span>Leave Group</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- P2P File Transfer Modal -->
+<div id="p2pModal" class="ig-modal-overlay" style="display: none;" onclick="closeP2PModal(event)">
+    <div class="ig-modal" style="max-width: 420px;" onclick="event.stopPropagation()">
+        <header class="ig-modal-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="share-2" style="width: 20px; height: 20px; color: var(--color-primary);"></i>
+                <h2 class="ig-modal-title" style="margin: 0;">P2P File Share</h2>
+            </div>
+            <button class="ig-modal-close" onclick="closeP2PModal()">
+                <i data-lucide="x"></i>
+            </button>
+        </header>
+        <div class="ig-modal-body" style="padding: 16px;">
+            <div id="p2pSetup">
+                <div style="background: linear-gradient(135deg, var(--color-primary), #6366f1); padding: 16px; border-radius: 12px; margin-bottom: 16px; color: white;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
+                        <div>
+                            <div style="font-weight: 600; font-size: 14px;">Direct Transfer</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Files are sent directly to the recipient - fast & secure</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="p2pPeers" class="ig-members-list" style="max-height: 300px; overflow-y: auto;">
+                    <!-- Peers loaded here -->
+                </div>
+            </div>
+            <div id="p2pTransfer" style="display: none;">
+                <div style="text-align: center; padding: 30px 20px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 20px; background: var(--ig-surface); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="file" style="width: 32px; height: 32px; color: var(--color-primary);"></i>
+                    </div>
+                    <h3 id="p2pStatus" style="margin: 0 0 16px; font-size: 16px; color: var(--ig-text-primary); display: flex; align-items: center; justify-content: center; gap: 8px;">Connecting...</h3>
+                    <div style="background: var(--ig-border); border-radius: 8px; height: 8px; margin: 16px 0; overflow: hidden;">
+                        <div id="p2pProgress" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--color-primary), #6366f1); transition: width 0.2s ease; border-radius: 8px;"></div>
+                    </div>
+                    <div id="p2pFileInfo" style="font-size: 13px; color: var(--ig-text-secondary); margin-top: 12px;"></div>
+                    <button onclick="stopP2P(); resetP2PUI();" style="margin-top: 20px; padding: 10px 24px; background: transparent; border: 1px solid var(--ig-border); border-radius: 8px; cursor: pointer; color: var(--ig-text-secondary); font-size: 13px;">
+                        Cancel Transfer
+                    </button>
+                </div>
+            </div>
+            <input type="file" id="p2pFileInput" style="display: none;" onchange="handleP2PFileSelect(event)">
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="ig-modal-overlay" style="display: none;" onclick="closeImageModal()">
+    <img id="modalImage" src="" alt="Full size" style="max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 4px;">
+    <button onclick="closeImageModal()" style="position: absolute; top: 20px; right: 20px; background: none; border: none; cursor: pointer;">
+        <i data-lucide="x" style="width: 32px; height: 32px; color: white;"></i>
+    </button>
+</div>
+
+<!-- Delete Message Modal -->
+<div id="deleteModal" class="ig-delete-modal-overlay">
+    <div class="ig-delete-modal">
+        <div class="ig-delete-modal-header">
+            <i data-lucide="trash-2" class="ig-delete-modal-icon"></i>
+            <h3>Delete message?</h3>
+        </div>
+        <div class="ig-delete-modal-body">
+            <p>Choose how you want to delete this message</p>
+        </div>
+        <div class="ig-delete-modal-actions">
+            <button class="ig-delete-btn ig-delete-for-me" onclick="confirmDeleteForMe()">
+                <i data-lucide="user"></i>
+                Delete for me
+            </button>
+            <button class="ig-delete-btn ig-delete-for-everyone" id="deleteForEveryoneBtn" onclick="confirmDeleteForEveryone()">
+                <i data-lucide="users"></i>
+                Delete for everyone
+            </button>
+            <button class="ig-delete-btn ig-delete-cancel" onclick="closeDeleteModal()">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Message Modal -->
+<div id="editModal" class="ig-edit-modal-overlay">
+    <div class="ig-edit-modal">
+        <div class="ig-edit-modal-header">
+            <h3>Edit message</h3>
+            <button class="ig-edit-modal-close" onclick="closeEditModal()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="ig-edit-modal-body">
+            <textarea id="editMessageInput" class="ig-edit-input" placeholder="Edit your message..." rows="3"></textarea>
+        </div>
+        <div class="ig-edit-modal-actions">
+            <button class="ig-edit-btn ig-edit-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="ig-edit-btn ig-edit-save" onclick="saveEditMessage()">Save</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const chatId = {{ chat.id }};
+const currentUserId = {{ request.user.id }};
+const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+let chatSocket = null;
+let typingTimeout = null;
+let reconnectAttempts = 0;
+let maxReconnectAttempts = 3;
+let reconnectDelay = 3000;
+let isOneTimeMode = false;
+let useWebSocket = false;
+let onlineCheckInterval = null;
+let heartbeatInterval = null;
+let isUserScrolledUp = false;
+let newMessagesCount = 0;
+let currentPinnedMessageId = null;
+
+// Notification sound (base64 encoded short beep)
+const notificationSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdH2JkZufoZyXko2IhYOBf39+fn5+fn9/gIGDhYiLj5SYnJ+hoZ6ZlI+LiIaBfnt5eHh4eXp8foGEh4uPk5ibnaChoZ6blpGNioeBfXp3dXR0dHV2eHt+goaKjpKWmp2goKCdmpaRjYmGgn97eHVzcnJyc3R2eXyAhIiMkJSYm56goJ2alZGNiYWBfXp3dHJxcHBxcnR3en6Ch4uPk5ebnp+fnpuXk4+LiIR/fHl2c3FwcHBxc3Z5fYGFiY2Rl5qdn5+enJiUkIyIhIF9enZzcXBvb3Bxc3Z5fYKGio6Sl5qdn5+dnJiUj4uHg398eHVycG9vb3Bxc3Z6foKGio6SlZmcnp6dnJiUkIyIhIF9enZzcXBvb29wcnR3e3+Dh4uPk5aZnJ6enZuXk4+LiIR/fHl1cnBvbm5vcHJ1eHyAhIiMkJSXmp2fn56cmJSQjIiFgX57d3RxcG9vb3Byc3Z6foKGio6Sl5qdn56dnJiUkIyIhIF9enZzcXBvb29wcnR3en6ChomNkZWYm56enp2blZGNiYaBfnp3dHJwb29vcHJ0d3p+goaKjpGVmJudnp6dm5eTj4yIhIF9enZ0cXBvb29wcnR3e3+Dh4qOkpWYm56enp2blZKOioeBfnp3dHJwb29vcHJ0d3t/g4eKjpKVmJudnp6dnJiVkY2JhoJ+e3d0cnBvb29wcnV4fICEiIyQlJebnZ6enZuYlJCMiYWBfXp3dHFwb29vcHJ1eHyAhIiMkJSXmp2enp2cmJSTj4uIhIF9end0cnBvb29wcnR3e3+Dh4uPkpWYm56enp2blZKOioeCf3t4dXJwb29vcHJ1eHyAhIiMj5OWmZyenp2cmJWRjYqGgn57d3RycG9vb3BydXh8gISIjJCTlpmcnp6dnJmVkY2KhoJ+e3d0cnFvb29wcnV4fICEiIyQk5aZnJ6enZyYlZGNioaCfnt4dXJwb29vcHJ1eHx/g4eKjpGVmJudnp6dnJiVkY2KhoJ+e3d1cnBvb29wcnV4fICDh4uOkpWYm52enp2cmJWRjYqGgn97eHVycG9vb3BydXh7f4OHi4+SlZibnZ6enZyYlZGOioaCf3t4dXJwb29vcHJ0eHt/goaKjpGVmJudnp6dnJmVko6KhoJ+e3h1cnBvb29wcnR4e3+DhomNkJSXmpyenp2cmZWRjoqGgn57eHVycG9vb3BydHh7f4KGiY2Qk5eZnJ6enZyZlZKOioaCfnt4dXNwb29vcHJ0d3t+goaJjZCTl5mcnp6dnJmVko6LhoN/fHl2c3Bvb29wcnR3e36ChomNkJOWmZyenp6cmJWRjoqGgn57eHZzcXBvb29xc3Z5fYGEiIyPk5aZm56enp2al5ORjYmGgn57eHVzcXBvb29xc3Z5fYCEh4uOkpWYm52fn56cmJWRjYmGgn57eHVzcXBvb3BxdHd6foGFiIyPk5aZnJ6fn56cl5ORjYmFgX57eHVycXBvb3BydHd7foKFiYyQk5aZnJ6fn56cmJWRjYmFgX57eHVycXBvb3BxdHd6foKFiYyPk5aZnJ6fn56cmJWRjYmFgn57eHVycXBvb3BxdHd6foKFiYyPk5aZnJ6fnp2cl5SSjomFgX57eHVycXBvb3BxdHd6fn6FiYyPk5aZnJ6fn56cmJWRjYmFgn57eHVzcXBvb3BxdHd6foGFiIyPkpWYm52en56cmJWSjoqGgn97eHVzcXBvb3BxdHd6fn+FiIyPkpWYm52en56cmJWSjoqGgn97eHVzcXBvb29xdHd6foGFiIyPkpWYm52en56cmJWSjoqGgn97eHVzcXBvb3BxdHd6foGFiIyPkpWYm52enp6cmJSSjoqHg397eHVzcXBvb29xdHd6foGFiIuPkpWYm52enp6cmJWSjoqGg397eHVzcXBvb3BxdHd6foGFiIuOkpWYm52enp6cmJWSjoqGg397eHVzcXBvb3BxdHd6foGFiIuOkpWYm52enp6cmJWSjoqGg397eHVzcXBvbw==');
+
+// Initialize - Optimized for performance
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Lucide icons once
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    initMessaging();
+    initInputHandler();
+    initScrollListener();
+    loadPinnedMessages();
+    
+    // Combine heartbeat and online status check into single interval
+    startHeartbeat();
+    startTypingPoll();
+    
+    // Start P2P signal polling in background to receive incoming file requests
+    startBackgroundSignalPolling();
+    
+    // Mark messages as read and start read status polling
+    markMessagesAsRead();
+    startReadReceiptPolling();
+    
+    // Scroll to bottom - multiple attempts to handle image loading
+    forceScrollToBottom();
+    setTimeout(forceScrollToBottom, 100);
+    setTimeout(forceScrollToBottom, 300);
+    setTimeout(forceScrollToBottom, 600);
+    setTimeout(forceScrollToBottom, 1000);
+    setTimeout(forceScrollToBottom, 2000);
+    setTimeout(forceScrollToBottom, 3000);
+});
+
+// Also scroll on full page load (including images)
+window.addEventListener('load', function() {
+    forceScrollToBottom();
+    setTimeout(forceScrollToBottom, 100);
+    setTimeout(forceScrollToBottom, 500);
+    setTimeout(forceScrollToBottom, 1000);
+    
+    // Also watch for any images that might still be loading
+    const images = document.querySelectorAll('.ig-chat-messages img');
+    images.forEach(img => {
+        if (!img.complete) {
+            img.addEventListener('load', forceScrollToBottom);
+        }
+    });
+});
+
+// FORCE scroll to bottom - no conditions, just scroll
+function forceScrollToBottom() {
+    const container = document.getElementById('messagesContainer');
+    const list = document.getElementById('messagesList');
+    if (container) {
+        // Method 1: Set scrollTop
+        container.scrollTop = container.scrollHeight + 99999;
+        
+        // Method 2: Also scroll the last message into view
+        if (list) {
+            const lastMessage = list.lastElementChild;
+            if (lastMessage) {
+                lastMessage.scrollIntoView({ behavior: 'instant', block: 'end' });
+            }
+        }
+    }
+}
+
+// Track scroll position to show "new messages" button
+function initScrollListener() {
+    const container = document.getElementById('messagesContainer');
+    if (container) {
+        container.addEventListener('scroll', function() {
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+            isUserScrolledUp = !isAtBottom;
+            
+            // Hide new messages button when scrolled to bottom
+            if (isAtBottom) {
+                hideNewMessagesButton();
+            }
+        });
+    }
+}
+
+function showNewMessagesButton(count) {
+    const btn = document.getElementById('newMessagesBtn');
+    const countEl = document.getElementById('newMessagesCount');
+    if (btn && countEl) {
+        newMessagesCount = count;
+        countEl.textContent = count === 1 ? 'New message' : `${count} new messages`;
+        btn.style.display = 'flex';
+    }
+}
+
+function hideNewMessagesButton() {
+    const btn = document.getElementById('newMessagesBtn');
+    if (btn) {
+        btn.style.display = 'none';
+        newMessagesCount = 0;
+    }
+}
+
+function scrollToNewMessages() {
+    scrollToBottom();
+    hideNewMessagesButton();
+}
+
+// =============================================
+// READ RECEIPTS FUNCTIONS
+// =============================================
+
+// Mark all messages in this chat as read
+function markMessagesAsRead() {
+    fetch(`/api/chat/${chatId}/mark-read/`, {
+        method: 'POST',
+        headers: { 
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(data => {
+        if (data.success && data.marked_count > 0) {
+            console.log(`Marked ${data.marked_count} messages as read`);
+        }
+    })
+    .catch(() => {});
+}
+
+// Poll for read receipt status updates on sent messages
+let readReceiptInterval = null;
+function startReadReceiptPolling() {
+    // Poll every 5 seconds to update read receipts on sent messages
+    readReceiptInterval = setInterval(updateReadReceipts, 5000);
+    // Also update when window gains focus
+    window.addEventListener('focus', updateReadReceipts);
+}
+
+// Update read receipt indicators on sent messages
+function updateReadReceipts() {
+    // Get all sent messages with read receipt indicators
+    const sentMessages = document.querySelectorAll('.ig-message.sent .ig-read-receipt[data-message-id]');
+    if (sentMessages.length === 0) return;
+    
+    // Get the latest message IDs to check
+    const messageIds = Array.from(sentMessages).map(el => el.dataset.messageId).slice(-20); // Last 20 messages
+    
+    // Fetch current read status for recent messages
+    fetch(`/api/chat/${chatId}/messages/`)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(data => {
+        if (data.messages) {
+            data.messages.forEach(msg => {
+                if (msg.is_own && msg.is_read) {
+                    const receiptEl = document.querySelector(`.ig-read-receipt[data-message-id="${msg.id}"] .checkmark`);
+                    if (receiptEl && !receiptEl.classList.contains('read')) {
+                        receiptEl.classList.remove('delivered');
+                        receiptEl.classList.add('read');
+                        receiptEl.title = 'Read';
+                    }
+                }
+            });
+        }
+    })
+    .catch(() => {});
+}
+
+// Mark messages as read when scrolling through them
+function markVisibleMessagesAsRead() {
+    markMessagesAsRead();
+}
+
+// Heartbeat - Optimized to reduce requests
+function startHeartbeat() {
+    sendHeartbeat();
+    heartbeatInterval = setInterval(sendHeartbeat, 30000); // Every 30 seconds (reduced from 10)
+}
+
+function sendHeartbeat() {
+    fetch('/api/user/heartbeat/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    }).catch(() => {});
+}
+
+// Helper to get CSRF token
+function getCSRFToken() {
+    return csrfToken;
+}
+
+// Initialize messaging - HTTP polling only for stability and performance
+function initMessaging() {
+    startPolling();
+    // WebSocket disabled - causes overhead without ASGI server
+}
+
+// WebSocket stub - disabled for performance
+function tryWebSocket() {
+    // Disabled - using HTTP polling for reliability
+    useWebSocket = false;
+}
+
+// Stub functions for WebSocket (disabled for performance)
+function isWSReady() { return false; }
+function wsSend(data) { return false; }
+
+// Fallback polling for messages - Optimized
+let pollingInterval = null;
+let lastKnownMsgId = 0;
+
+function startPolling() {
+    if (pollingInterval) return;
+    
+    // Cache the last message ID
+    lastKnownMsgId = getLastMessageId();
+    pollMessages();
+    pollingInterval = setInterval(pollMessages, 2500); // Poll every 2.5 seconds (balanced)
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
+}
+
+function getLastMessageId() {
+    // Use cached value if available, otherwise query DOM
+    if (lastKnownMsgId > 0) return lastKnownMsgId;
+    
+    const msgs = document.querySelectorAll('[data-message-id]');
+    let maxId = 0;
+    for (let i = msgs.length - 1; i >= 0; i--) {
+        const id = parseInt(msgs[i].getAttribute('data-message-id'));
+        if (id > maxId) {
+            maxId = id;
+            break; // Messages are in order, so first from end is highest
+        }
+    }
+    return maxId;
+}
+
+function pollMessages() {
+    const url = lastKnownMsgId > 0 
+        ? `/api/chat/${chatId}/messages/?after_id=${lastKnownMsgId}`
+        : `/api/chat/${chatId}/messages/`;
+    
+    fetch(url)
+    .then(r => r.ok ? r.json() : Promise.reject())
+    .then(data => {
+        if (data.messages && data.messages.length > 0) {
+            let addedCount = 0;
+            let hasNewFromOthers = false;
+            
+            data.messages.forEach(msg => {
+                if (msg.id > lastKnownMsgId) {
+                    lastKnownMsgId = msg.id;
+                }
+                if (!document.querySelector(`[data-message-id="${msg.id}"]`)) {
+                    appendMessage(msg, true); // Always auto-scroll for polled messages
+                    addedCount++;
+                    
+                    // Check if message is from someone else
+                    if (!msg.is_own) {
+                        hasNewFromOthers = true;
+                    }
+                }
+                
+                // Update read receipts for own messages
+                if (msg.is_own && msg.is_read) {
+                    const receiptEl = document.querySelector(`.ig-read-receipt[data-message-id="${msg.id}"] .checkmark`);
+                    if (receiptEl && !receiptEl.classList.contains('read')) {
+                        receiptEl.classList.remove('delivered');
+                        receiptEl.classList.add('read');
+                        receiptEl.title = 'Read';
+                    }
+                }
+            });
+            
+            // Notify user of new messages from others
+            if (hasNewFromOthers && addedCount > 0) {
+                playNotificationSound();
+                showNewMessageNotification(addedCount);
+                // Mark new messages as read immediately (user is viewing the chat)
+                markMessagesAsRead();
+            }
+            
+            // Show new messages button if user is scrolled up
+            if (addedCount > 0 && isUserScrolledUp) {
+                showNewMessagesButton(newMessagesCount + addedCount);
+            }
+        }
+    })
+    .catch(err => console.error('Polling error:', err));
+}
+
+function handleSocketMessage(data) {
+    switch(data.type) {
+        case 'message.new':
+            // Prevent duplicates
+            if (!document.querySelector(`[data-message-id="${data.message.id}"]`)) {
+                appendMessage(data.message);
+            }
+            break;
+        case 'typing.update':
+            if (data.users && data.users.length > 0) {
+                // Filter out current user
+                const otherUsers = data.users.filter(u => u.id !== currentUserId);
+                if (otherUsers.length > 0) {
+                    showTypingIndicator(otherUsers);
+                } else {
+                    hideTypingIndicator();
+                }
+            } else {
+                hideTypingIndicator();
+            }
+            break;
+        case 'message.read':
+            // Handle read receipts if needed
+            handleMessageRead(data);
+            break;
+        case 'message.consumed':
+            // Handle one-time message consumption
+            handleMessageConsumed(data);
+            break;
+        case 'message_reaction':
+            handleReactionUpdate(data);
+            break;
+        case 'error':
+            console.error('WebSocket error:', data.message);
+            break;
+    }
+}
+
+// Handle message read receipts
+function handleMessageRead(data) {
+    const msg = document.querySelector(`[data-message-id="${data.message_id}"]`);
+    if (msg) {
+        // Could add a read indicator here if needed
+        console.log(`Message ${data.message_id} read by user ${data.read_by}`);
+    }
+}
+
+// Handle one-time message consumption
+function handleMessageConsumed(data) {
+    const msg = document.querySelector(`[data-message-id="${data.message_id}"]`);
+    if (msg) {
+        msg.classList.add('ig-message-consumed');
+        const bubble = msg.querySelector('.ig-message-bubble');
+        if (bubble) {
+            // Remove one-time indicator
+            const oneTimeIndicator = bubble.querySelector('.ig-message-onetime');
+            if (oneTimeIndicator) oneTimeIndicator.remove();
+        }
+    }
+}
+
+function handleReactionUpdate(data) {
+    const msg = document.querySelector(`[data-message-id="${data.message_id}"] .ig-message-bubble`);
+    if (!msg) return;
+    
+    let reactionContainer = msg.querySelector('.ig-message-reactions');
+    
+    if (data.action === 'add') {
+        if (!reactionContainer) {
+            reactionContainer = document.createElement('div');
+            reactionContainer.className = 'ig-message-reactions';
+            reactionContainer.style.cssText = 'position: absolute; bottom: -10px; right: 0; background: var(--ig-surface); border-radius: 10px; padding: 2px 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); font-size: 12px;';
+            msg.appendChild(reactionContainer);
+        }
+        // Append emoji
+        reactionContainer.innerHTML += data.emoji;
+    } else if (data.action === 'remove') {
+        if (reactionContainer) {
+            // Remove one instance of the emoji
+            reactionContainer.innerHTML = reactionContainer.innerHTML.replace(data.emoji, '');
+            if (reactionContainer.innerHTML.trim() === '') {
+                reactionContainer.remove();
+            }
+        }
+    }
+}
+
+function appendMessage(data, autoScroll = true) {
+    const list = document.getElementById('messagesList');
+    const isSent = data.is_own;
+    const isOneTime = data.one_time;
+    const isConsumed = data.consumed;
+    const hasMedia = data.media_url || data.has_media;
+    
+    let replyHtml = '';
+    if (data.reply_to && data.reply_to.id) {
+        const replyContent = data.reply_to.media_url ? '📷 Photo' : escapeHtml(data.reply_to.content || '');
+        replyHtml = `
+            <div class="ig-reply-context" onclick="scrollToMessage('${data.reply_to.id}')">
+                <span class="ig-reply-context-name">${escapeHtml(data.reply_to.sender_name || 'User')}</span>
+                <span class="ig-reply-context-text">${replyContent}</span>
+            </div>
+        `;
+    }
+    
+    // WhatsApp-style View Once message content
+    let bubbleContent = '';
+    
+    if (isOneTime) {
+        if (isConsumed) {
+            // Already viewed - show "Opened" placeholder
+            bubbleContent = `
+                <div class="ig-viewonce-placeholder opened">
+                    <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 6v6l4 2"></path>
+                    </svg>
+                    <span class="ig-viewonce-text">Opened</span>
+                    <span class="ig-viewonce-subtext">${hasMedia ? 'Photo' : 'Message'}</span>
+                </div>
+            `;
+        } else if (isSent) {
+            // Sent by current user - show preview
+            bubbleContent = `
+                <div class="ig-viewonce-placeholder ${hasMedia ? 'photo' : ''}">
+                    <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                    <span class="ig-viewonce-text">View once ${hasMedia ? 'photo' : 'message'}</span>
+                    <span class="ig-viewonce-subtext">Waiting to be opened</span>
+                </div>
+            `;
+        } else {
+            // Received - show clickable placeholder
+            bubbleContent = `
+                <div class="ig-viewonce-message" onclick="openViewOnceMessage(${data.id}, '${hasMedia ? (data.media_url || '') : ''}', '${escapeHtml(data.content || '')}', '${hasMedia ? 'photo' : 'text'}')">
+                    <div class="ig-viewonce-placeholder ${hasMedia ? 'photo' : ''}">
+                        <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span class="ig-viewonce-text">${hasMedia ? 'Photo' : 'Message'}</span>
+                        <span class="ig-viewonce-subtext">Tap to view</span>
+                    </div>
+                </div>
+            `;
+        }
+    } else {
+        // Regular message content
+        bubbleContent = `
+            ${replyHtml}
+            ${data.media_url ? `<div class="ig-message-media" onclick="openImageModal('${data.media_url}')"><img src="${data.media_url}" alt=""></div>` : ''}
+            ${data.content ? `<p class="ig-message-text">${escapeHtml(data.content)}</p>` : ''}
+        `;
+    }
+
+    // Build avatar HTML - use profile picture if available, otherwise placeholder with initials
+    const senderInitial = data.sender_initials || (data.sender_name ? data.sender_name.charAt(0).toUpperCase() : 'U');
+    let avatarHtml = '';
+    if (!isSent) {
+        if (data.sender_avatar) {
+            avatarHtml = `<img src="${data.sender_avatar}" alt="" class="ig-message-avatar" onerror="this.outerHTML='<div class=\\'ig-message-avatar placeholder\\'>${senderInitial}</div>'">`;
+        } else {
+            avatarHtml = `<div class="ig-message-avatar placeholder">${senderInitial}</div>`;
+        }
+    }
+
+    const msgHtml = `
+        <div class="ig-message ${isSent ? 'sent' : 'received'}" data-message-id="${data.id}" data-one-time="${isOneTime}" data-consumed="${isConsumed}">
+            ${avatarHtml}
+            <div class="ig-message-bubble">
+                ${bubbleContent}
+                <span class="ig-message-time">
+                    ${data.timestamp}
+                    ${isSent ? `<span class="ig-read-receipt" data-message-id="${data.id}"><span class="checkmark ${data.is_read ? 'read' : 'delivered'}" title="${data.is_read ? 'Read' : 'Delivered'}">✓✓</span></span>` : ''}
+                </span>
+            </div>
+            ${!isOneTime ? `
+            <button class="ig-message-menu-btn" onclick="toggleMessageMenu(${data.id}, event)" title="More options">
+                <i data-lucide="more-vertical"></i>
+            </button>
+            <div class="ig-message-menu" id="menu-${data.id}">
+                ${isSent ? `
+                    <button onclick="editMessage(${data.id})"><i data-lucide="edit-2"></i> Edit</button>
+                    <button onclick="pinMessage(${data.id})"><i data-lucide="pin"></i> Pin</button>
+                    <button onclick="deleteMessage(${data.id}, true)" class="danger"><i data-lucide="trash-2"></i> Delete</button>
+                ` : `
+                    <button onclick="reactToMessage(${data.id}, '❤️')"><i data-lucide="heart"></i> Like</button>
+                    <button onclick="replyToMessage(${data.id}, '${escapeHtml(data.sender_name)}', '${escapeHtml(data.content || 'Photo')}')"><i data-lucide="corner-up-left"></i> Reply</button>
+                    <button onclick="pinMessage(${data.id})"><i data-lucide="pin"></i> Pin</button>
+                    <button onclick="deleteMessage(${data.id}, false)" class="danger"><i data-lucide="trash-2"></i> Delete</button>
+                `}
+            </div>
+            ` : ''}
+        </div>
+    `;
+    
+    list.insertAdjacentHTML('beforeend', msgHtml);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // ALWAYS scroll to bottom for new messages
+    if (autoScroll) {
+        isUserScrolledUp = false;
+        forceScrollToBottom();
+        // Extra scroll after a short delay to ensure DOM is updated
+        setTimeout(forceScrollToBottom, 100);
+    }
+}
+
+// View Once Message Viewer - Manual close (no timer)
+let currentViewOnceMessageId = null;
+let currentViewOnceType = null;
+
+function openViewOnceMessage(messageId, mediaUrl, content, type) {
+    // Store message info for when user closes
+    currentViewOnceMessageId = messageId;
+    currentViewOnceType = type;
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.className = 'ig-viewonce-modal';
+    modal.id = 'viewOnceModal';
+    
+    let contentHtml = '';
+    if (type === 'photo' && mediaUrl) {
+        contentHtml = `<div class="ig-viewonce-content"><img src="${mediaUrl}" alt="View once photo"></div>`;
+    } else {
+        contentHtml = `<div class="ig-viewonce-text-content">${escapeHtml(content)}</div>`;
+    }
+    
+    modal.innerHTML = `
+        <div class="ig-viewonce-modal-header">
+            <button class="ig-viewonce-modal-close" onclick="closeViewOnceModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+                <span>Close</span>
+            </button>
+        </div>
+        ${contentHtml}
+        <div class="ig-viewonce-hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+            </svg>
+            <span>This message will disappear after you close it</span>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+function closeViewOnceModal() {
+    const modal = document.getElementById('viewOnceModal');
+    if (!modal) return;
+    
+    const messageId = currentViewOnceMessageId;
+    const type = currentViewOnceType;
+    
+    // Remove modal first for better UX
+    modal.remove();
+    document.body.style.overflow = '';
+    
+    if (!messageId) return;
+    
+    // Mark as consumed on server when user closes
+    fetch(`/api/consume-message/${messageId}/`, {
+        method: 'POST',
+        headers: { 
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Update the message in UI to show as consumed
+            const msgEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (msgEl) {
+                msgEl.dataset.consumed = 'true';
+                const bubble = msgEl.querySelector('.ig-message-bubble');
+                if (bubble) {
+                    const viewOnceEl = bubble.querySelector('.ig-viewonce-message');
+                    if (viewOnceEl) {
+                        viewOnceEl.classList.add('opened');
+                        viewOnceEl.onclick = null;
+                        viewOnceEl.style.cursor = 'default';
+                        viewOnceEl.innerHTML = `
+                            <div class="ig-viewonce-placeholder opened">
+                                <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M9 12l2 2 4-4"></path>
+                                </svg>
+                                <span class="ig-viewonce-text">Opened</span>
+                                <span class="ig-viewonce-subtext">${type === 'photo' ? 'Photo' : 'Message'}</span>
+                            </div>
+                        `;
+                    }
+                    
+                    // Also update placeholder if it exists
+                    const placeholder = bubble.querySelector('.ig-viewonce-placeholder');
+                    if (placeholder && !placeholder.classList.contains('opened')) {
+                        placeholder.classList.add('opened');
+                        placeholder.innerHTML = `
+                            <svg class="ig-viewonce-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9 12l2 2 4-4"></path>
+                            </svg>
+                            <span class="ig-viewonce-text">Opened</span>
+                            <span class="ig-viewonce-subtext">${type === 'photo' ? 'Photo' : 'Message'}</span>
+                        `;
+                    }
+                }
+            }
+            
+            if (typeof showIGToast === 'function') {
+                showIGToast('Message viewed and deleted', 'info');
+            }
+        }
+    })
+    .catch(err => console.error('Error consuming message:', err))
+    .finally(() => {
+        currentViewOnceMessageId = null;
+        currentViewOnceType = null;
+    });
+}
+
+function removeMessage(messageId) {
+    const msg = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (msg) msg.remove();
+}
+
+function updateMessage(data) {
+    const msg = document.querySelector(`[data-message-id="${data.message_id}"]`);
+    if (msg) {
+        const textEl = msg.querySelector('.ig-message-text');
+        if (textEl) textEl.textContent = data.content;
+    }
+}
+
+// Send Message
+function sendMessage(event) {
+    event.preventDefault();
+    
+    const input = document.getElementById('messageInput');
+    const imageInput = document.getElementById('imageInput');
+    const message = input.value.trim();
+    const image = imageInput.files[0];
+    
+    if (!message && !image) return;
+    
+    // Store values before clearing
+    const messageContent = message;
+    const replyToId = currentReplyToId;
+    const oneTime = isOneTimeMode;
+    
+    // Clear input immediately for better UX
+    input.value = '';
+    clearImagePreview();
+    updateSendButton();
+    sendStopTyping();
+    cancelReply(); // Clear reply state
+    
+    // Reset one-time mode after sending
+    if (oneTime) {
+        toggleOneTimeMode();
+    }
+    
+    if (image) {
+        sendImageMessage(image, messageContent, replyToId, oneTime);
+    } else {
+        // Try WebSocket first, fallback to HTTP
+        const payload = {
+            'type': 'message.send',
+            'content': messageContent,
+            'one_time': oneTime
+        };
+        if (replyToId) {
+            payload.reply_to = replyToId;
+        }
+        
+        if (!wsSend(payload)) {
+            // Fall back to HTTP
+            sendMessageViaHTTP(messageContent, replyToId, oneTime);
+        }
+    }
+}
+
+// Send message via HTTP fallback
+function sendMessageViaHTTP(message, replyToId, oneTime) {
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('content', message);
+    if (replyToId) {
+        formData.append('reply_to', replyToId);
+    }
+    if (oneTime) {
+        formData.append('one_time', 'true');
+    }
+    
+    fetch('/api/send-message/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.message) {
+            // Append the message to the UI
+            appendMessage({
+                id: data.message.id,
+                content: data.message.content,
+                sender_name: data.message.sender_name,
+                is_own: true,
+                timestamp: data.message.timestamp,
+                message_type: data.message.message_type,
+                media_url: data.message.media_url,
+                media_type: data.message.media_type,
+                one_time: data.message.one_time || oneTime,
+                consumed: false
+            }, true); // Force scroll for own messages
+            
+            // Extra force scrolls to ensure it works
+            forceScrollToBottom();
+            setTimeout(forceScrollToBottom, 100);
+            setTimeout(forceScrollToBottom, 300);
+        } else {
+            // Try to show toast, fallback to alert
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.error || 'Failed to send message', 'error');
+            } else {
+                console.error(data.error || 'Failed to send message');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Failed to send message:', err);
+        if (typeof showIGToast === 'function') {
+            showIGToast('Failed to send message', 'error');
+        }
+    });
+}
+
+function sendImageMessage(image, caption, replyToId, oneTime) {
+    const formData = new FormData();
+    formData.append('chat_id', chatId);
+    formData.append('media', image);
+    if (caption) formData.append('content', caption);
+    if (replyToId) formData.append('reply_to', replyToId);
+    if (oneTime) formData.append('one_time', 'true');
+    
+    fetch('/api/send-message/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+             appendMessage({
+                id: data.message.id,
+                content: data.message.content,
+                sender_name: data.message.sender_name,
+                is_own: true,
+                timestamp: data.message.timestamp,
+                message_type: data.message.message_type,
+                media_url: data.message.media_url,
+                media_type: data.message.media_type,
+                one_time: data.message.one_time || oneTime,
+                consumed: false
+            }, true); // Always scroll for own messages
+            forceScrollToBottom();
+            setTimeout(forceScrollToBottom, 100);
+            setTimeout(forceScrollToBottom, 300);
+        } else {
+            if (typeof showIGToast === 'function') showIGToast('Failed to send image', 'error');
+        }
+    })
+    .catch(err => {
+        console.error('Failed to send image:', err);
+        if (typeof showIGToast === 'function') showIGToast('Failed to send image', 'error');
+    });
+}
+
+// Send Like (heart emoji) - with fallback support
+function sendLike() {
+    const payload = {
+        'type': 'message.send',
+        'content': '❤️'
+    };
+    
+    if (!wsSend(payload)) {
+        // Fallback to HTTP if WebSocket not available
+        sendMessageViaHTTP('❤️', null, false);
+    }
+}
+
+// Toggle View Once Message Mode (WhatsApp style)
+function toggleOneTimeMode() {
+    isOneTimeMode = !isOneTimeMode;
+    const toggleBtn = document.getElementById('viewOnceToggleBtn');
+    const input = document.getElementById('messageInput');
+    
+    if (isOneTimeMode) {
+        if (toggleBtn) toggleBtn.classList.add('active');
+        input.placeholder = 'View once message...';
+        input.style.borderColor = '#22c55e';
+        if (typeof showIGToast === 'function') showIGToast('View once mode ON', 'success');
+    } else {
+        if (toggleBtn) toggleBtn.classList.remove('active');
+        input.placeholder = 'Message...';
+        input.style.borderColor = '';
+        if (typeof showIGToast === 'function') showIGToast('View once mode OFF', 'info');
+    }
+}
+
+// Input Handler
+function initInputHandler() {
+    const input = document.getElementById('messageInput');
+    
+    input.addEventListener('input', function() {
+        updateSendButton();
+        sendTyping();
+    });
+    
+    // Handle Enter key
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('messageForm').dispatchEvent(new Event('submit'));
+        }
+    });
+}
+
+function updateSendButton() {
+    const input = document.getElementById('messageInput');
+    const imageInput = document.getElementById('imageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const viewOnceBtn = document.getElementById('viewOnceToggleBtn');
+    
+    if (input.value.trim() || imageInput.files.length > 0) {
+        sendBtn.style.display = 'flex';
+        if (viewOnceBtn) viewOnceBtn.style.display = 'none';
+    } else {
+        sendBtn.style.display = 'none';
+        if (viewOnceBtn) viewOnceBtn.style.display = 'flex';
+    }
+}
+
+// Typing Indicators - Optimized HTTP-based
+let typingPollInterval = null;
+let lastTypingUpdate = 0;
+let isTyping = false;
+
+function sendTyping() {
+    clearTimeout(typingTimeout);
+    
+    // Throttle to max once per 1.5 seconds
+    const now = Date.now();
+    if (now - lastTypingUpdate < 1500) {
+        typingTimeout = setTimeout(sendStopTyping, 3000);
+        return;
+    }
+    
+    if (!isTyping) {
+        isTyping = true;
+        lastTypingUpdate = now;
+        
+        // Only use HTTP - simpler and more reliable
+        fetch(`/api/chat/${chatId}/typing/`, {
+            method: 'POST',
+            headers: { 
+                'X-CSRFToken': getCSRFToken(),
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: 'is_typing=true'
+        }).catch(() => {});
+    }
+    
+    typingTimeout = setTimeout(sendStopTyping, 3000);
+}
+
+function sendStopTyping() {
+    if (!isTyping) return;
+    isTyping = false;
+    
+    fetch(`/api/chat/${chatId}/typing/`, {
+        method: 'POST',
+        headers: { 
+            'X-CSRFToken': getCSRFToken(),
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: 'is_typing=false'
+    }).catch(() => {});
+}
+
+// Start polling for typing status - Optimized
+function startTypingPoll() {
+    if (typingPollInterval) return;
+    typingPollInterval = setInterval(pollTypingStatus, 2500); // Poll every 2.5 seconds
+}
+
+function stopTypingPoll() {
+    if (typingPollInterval) {
+        clearInterval(typingPollInterval);
+        typingPollInterval = null;
+    }
+}
+
+function pollTypingStatus() {
+    fetch(`/api/chat/${chatId}/typing-status/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.typing_users && data.typing_users.length > 0) {
+                showTypingIndicator(data.typing_users);
+            } else {
+                hideTypingIndicator();
+            }
+        })
+        .catch(err => console.log('Typing poll failed:', err));
+}
+
+function showTypingIndicator(users) {
+    const indicator = document.getElementById('typingIndicator');
+    const textEl = document.getElementById('typingText');
+    
+    if (indicator && textEl) {
+        // Format the typing text based on number of users
+        let typingText = '';
+        if (users.length === 1) {
+            typingText = `${users[0].name} is typing`;
+        } else if (users.length === 2) {
+            typingText = `${users[0].name} and ${users[1].name} are typing`;
+        } else if (users.length > 2) {
+            typingText = `${users[0].name}, ${users[1].name} and ${users.length - 2} more are typing`;
+        }
+        
+        textEl.textContent = typingText;
+        indicator.style.display = 'flex';
+    }
+}
+
+function hideTypingIndicator() {
+    const indicator = document.getElementById('typingIndicator');
+    if (indicator) {
+        indicator.style.display = 'none';
+    }
+}
+
+// Image handling
+function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImg').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'flex';
+            updateSendButton();
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function clearImagePreview() {
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('imageInput').value = '';
+    document.getElementById('previewImg').src = '';
+    updateSendButton();
+}
+
+// Message menu - Fixed for reliable single-click operation
+let currentOpenMenuId = null;
+
+function toggleMessageMenu(messageId, event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (!menu) {
+        console.log('Menu not found for message:', messageId);
+        return;
+    }
+    
+    // Check if this menu is currently open
+    const isCurrentlyOpen = currentOpenMenuId === messageId && menu.style.display === 'flex';
+    
+    // Close all menus first
+    document.querySelectorAll('.ig-message-menu').forEach(m => {
+        m.style.display = 'none';
+    });
+    currentOpenMenuId = null;
+    
+    // If menu was closed, open it now
+    if (!isCurrentlyOpen) {
+        menu.style.display = 'flex';
+        currentOpenMenuId = messageId;
+        
+        // Reinitialize icons in the menu
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons({ nodes: menu.querySelectorAll('[data-lucide]') });
+        }
+        
+        // Adjust position if menu goes off screen
+        requestAnimationFrame(() => {
+            const rect = menu.getBoundingClientRect();
+            const viewportHeight = window.innerHeight;
+            
+            // Reset positioning
+            menu.style.top = 'auto';
+            menu.style.bottom = '100%';
+            menu.style.marginBottom = '4px';
+            menu.style.marginTop = '0';
+            
+            // If menu is above viewport, show it below instead
+            if (rect.top < 10) {
+                menu.style.bottom = 'auto';
+                menu.style.top = '100%';
+                menu.style.marginTop = '4px';
+                menu.style.marginBottom = '0';
+            }
+        });
+    }
+}
+
+// Close menus when clicking outside - improved event handling
+document.addEventListener('click', function(e) {
+    // Don't close if clicking on menu button (toggleMessageMenu handles that)
+    if (e.target.closest('.ig-message-menu-btn')) return;
+    
+    // Don't close if clicking inside a menu
+    if (e.target.closest('.ig-message-menu')) return;
+    
+    // Close all menus
+    document.querySelectorAll('.ig-message-menu').forEach(m => m.style.display = 'none');
+    currentOpenMenuId = null;
+}, true);
+
+// =============================================
+// DELETE MESSAGE MODAL FUNCTIONS
+// =============================================
+let deleteTargetMessageId = null;
+let deleteTargetIsOwn = false;
+
+function showDeleteModal(messageId, isOwn) {
+    deleteTargetMessageId = messageId;
+    deleteTargetIsOwn = isOwn;
+    
+    const modal = document.getElementById('deleteModal');
+    const everyoneBtn = document.getElementById('deleteForEveryoneBtn');
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        // Show "delete for everyone" only for own messages
+        if (everyoneBtn) {
+            everyoneBtn.style.display = isOwn ? 'block' : 'none';
+        }
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) modal.style.display = 'none';
+    deleteTargetMessageId = null;
+    deleteTargetIsOwn = false;
+}
+
+function confirmDeleteForMe() {
+    if (!deleteTargetMessageId) return;
+    
+    fetch(`/delete-message-for-me/${deleteTargetMessageId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' || data.success) {
+            removeMessage(deleteTargetMessageId);
+            if (typeof showIGToast === 'function') {
+                showIGToast('Message deleted for you', 'success');
+            }
+        } else {
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.message || data.error || 'Failed to delete', 'error');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Delete error:', err);
+        if (typeof showIGToast === 'function') showIGToast('Failed to delete', 'error');
+    })
+    .finally(() => {
+        closeDeleteModal();
+    });
+}
+
+function confirmDeleteForEveryone() {
+    if (!deleteTargetMessageId) return;
+    
+    fetch(`/delete-message-for-everyone/${deleteTargetMessageId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success' || data.success) {
+            removeMessage(deleteTargetMessageId);
+            if (typeof showIGToast === 'function') {
+                showIGToast('Message deleted for everyone', 'success');
+            }
+        } else {
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.message || data.error || 'Failed to delete', 'error');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Delete error:', err);
+        if (typeof showIGToast === 'function') showIGToast('Failed to delete', 'error');
+    })
+    .finally(() => {
+        closeDeleteModal();
+    });
+}
+
+function deleteMessage(messageId, isOwn = true) {
+    // Close menu first
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (menu) menu.style.display = 'none';
+    currentOpenMenuId = null;
+    
+    // Show delete modal instead of confirm()
+    showDeleteModal(messageId, isOwn);
+}
+
+// =============================================
+// EDIT MESSAGE MODAL FUNCTIONS
+// =============================================
+let editTargetMessageId = null;
+
+function showEditModal(messageId) {
+    editTargetMessageId = messageId;
+    
+    const msg = document.querySelector(`[data-message-id="${messageId}"]`);
+    const textEl = msg ? msg.querySelector('.ig-message-text') : null;
+    const currentText = textEl ? textEl.textContent : '';
+    
+    const modal = document.getElementById('editModal');
+    const input = document.getElementById('editMessageInput');
+    
+    if (modal && input) {
+        input.value = currentText;
+        modal.style.display = 'flex';
+        // Focus input after modal is visible
+        setTimeout(() => input.focus(), 100);
+    }
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('editModal');
+    if (modal) modal.style.display = 'none';
+    editTargetMessageId = null;
+}
+
+function saveEditMessage() {
+    if (!editTargetMessageId) return;
+    
+    const input = document.getElementById('editMessageInput');
+    const newText = input ? input.value.trim() : '';
+    
+    if (!newText) {
+        if (typeof showIGToast === 'function') showIGToast('Message cannot be empty', 'error');
+        return;
+    }
+    
+    fetch(`/api/edit-message/${editTargetMessageId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ content: newText })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const msg = document.querySelector(`[data-message-id="${editTargetMessageId}"]`);
+            const textEl = msg ? msg.querySelector('.ig-message-text') : null;
+            
+            if (textEl) {
+                textEl.textContent = newText;
+            }
+            
+            // Add edited indicator if not present
+            if (msg && !msg.querySelector('.edited')) {
+                const timeEl = msg.querySelector('.ig-message-time');
+                if (timeEl) {
+                    const editSpan = document.createElement('span');
+                    editSpan.className = 'edited';
+                    editSpan.textContent = ' (edited)';
+                    timeEl.appendChild(editSpan);
+                }
+            }
+            
+            if (typeof showIGToast === 'function') showIGToast('Message edited', 'success');
+        } else {
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.error || 'Failed to edit message', 'error');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Edit error:', err);
+        if (typeof showIGToast === 'function') showIGToast('Failed to edit', 'error');
+    })
+    .finally(() => {
+        closeEditModal();
+    });
+}
+
+function editMessage(messageId) {
+    // Close menu first
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (menu) menu.style.display = 'none';
+    currentOpenMenuId = null;
+    
+    // Show edit modal instead of prompt()
+    showEditModal(messageId);
+}
+
+// New Functions for Pin, Reply, React
+function pinMessage(messageId) {
+    // Close menu first
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (menu) menu.style.display = 'none';
+    currentOpenMenuId = null;
+    
+    fetch(`/api/pin-message/${messageId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update button text without reload
+            const msgEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (msgEl) {
+                const pinBtn = msgEl.querySelector('[onclick*="pinMessage"]');
+                if (pinBtn) {
+                    const icon = pinBtn.querySelector('i, svg');
+                    pinBtn.innerHTML = '';
+                    if (icon) pinBtn.appendChild(icon.cloneNode(true));
+                    pinBtn.append(data.pinned ? ' Unpin' : ' Pin');
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }
+                
+                // Toggle pinned visual indicator
+                if (data.pinned) {
+                    msgEl.classList.add('pinned');
+                    // Show pinned banner
+                    const textEl = msgEl.querySelector('.ig-message-text');
+                    const text = textEl ? textEl.textContent : 'Pinned message';
+                    showPinnedBanner(messageId, text);
+                } else {
+                    msgEl.classList.remove('pinned');
+                    // Hide banner if this was the pinned message
+                    if (currentPinnedMessageId == messageId) {
+                        closePinnedBanner();
+                    }
+                }
+            }
+            // Show toast notification
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.pinned ? 'Message pinned' : 'Message unpinned', 'success');
+            }
+        } else {
+            if (typeof showIGToast === 'function') {
+                showIGToast(data.error || 'Failed to pin message', 'error');
+            }
+        }
+    })
+    .catch(err => {
+        console.error('Pin error:', err);
+        if (typeof showIGToast === 'function') showIGToast('Failed to pin message', 'error');
+    });
+}
+
+let currentReplyToId = null;
+
+function replyToMessage(messageId, username, content) {
+    // Close menu first
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (menu) menu.style.display = 'none';
+    currentOpenMenuId = null;
+    
+    currentReplyToId = messageId;
+    document.getElementById('replyPreview').style.display = 'flex';
+    document.getElementById('replyUsername').textContent = username;
+    document.getElementById('replyText').textContent = content;
+    document.getElementById('messageInput').focus();
+}
+
+function cancelReply() {
+    currentReplyToId = null;
+    document.getElementById('replyPreview').style.display = 'none';
+}
+
+function reactToMessage(messageId, emoji) {
+    // Close menu first
+    const menu = document.getElementById(`menu-${messageId}`);
+    if (menu) menu.style.display = 'none';
+    currentOpenMenuId = null;
+    
+    fetch(`/api/react-message/${messageId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ emoji: emoji })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'added' || data.success) {
+            // Show reaction in UI
+            const msg = document.querySelector(`[data-message-id="${messageId}"] .ig-message-bubble`);
+            if (msg) {
+                let reactionContainer = msg.querySelector('.ig-message-reactions');
+                if (!reactionContainer) {
+                    reactionContainer = document.createElement('div');
+                    reactionContainer.className = 'ig-message-reactions';
+                    msg.appendChild(reactionContainer);
+                }
+                reactionContainer.textContent = emoji;
+            }
+        } else if (data.status === 'removed') {
+            // Remove reaction from UI
+            const msg = document.querySelector(`[data-message-id="${messageId}"] .ig-message-bubble`);
+            if (msg) {
+                const reactionContainer = msg.querySelector('.ig-message-reactions');
+                if (reactionContainer) {
+                    reactionContainer.remove();
+                }
+            }
+        }
+    })
+    .catch(err => console.error('Reaction error:', err));
+}
+
+// Scroll to a specific message (for reply context)
+function scrollToMessage(messageId) {
+    const msg = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (msg) {
+        msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Highlight the message briefly
+        msg.style.background = 'var(--ig-surface-hover)';
+        setTimeout(() => {
+            msg.style.background = '';
+        }, 1500);
+    }
+}
+
+// Modals
+function openChatInfo() {
+    document.getElementById('chatInfoModal').style.display = 'flex';
+}
+
+function closeChatInfo(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('chatInfoModal').style.display = 'none';
+    }
+}
+
+function openGroupInfo() {
+    document.getElementById('groupInfoModal').style.display = 'flex';
+}
+
+function closeGroupInfo(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('groupInfoModal').style.display = 'none';
+    }
+}
+
+// ===============================
+// P2P File Transfer Logic - Enhanced Real-Time Implementation
+// ===============================
+let p2pConnection = null;
+let p2pDataChannel = null;
+let p2pSignalInterval = null;
+let p2pSelectedFile = null;
+let p2pTargetUserId = null;
+let p2pConnectionTimeout = null;
+let p2pReceivedBuffers = [];
+let p2pReceivedSize = 0;
+let p2pFileInfo = null;
+
+const p2pConfig = { 
+    'iceServers': [
+        { 'urls': 'stun:stun.l.google.com:19302' },
+        { 'urls': 'stun:stun1.l.google.com:19302' },
+        { 'urls': 'stun:stun2.l.google.com:19302' }
+    ]
+};
+
+function openP2PModal() {
+    document.getElementById('p2pModal').style.display = 'flex';
+    loadP2PParticipants();
+    // Start polling for incoming signals
+    startSignalPolling();
+}
+
+function closeP2PModal(event) {
+    if (!event || event.target === event.currentTarget) {
+        document.getElementById('p2pModal').style.display = 'none';
+        stopP2P();
+    }
+}
+
+function loadP2PParticipants() {
+    const container = document.getElementById('p2pPeers');
+    container.innerHTML = '<div style="text-align: center; padding: 20px;"><div class="ig-typing-dots"><span></span><span></span><span></span></div><p style="margin-top: 10px;">Scanning for online users...</p></div>';
+    
+    fetch(`/api/p2p/${chatId}/participants/`)
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            if (data.participants.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px; color: var(--ig-text-secondary);">
+                        <i data-lucide="users" style="width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0;">No other participants in this chat.</p>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
+            
+            const onlineUsers = data.participants.filter(p => p.is_online);
+            const offlineUsers = data.participants.filter(p => !p.is_online);
+            
+            let html = '';
+            
+            if (onlineUsers.length > 0) {
+                html += '<div style="margin-bottom: 8px; font-size: 12px; color: var(--ig-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Online Now</div>';
+                html += onlineUsers.map(p => `
+                    <div class="ig-member-item" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: var(--ig-surface); border-radius: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--ig-hover)'" onmouseout="this.style.background='var(--ig-surface)'">
+                        <div style="position: relative;">
+                            <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
+                            <div style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; border: 2px solid var(--ig-surface);"></div>
+                        </div>
+                        <div style="flex: 1; margin-left: 12px;">
+                            <div style="font-weight: 600; color: var(--ig-text-primary);">${escapeHtml(p.full_name)}</div>
+                            <div style="font-size: 12px; color: #22c55e;">● Online - Ready to receive</div>
+                        </div>
+                        <button class="ig-auth-btn" style="width: auto; padding: 8px 16px; font-size: 13px; display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation(); startP2PWith(${p.id}, '${escapeHtml(p.full_name)}')">
+                            <i data-lucide="send" style="width: 14px; height: 14px;"></i>
+                            Send File
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            if (offlineUsers.length > 0) {
+                if (onlineUsers.length > 0) {
+                    html += '<div style="margin: 16px 0 8px; font-size: 12px; color: var(--ig-text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Offline</div>';
+                }
+                html += offlineUsers.map(p => `
+                    <div class="ig-member-item" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: var(--ig-surface); border-radius: 12px; opacity: 0.6;">
+                        <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; filter: grayscale(50%);" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:50%;background:var(--ig-text-secondary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
+                        <div style="flex: 1; margin-left: 12px;">
+                            <div style="font-weight: 600; color: var(--ig-text-primary);">${escapeHtml(p.full_name)}</div>
+                            <div style="font-size: 12px; color: var(--ig-text-secondary);">Offline - Not available</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            if (onlineUsers.length === 0) {
+                html = `
+                    <div style="text-align: center; padding: 30px; color: var(--ig-text-secondary);">
+                        <i data-lucide="wifi-off" style="width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.5;"></i>
+                        <p style="margin: 0 0 8px;">No users are online right now</p>
+                        <p style="margin: 0; font-size: 12px;">They need to be in this chat to receive files directly</p>
+                    </div>
+                ` + html;
+            }
+            
+            container.innerHTML = html;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } else {
+            container.innerHTML = '<p style="color: var(--ig-text-secondary); text-align: center; padding: 20px;">Failed to load participants</p>';
+        }
+    })
+    .catch(err => {
+        console.error('P2P participants error:', err);
+        container.innerHTML = '<p style="color: var(--ig-text-secondary); text-align: center; padding: 20px;">Failed to load participants</p>';
+    });
+}
+
+function startP2PWith(userId, userName) {
+    p2pTargetUserId = userId;
+    // Show file picker
+    const fileInput = document.getElementById('p2pFileInput');
+    fileInput.value = ''; // Reset
+    fileInput.click();
+}
+
+function handleP2PFileSelect(event) {
+    const file = event.target.files[0];
+    if (file && p2pTargetUserId) {
+        p2pSelectedFile = file;
+        initiateP2PConnection(p2pTargetUserId, file);
+    }
+}
+
+function initiateP2PConnection(targetUserId, file) {
+    // Reset state
+    p2pReceivedBuffers = [];
+    p2pReceivedSize = 0;
+    p2pTargetUserId = targetUserId;
+    p2pSelectedFile = file;
+    
+    // Update UI
+    document.getElementById('p2pSetup').style.display = 'none';
+    document.getElementById('p2pTransfer').style.display = 'block';
+    document.getElementById('p2pStatus').innerHTML = '<i data-lucide="loader" style="width: 20px; height: 20px; animation: spin 1s linear infinite;"></i> Initializing secure connection...';
+    document.getElementById('p2pProgress').style.width = '0%';
+    document.getElementById('p2pFileInfo').innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i data-lucide="file" style="width: 16px; height: 16px;"></i>
+            <span>${escapeHtml(file.name)}</span>
+            <span style="opacity: 0.7;">(${formatBytes(file.size)})</span>
+        </div>
+    `;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    
+    // Clear any existing connection
+    if (p2pConnection) {
+        p2pConnection.close();
+        p2pConnection = null;
+    }
+    
+    // Set connection timeout
+    if (p2pConnectionTimeout) clearTimeout(p2pConnectionTimeout);
+    p2pConnectionTimeout = setTimeout(() => {
+        if (p2pConnection && p2pConnection.connectionState !== 'connected') {
+            document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Connection timed out. Peer may be offline.';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            setTimeout(() => resetP2PUI(), 3000);
+        }
+    }, 45000); // 45 second timeout
+    
+    try {
+        p2pConnection = new RTCPeerConnection(p2pConfig);
+        
+        p2pConnection.onconnectionstatechange = () => {
+            console.log('P2P Connection state:', p2pConnection.connectionState);
+            const statusEl = document.getElementById('p2pStatus');
+            
+            switch(p2pConnection.connectionState) {
+                case 'connecting':
+                    statusEl.innerHTML = '<i data-lucide="loader" style="width: 20px; height: 20px; animation: spin 1s linear infinite;"></i> Establishing secure connection...';
+                    break;
+                case 'connected':
+                    if (p2pConnectionTimeout) clearTimeout(p2pConnectionTimeout);
+                    statusEl.innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px; color: #22c55e;"></i> Connected! Transferring file...';
+                    break;
+                case 'disconnected':
+                    statusEl.innerHTML = '<i data-lucide="wifi-off" style="width: 20px; height: 20px; color: #f59e0b;"></i> Connection lost. Reconnecting...';
+                    break;
+                case 'failed':
+                    if (p2pConnectionTimeout) clearTimeout(p2pConnectionTimeout);
+                    statusEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Connection failed. Please try again.';
+                    setTimeout(() => resetP2PUI(), 3000);
+                    break;
+                case 'closed':
+                    break;
+            }
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        };
+        
+        // Create data channel for file transfer
+        p2pDataChannel = p2pConnection.createDataChannel("fileTransfer", {
+            ordered: true
+        });
+        setupSenderDataChannel(p2pDataChannel, file);
+        
+        // ICE candidate handling
+        p2pConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+                console.log('Sending ICE candidate');
+                sendSignal(targetUserId, { type: 'candidate', candidate: event.candidate });
+            }
+        };
+        
+        p2pConnection.onicegatheringstatechange = () => {
+            console.log('ICE gathering state:', p2pConnection.iceGatheringState);
+        };
+        
+        // Create and send offer
+        p2pConnection.createOffer()
+            .then(offer => p2pConnection.setLocalDescription(offer))
+            .then(() => {
+                document.getElementById('p2pStatus').innerHTML = '<i data-lucide="radio" style="width: 20px; height: 20px; animation: pulse 1.5s ease-in-out infinite;"></i> Waiting for peer to accept...';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                sendSignal(targetUserId, { 
+                    type: 'offer', 
+                    offer: p2pConnection.localDescription, 
+                    fileInfo: { 
+                        name: file.name, 
+                        size: file.size, 
+                        type: file.type || 'application/octet-stream' 
+                    } 
+                });
+            })
+            .catch(err => {
+                console.error('Error creating offer:', err);
+                document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Failed to create connection';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                if (p2pConnectionTimeout) clearTimeout(p2pConnectionTimeout);
+                setTimeout(() => resetP2PUI(), 3000);
+            });
+    } catch (err) {
+        console.error('P2P initialization error:', err);
+        document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Failed to initialize P2P';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        if (p2pConnectionTimeout) clearTimeout(p2pConnectionTimeout);
+        setTimeout(() => resetP2PUI(), 3000);
+    }
+}
+
+function setupSenderDataChannel(channel, file) {
+    channel.binaryType = 'arraybuffer';
+    
+    channel.onopen = () => {
+        console.log('Data channel opened - starting file transfer');
+        document.getElementById('p2pStatus').innerHTML = '<i data-lucide="upload" style="width: 20px; height: 20px; color: #22c55e;"></i> Sending file...';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        sendFileData(channel, file);
+    };
+    
+    channel.onerror = (error) => {
+        console.error('Data channel error:', error);
+        document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Transfer error';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+    
+    channel.onclose = () => {
+        console.log('Data channel closed');
+    };
+}
+
+function sendFileData(channel, file) {
+    const chunkSize = 16384; // 16KB chunks
+    const fileReader = new FileReader();
+    let offset = 0;
+    
+    fileReader.onerror = (error) => {
+        console.error('FileReader error:', error);
+        document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Error reading file';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+    
+    fileReader.onload = (e) => {
+        try {
+            channel.send(e.target.result);
+            offset += e.target.result.byteLength;
+            
+            // Update progress
+            const progress = Math.min((offset / file.size) * 100, 100);
+            document.getElementById('p2pProgress').style.width = `${progress}%`;
+            
+            if (offset < file.size) {
+                // More data to send
+                readSlice(offset);
+            } else {
+                // File sent completely
+                document.getElementById('p2pStatus').innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px; color: #22c55e;"></i> File sent successfully!';
+                document.getElementById('p2pProgress').style.width = '100%';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                // Auto close after success
+                setTimeout(() => {
+                    closeP2PModal();
+                    resetP2PUI();
+                }, 2500);
+            }
+        } catch (err) {
+            console.error('Error sending chunk:', err);
+            // Wait for buffer to clear and retry
+            setTimeout(() => {
+                if (offset < file.size) {
+                    readSlice(offset);
+                }
+            }, 100);
+        }
+    };
+    
+    const readSlice = (o) => {
+        const slice = file.slice(o, o + chunkSize);
+        fileReader.readAsArrayBuffer(slice);
+    };
+    
+    readSlice(0);
+}
+
+function setupDataChannel(channel, file) {
+    channel.onopen = () => {
+        document.getElementById('p2pStatus').textContent = 'Sending file...';
+        sendFile(channel, file);
+    };
+    channel.onclose = () => console.log('Data channel closed');
+}
+
+function sendFile(channel, file) {
+    const chunkSize = 16384;
+    const fileReader = new FileReader();
+    let offset = 0;
+    
+    fileReader.onload = (e) => {
+        channel.send(e.target.result);
+        offset += e.target.result.byteLength;
+        
+        const progress = (offset / file.size) * 100;
+        document.getElementById('p2pProgress').style.width = `${progress}%`;
+        
+        if (offset < file.size) {
+            readSlice(offset);
+        } else {
+            document.getElementById('p2pStatus').textContent = 'Sent successfully!';
+            setTimeout(() => closeP2PModal(), 2000);
+        }
+    };
+    
+    const readSlice = o => {
+        const slice = file.slice(offset, o + chunkSize);
+        fileReader.readAsArrayBuffer(slice);
+    };
+    
+    readSlice(0);
+}
+
+function startSignalPolling() {
+    // Signal polling is now handled by background polling
+    // This function is kept for compatibility when modal is opened
+    console.log('Signal polling active (handled by background)');
+}
+
+// Background P2P signal polling - runs all the time to receive incoming file requests
+let p2pBackgroundInterval = null;
+
+function startBackgroundSignalPolling() {
+    if (p2pBackgroundInterval) clearInterval(p2pBackgroundInterval);
+    
+    // Poll for incoming P2P signals every 3 seconds
+    p2pBackgroundInterval = setInterval(() => {
+        fetch(`/api/p2p/${chatId}/signals/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.signals && data.signals.length > 0) {
+                console.log('Received P2P signals:', data.signals.length);
+                data.signals.forEach(handleSignal);
+            }
+        })
+        .catch(err => console.error('P2P signal poll error:', err));
+    }, 3000);
+    
+    // Also do an immediate check
+    fetch(`/api/p2p/${chatId}/signals/`)
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.signals && data.signals.length > 0) {
+            console.log('Received P2P signals on init:', data.signals.length);
+            data.signals.forEach(handleSignal);
+        }
+    })
+    .catch(err => console.error('P2P signal init error:', err));
+}
+
+function stopP2P() {
+    if (p2pSignalInterval) clearInterval(p2pSignalInterval);
+    if (p2pConnection) p2pConnection.close();
+    p2pConnection = null;
+    p2pDataChannel = null;
+    p2pTargetUserId = null;
+    p2pSelectedFile = null;
+    document.getElementById('p2pSetup').style.display = 'block';
+    document.getElementById('p2pTransfer').style.display = 'none';
+    document.getElementById('p2pProgress').style.width = '0%';
+}
+
+function resetP2PUI() {
+    document.getElementById('p2pSetup').style.display = 'block';
+    document.getElementById('p2pTransfer').style.display = 'none';
+    document.getElementById('p2pProgress').style.width = '0%';
+    loadP2PParticipants();
+}
+
+function sendSignal(targetId, data) {
+    console.log('Sending signal:', data.type, 'to user:', targetId);
+    fetch('/api/p2p/send-signal/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            chat_id: chatId,
+            target_user_id: targetId,
+            signal_data: data
+        })
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (!result.success) {
+            console.error('Failed to send signal:', result.error);
+        }
+    })
+    .catch(err => console.error('Signal send error:', err));
+}
+
+async function handleSignal(signalWrapper) {
+    console.log('Received signal:', signalWrapper);
+    const data = signalWrapper.signal;
+    const senderId = signalWrapper.sender_id;
+    const senderName = signalWrapper.sender_name || 'User';
+    const senderAvatar = signalWrapper.sender_avatar;
+    
+    try {
+        if (!p2pConnection) {
+            // Incoming connection - we're the receiver
+            if (data.type === 'offer') {
+                // Show incoming file notification with better UI
+                const fileSize = formatBytes(data.fileInfo.size);
+                const fileName = data.fileInfo.name;
+                
+                // Create custom confirm dialog
+                const accept = await showP2PIncomingModal(senderName, senderAvatar, fileName, fileSize);
+                if (!accept) {
+                    console.log('User rejected file transfer');
+                    return;
+                }
+                
+                // Store file info for receiving
+                p2pFileInfo = data.fileInfo;
+                p2pReceivedBuffers = [];
+                p2pReceivedSize = 0;
+                p2pTargetUserId = senderId;
+                
+                // Show receiving UI
+                openP2PModal();
+                document.getElementById('p2pSetup').style.display = 'none';
+                document.getElementById('p2pTransfer').style.display = 'block';
+                document.getElementById('p2pStatus').innerHTML = '<i data-lucide="download" style="width: 20px; height: 20px; color: #3b82f6;"></i> Connecting to receive file...';
+                document.getElementById('p2pProgress').style.width = '0%';
+                document.getElementById('p2pFileInfo').innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i data-lucide="file" style="width: 16px; height: 16px;"></i>
+                        <span>${escapeHtml(fileName)}</span>
+                        <span style="opacity: 0.7;">(${fileSize})</span>
+                    </div>
+                `;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                
+                // Create peer connection
+                p2pConnection = new RTCPeerConnection(p2pConfig);
+                
+                p2pConnection.onconnectionstatechange = () => {
+                    console.log('Receiver connection state:', p2pConnection.connectionState);
+                    const statusEl = document.getElementById('p2pStatus');
+                    
+                    if (p2pConnection.connectionState === 'connected') {
+                        statusEl.innerHTML = '<i data-lucide="download" style="width: 20px; height: 20px; color: #22c55e;"></i> Receiving file...';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                    } else if (p2pConnection.connectionState === 'failed') {
+                        statusEl.innerHTML = '<i data-lucide="x-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Connection failed';
+                        if (typeof lucide !== 'undefined') lucide.createIcons();
+                        setTimeout(() => resetP2PUI(), 3000);
+                    }
+                };
+                
+                p2pConnection.onicecandidate = (event) => {
+                    if (event.candidate) {
+                        console.log('Sending ICE candidate (receiver)');
+                        sendSignal(senderId, { type: 'candidate', candidate: event.candidate });
+                    }
+                };
+                
+                // Handle incoming data channel
+                p2pConnection.ondatachannel = (event) => {
+                    console.log('Data channel received');
+                    setupReceiverDataChannel(event.channel, data.fileInfo);
+                };
+                
+                // Set remote description and create answer
+                await p2pConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
+                const answer = await p2pConnection.createAnswer();
+                await p2pConnection.setLocalDescription(answer);
+                sendSignal(senderId, { type: 'answer', answer: answer });
+            }
+        } else {
+            // Existing connection - handle answer or ICE candidates
+            if (data.type === 'answer') {
+                console.log('Received answer');
+                await p2pConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+            } else if (data.type === 'candidate' && data.candidate) {
+                console.log('Received ICE candidate');
+                try {
+                    await p2pConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+                } catch (e) {
+                    console.error('Error adding ICE candidate:', e);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error handling signal:', error);
+    }
+}
+
+// Show incoming P2P file modal
+function showP2PIncomingModal(senderName, senderAvatar, fileName, fileSize) {
+    return new Promise((resolve) => {
+        // Create modal overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'ig-modal-overlay';
+        overlay.style.cssText = 'display: flex; z-index: 10001;';
+        
+        overlay.innerHTML = `
+            <div class="ig-modal" style="max-width: 380px;" onclick="event.stopPropagation()">
+                <div style="padding: 24px; text-align: center;">
+                    <div style="margin-bottom: 16px;">
+                        ${senderAvatar 
+                            ? `<img src="${senderAvatar}" alt="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-primary);">`
+                            : `<div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; margin: 0 auto;">${senderName.charAt(0).toUpperCase()}</div>`
+                        }
+                    </div>
+                    <h3 style="margin: 0 0 8px; font-size: 18px; color: var(--ig-text-primary);">${escapeHtml(senderName)}</h3>
+                    <p style="margin: 0 0 16px; color: var(--ig-text-secondary); font-size: 14px;">wants to send you a file</p>
+                    
+                    <div style="background: var(--ig-surface); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; background: var(--color-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="file" style="width: 20px; height: 20px; color: white;"></i>
+                            </div>
+                            <div style="flex: 1; text-align: left;">
+                                <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; word-break: break-all;">${escapeHtml(fileName)}</div>
+                                <div style="font-size: 12px; color: var(--ig-text-secondary);">${fileSize}</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px;">
+                        <button id="p2pDeclineBtn" style="flex: 1; padding: 12px; border: 1px solid var(--ig-border); background: transparent; border-radius: 8px; font-weight: 600; cursor: pointer; color: var(--ig-text-primary);">
+                            Decline
+                        </button>
+                        <button id="p2pAcceptBtn" style="flex: 1; padding: 12px; border: none; background: var(--color-primary); border-radius: 8px; font-weight: 600; cursor: pointer; color: white;">
+                            Accept
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(overlay);
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        // Play notification sound
+        playNotificationSound();
+        
+        // Handle buttons
+        document.getElementById('p2pAcceptBtn').onclick = () => {
+            overlay.remove();
+            resolve(true);
+        };
+        
+        document.getElementById('p2pDeclineBtn').onclick = () => {
+            overlay.remove();
+            resolve(false);
+        };
+        
+        // Auto-decline after 60 seconds
+        setTimeout(() => {
+            if (document.body.contains(overlay)) {
+                overlay.remove();
+                resolve(false);
+            }
+        }, 60000);
+    });
+}
+
+function setupReceiverDataChannel(channel, fileInfo) {
+    channel.binaryType = 'arraybuffer';
+    p2pReceivedBuffers = [];
+    p2pReceivedSize = 0;
+    
+    channel.onopen = () => {
+        console.log('Receiver data channel opened');
+    };
+    
+    channel.onmessage = (event) => {
+        const data = event.data;
+        p2pReceivedSize += data.byteLength;
+        p2pReceivedBuffers.push(data);
+        
+        // Update progress
+        const progress = Math.min((p2pReceivedSize / fileInfo.size) * 100, 100);
+        document.getElementById('p2pProgress').style.width = `${progress}%`;
+        
+        if (p2pReceivedSize >= fileInfo.size) {
+            // File received completely
+            const blob = new Blob(p2pReceivedBuffers, { type: fileInfo.type || 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            
+            // Auto-download the file
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileInfo.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            // Update UI
+            document.getElementById('p2pStatus').innerHTML = '<i data-lucide="check-circle" style="width: 20px; height: 20px; color: #22c55e;"></i> File received successfully!';
+            document.getElementById('p2pProgress').style.width = '100%';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            
+            // Clean up and close
+            setTimeout(() => {
+                URL.revokeObjectURL(url);
+                closeP2PModal();
+                resetP2PUI();
+            }, 2500);
+        }
+    };
+    
+    channel.onerror = (error) => {
+        console.error('Receiver channel error:', error);
+        document.getElementById('p2pStatus').innerHTML = '<i data-lucide="alert-circle" style="width: 20px; height: 20px; color: #ef4444;"></i> Transfer error';
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    };
+}
+
+function receiveFile(channel, fileInfo) {
+    let receivedSize = 0;
+    const receivedBuffers = [];
+    
+    channel.onmessage = (event) => {
+        const data = event.data;
+        receivedSize += data.byteLength;
+        receivedBuffers.push(data);
+        
+        const progress = (receivedSize / fileInfo.size) * 100;
+        document.getElementById('p2pProgress').style.width = `${progress}%`;
+        
+        if (receivedSize === fileInfo.size) {
+            const blob = new Blob(receivedBuffers, { type: fileInfo.type });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileInfo.name;
+            a.click();
+            
+            document.getElementById('p2pStatus').textContent = 'Received successfully!';
+            setTimeout(() => closeP2PModal(), 2000);
+        }
+    };
+}
+
+function formatBytes(bytes, decimals = 2) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+function openImageModal(src) {
+    document.getElementById('modalImage').src = src;
+    document.getElementById('imageModal').style.display = 'flex';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+// Utility functions
+function scrollToBottom(smooth = true) {
+    const container = document.getElementById('messagesContainer');
+    if (!container) return;
+    
+    if (smooth) {
+        container.scrollTo({
+            top: container.scrollHeight + 10000,
+            behavior: 'smooth'
+        });
+    } else {
+        container.scrollTop = container.scrollHeight + 10000;
+    }
+}
+
+function getCSRFToken() {
+    const cookie = document.cookie.split(';').find(c => c.trim().startsWith('csrftoken='));
+    return cookie ? cookie.split('=')[1] : '';
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Group Management Functions
+function leaveGroup() {
+    if (!confirm('Are you sure you want to leave this group?')) return;
+    
+    fetch(`/api/group/${chatId}/leave/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('You have left the group');
+            window.location.href = '/chat/dashboard/';
+        } else {
+            alert(data.error || 'Failed to leave group');
+        }
+    })
+    .catch(err => {
+        console.error('Leave group error:', err);
+        alert('Failed to leave group');
+    });
+}
+
+function removeMember(memberId) {
+    if (!confirm('Remove this member from the group?')) return;
+    
+    fetch(`/api/group/${chatId}/remove-member/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ member_id: memberId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.error || 'Failed to remove member');
+        }
+    })
+    .catch(err => {
+        console.error('Remove member error:', err);
+        alert('Failed to remove member');
+    });
+}
+
+function openInviteLink() {
+    const inviteLink = '{{ chat.invite_link }}';
+    if (inviteLink) {
+        navigator.clipboard.writeText(inviteLink).then(() => {
+            alert('Invite link copied to clipboard!');
+        }).catch(() => {
+            prompt('Copy this invite link:', inviteLink);
+        });
+    } else {
+        alert('No invite link available');
+    }
+}
+
+// Video Call Function
+function startVideoCall() {
+    showIGToast('Video calling is not available yet', 'info');
+    // Future implementation: WebRTC video call
+    console.log('Video call initiated for chat:', chatId);
+}
+
+// Voice Call Function
+function startVoiceCall() {
+    showIGToast('Voice calling is not available yet', 'info');
+    // Future implementation: WebRTC voice call
+    console.log('Voice call initiated for chat:', chatId);
+}
+
+// Delete Chat Function
+function deleteChat() {
+    if (!confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) return;
+    
+    fetch(`/api/chat/${chatId}/delete/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showIGToast('Chat deleted successfully', 'success');
+            window.location.href = '/chat/dashboard/';
+        } else {
+            alert(data.error || 'Failed to delete chat');
+        }
+    })
+    .catch(err => {
+        console.error('Delete chat error:', err);
+        alert('Failed to delete chat');
+    });
+}
+
+// Emoji Picker Toggle - Fixed CSS and positioning
+let emojiPickerOpen = false;
+const commonEmojis = ['😀', '😂', '❤️', '👍', '🔥', '✨', '🎉', '😊', '🥰', '😎', '🤔', '👏', '💯', '🙌', '😍', '🤗'];
+
+function toggleEmojiPicker() {
+    const existingPicker = document.getElementById('emojiPickerPopup');
+    
+    if (existingPicker) {
+        existingPicker.remove();
+        emojiPickerOpen = false;
+        return;
+    }
+    
+    const footer = document.querySelector('.ig-chat-footer');
+    
+    const picker = document.createElement('div');
+    picker.id = 'emojiPickerPopup';
+    picker.className = 'ig-emoji-picker';
+    
+    commonEmojis.forEach(emoji => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = emoji;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const input = document.getElementById('messageInput');
+            input.value += emoji;
+            input.focus();
+            updateSendButton();
+            picker.remove();
+            emojiPickerOpen = false;
+        };
+        picker.appendChild(btn);
+    });
+    
+    footer.appendChild(picker);
+    emojiPickerOpen = true;
+    
+    // Close on click outside - with delay to prevent immediate close
+    setTimeout(() => {
+        const closeHandler = function(e) {
+            if (!e.target.closest('#emojiPickerPopup') && !e.target.closest('.ig-chat-emoji')) {
+                const p = document.getElementById('emojiPickerPopup');
+                if (p) p.remove();
+                emojiPickerOpen = false;
+                document.removeEventListener('click', closeHandler);
+            }
+        };
+        document.addEventListener('click', closeHandler);
+    }, 100);
+}
+
+// New Message Modal
+function openNewMessageModal() {
+    window.location.href = '/chat/dashboard/?new=1';
+}
+
+// Toast notification function - disabled
+function showIGToast(message, type) {
+    // Disabled - just log to console
+    console.log(`[${type}] ${message}`);
+}
+
+// =============================================
+// NOTIFICATION FUNCTIONS
+// =============================================
+function playNotificationSound() {
+    try {
+        // Try Web Audio API for pleasant chime
+        createNotificationSound();
+    } catch(e) {
+        // Fallback to audio element
+        try {
+            notificationSoundFallback.volume = 0.3;
+            notificationSoundFallback.play().catch(() => {});
+        } catch(e2) {}
+    }
+}
+
+function showNewMessageNotification(count) {
+    // Browser notification if permitted
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('New Message', {
+            body: `You have ${count} new message${count > 1 ? 's' : ''}`,
+            icon: '/static/images/logo.png',
+            tag: 'new-message'
+        });
+    }
+    
+    // Also flash the title
+    let originalTitle = document.title;
+    let flashInterval = setInterval(() => {
+        document.title = document.title.includes('🔔') ? originalTitle : `🔔 (${count}) New Message`;
+    }, 1000);
+    
+    // Stop flashing after 10 seconds or on focus
+    setTimeout(() => clearInterval(flashInterval), 10000);
+    window.addEventListener('focus', () => {
+        clearInterval(flashInterval);
+        document.title = originalTitle;
+    }, { once: true });
+}
+
+// =============================================
+// PINNED MESSAGE FUNCTIONS
+// =============================================
+function loadPinnedMessages() {
+    // Find pinned messages in the current DOM
+    const pinnedMsg = document.querySelector('.ig-message.pinned');
+    if (pinnedMsg) {
+        const messageId = pinnedMsg.dataset.messageId;
+        const textEl = pinnedMsg.querySelector('.ig-message-text');
+        const text = textEl ? textEl.textContent : 'Pinned message';
+        showPinnedBanner(messageId, text);
+    }
+    
+    // Also check from server
+    fetch(`/api/chat/${chatId}/pinned-messages/`)
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            if (data.pinned_messages && data.pinned_messages.length > 0) {
+                const pinned = data.pinned_messages[0]; // Show first pinned
+                showPinnedBanner(pinned.id, pinned.content || 'Photo');
+                
+                // Mark message as pinned in DOM
+                const msgEl = document.querySelector(`[data-message-id="${pinned.id}"]`);
+                if (msgEl) msgEl.classList.add('pinned');
+            }
+        })
+        .catch(() => {});
+}
+
+function showPinnedBanner(messageId, text) {
+    currentPinnedMessageId = messageId;
+    const banner = document.getElementById('pinnedBanner');
+    const textEl = document.getElementById('pinnedMessageText');
+    
+    if (banner && textEl) {
+        textEl.textContent = text.length > 50 ? text.substring(0, 50) + '...' : text;
+        banner.style.display = 'flex';
+        
+        // Reinitialize icons
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+}
+
+function closePinnedBanner() {
+    const banner = document.getElementById('pinnedBanner');
+    if (banner) banner.style.display = 'none';
+}
+
+function scrollToPinnedMessage() {
+    if (!currentPinnedMessageId) return;
+    
+    const msg = document.querySelector(`[data-message-id="${currentPinnedMessageId}"]`);
+    if (msg) {
+        msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Highlight effect
+        msg.style.animation = 'pulseHighlight 1.5s ease';
+        setTimeout(() => {
+            msg.style.animation = '';
+        }, 1500);
+    }
+}
+
+// Request notification permission on first interaction
+document.addEventListener('click', function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+    document.removeEventListener('click', requestNotificationPermission);
+}, { once: true });
+</script>
+{% endblock %}

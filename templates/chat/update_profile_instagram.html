@@ -1,0 +1,886 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Edit Profile - Odnix{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<style>
+/* Hide old sidebars */
+.sidebar-enhanced { display: none !important; }
+.bottom-navbar { display: none !important; }
+
+/* Edit Profile Container */
+.ig-edit-profile-container {
+    padding-top: 90px;
+    padding-bottom: 100px;
+    min-height: 100vh;
+    background: var(--ig-bg);
+}
+
+.ig-edit-profile {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Card Style */
+.ig-edit-card {
+    background: var(--ig-surface);
+    border-radius: 16px;
+    border: 1px solid var(--ig-border);
+    overflow: hidden;
+}
+
+/* Header */
+.ig-edit-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    border-bottom: 1px solid var(--ig-border);
+    background: var(--ig-surface);
+}
+
+.ig-edit-avatar-section {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.ig-edit-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid transparent;
+    background: linear-gradient(var(--ig-surface), var(--ig-surface)) padding-box,
+                var(--odnix-gradient) border-box;
+}
+
+.ig-edit-avatar-fallback {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--odnix-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 600;
+    color: white;
+}
+
+.ig-edit-avatar-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    cursor: pointer;
+}
+
+.ig-edit-avatar-section:hover .ig-edit-avatar-overlay {
+    opacity: 1;
+}
+
+.ig-edit-avatar-overlay svg {
+    width: 24px;
+    height: 24px;
+    color: white;
+}
+
+.ig-edit-user-info {
+    flex: 1;
+}
+
+.ig-edit-username {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+    margin-bottom: 4px;
+}
+
+.ig-change-photo-btn {
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.ig-change-photo-btn:hover {
+    text-decoration: underline;
+}
+
+/* Form Styles */
+.ig-edit-form {
+    padding: 0;
+}
+
+.ig-form-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--ig-border);
+}
+
+.ig-form-section:last-child {
+    border-bottom: none;
+}
+
+.ig-form-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ig-form-section-title svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+}
+
+.ig-form-group {
+    margin-bottom: 20px;
+}
+
+.ig-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.ig-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ig-text-secondary);
+    margin-bottom: 8px;
+}
+
+.ig-form-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--ig-bg);
+    border: 1px solid var(--ig-border);
+    border-radius: 12px;
+    font-size: 16px;
+    color: var(--ig-text-primary);
+    transition: all 0.2s;
+}
+
+.ig-form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--ig-surface);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.ig-form-input::placeholder {
+    color: var(--ig-text-secondary);
+}
+
+.ig-form-hint {
+    font-size: 12px;
+    color: var(--ig-text-secondary);
+    margin-top: 6px;
+}
+
+.ig-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* Toggle Switch */
+.ig-toggle-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--ig-border-light);
+}
+
+.ig-toggle-row:last-child {
+    border-bottom: none;
+}
+
+.ig-toggle-info {
+    flex: 1;
+}
+
+.ig-toggle-title {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ig-text-primary);
+    margin-bottom: 4px;
+}
+
+.ig-toggle-desc {
+    font-size: 13px;
+    color: var(--ig-text-secondary);
+}
+
+.ig-toggle-switch {
+    position: relative;
+    width: 50px;
+    height: 28px;
+    background: var(--ig-border);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.ig-toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.ig-toggle-switch input:checked + .ig-toggle-slider {
+    background: var(--color-primary);
+}
+
+.ig-toggle-switch input:checked + .ig-toggle-slider::before {
+    transform: translateX(22px);
+}
+
+.ig-toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: var(--ig-border);
+    border-radius: 14px;
+    transition: background 0.3s;
+}
+
+.ig-toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Form Actions */
+.ig-form-actions {
+    display: flex;
+    gap: 12px;
+    padding: 24px;
+    background: var(--ig-surface);
+    border-top: 1px solid var(--ig-border);
+}
+
+.ig-btn {
+    flex: 1;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+}
+
+.ig-btn-cancel {
+    background: var(--ig-bg);
+    color: var(--ig-text-primary);
+    border: 1px solid var(--ig-border);
+}
+
+.ig-btn-cancel:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-btn-save {
+    background: var(--color-primary);
+    color: white;
+}
+
+.ig-btn-save:hover {
+    background: var(--color-primary-dark, #4f46e5);
+    transform: translateY(-1px);
+}
+
+.ig-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Danger Zone */
+.ig-danger-zone {
+    margin-top: 24px;
+}
+
+.ig-danger-card {
+    background: var(--ig-surface);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.ig-danger-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ef4444;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ig-danger-title svg {
+    width: 16px;
+    height: 16px;
+}
+
+.ig-logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 10px;
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.ig-logout-btn:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.ig-logout-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Cropper Modal */
+.ig-crop-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.ig-crop-modal.show {
+    display: flex;
+}
+
+.ig-crop-dialog {
+    background: var(--ig-surface);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.ig-crop-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--ig-border);
+}
+
+.ig-crop-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.ig-crop-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: var(--ig-text-secondary);
+}
+
+.ig-crop-body {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    min-height: 300px;
+}
+
+.ig-crop-body img {
+    max-width: 100%;
+    display: block;
+}
+
+.ig-crop-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid var(--ig-border);
+}
+
+.ig-crop-tool-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--ig-bg);
+    border: 1px solid var(--ig-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.ig-crop-tool-btn:hover {
+    background: var(--ig-surface-hover);
+}
+
+.ig-crop-tool-btn svg {
+    width: 18px;
+    height: 18px;
+    color: var(--ig-text-primary);
+}
+
+.ig-crop-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 20px;
+    border-top: 1px solid var(--ig-border);
+}
+
+.ig-crop-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.ig-crop-cancel {
+    background: var(--ig-bg);
+    color: var(--ig-text-primary);
+}
+
+.ig-crop-apply {
+    background: var(--color-primary);
+    color: white;
+}
+
+/* Hidden file input */
+.ig-hidden-input {
+    display: none;
+}
+
+/* Success/Error Messages */
+.ig-message {
+    padding: 14px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+}
+
+.ig-message-success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.ig-message-error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.ig-message svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ig-edit-profile-container {
+        padding-top: 20px;
+        padding-bottom: 80px;
+    }
+    
+    .ig-edit-profile {
+        padding: 12px;
+    }
+    
+    .ig-edit-card {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+    }
+    
+    .ig-form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .ig-edit-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .ig-edit-user-info {
+        text-align: center;
+    }
+    
+    .ig-form-actions {
+        flex-direction: column;
+    }
+    
+    .ig-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .ig-edit-header {
+        padding: 20px 16px;
+    }
+    
+    .ig-form-section {
+        padding: 16px;
+    }
+    
+    .ig-form-actions {
+        padding: 16px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Include Shared Navbar -->
+{% include 'chat/partials/navbar.html' %}
+
+<div class="ig-edit-profile-container">
+    <div class="ig-edit-profile">
+        <!-- Messages -->
+        {% if messages %}
+        {% for message in messages %}
+        <div class="ig-message ig-message-{{ message.tags }}">
+            {% if message.tags == 'success' %}
+            <i data-lucide="check-circle"></i>
+            {% else %}
+            <i data-lucide="alert-circle"></i>
+            {% endif %}
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        
+        <form method="post" enctype="multipart/form-data" id="profileForm" class="ig-edit-card">
+            {% csrf_token %}
+            
+            <!-- Header with Avatar -->
+            <div class="ig-edit-header">
+                <div class="ig-edit-avatar-section">
+                    {% if request.user.profile_picture %}
+                    <img src="{{ request.user.profile_picture_url }}" alt="" class="ig-edit-avatar" id="avatarPreview"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    {% endif %}
+                    <div class="ig-edit-avatar-fallback" id="avatarFallback" {% if request.user.profile_picture %}style="display: none;"{% endif %}>
+                        {{ request.user.name.0 }}{{ request.user.lastname.0 }}
+                    </div>
+                    <label class="ig-edit-avatar-overlay" for="profilePictureInput">
+                        <i data-lucide="camera"></i>
+                    </label>
+                </div>
+                <div class="ig-edit-user-info">
+                    <div class="ig-edit-username">{{ request.user.username }}</div>
+                    <button type="button" class="ig-change-photo-btn" onclick="document.getElementById('profilePictureInput').click()">
+                        Change profile photo
+                    </button>
+                </div>
+                <input type="file" id="profilePictureInput" class="ig-hidden-input" accept="image/*" onchange="handleImageSelect(event)">
+                <input type="hidden" name="profile_picture_cropped" id="croppedImageData">
+            </div>
+            
+            <!-- Personal Information -->
+            <div class="ig-form-section">
+                <div class="ig-form-section-title">
+                    <i data-lucide="user"></i>
+                    Personal Information
+                </div>
+                
+                <div class="ig-form-row">
+                    <div class="ig-form-group">
+                        <label class="ig-form-label">First Name</label>
+                        <input type="text" name="name" class="ig-form-input" value="{{ request.user.name }}" placeholder="First name">
+                    </div>
+                    <div class="ig-form-group">
+                        <label class="ig-form-label">Last Name</label>
+                        <input type="text" name="lastname" class="ig-form-input" value="{{ request.user.lastname }}" placeholder="Last name">
+                    </div>
+                </div>
+                
+                <div class="ig-form-group">
+                    <label class="ig-form-label">Username</label>
+                    <input type="text" name="username" class="ig-form-input" value="{{ request.user.username }}" placeholder="Username">
+                    <div class="ig-form-hint">People can find you with @{{ request.user.username }}</div>
+                </div>
+            </div>
+            
+            <!-- Privacy Settings -->
+            <div class="ig-form-section">
+                <div class="ig-form-section-title">
+                    <i data-lucide="shield"></i>
+                    Privacy
+                </div>
+                
+                <div class="ig-toggle-row">
+                    <div class="ig-toggle-info">
+                        <div class="ig-toggle-title">Private Account</div>
+                        <div class="ig-toggle-desc">Only approved followers can see your posts and stories</div>
+                    </div>
+                    <label class="ig-toggle-switch">
+                        <input type="checkbox" name="is_private" {% if request.user.is_private %}checked{% endif %}>
+                        <span class="ig-toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="ig-form-actions">
+                <a href="{% url 'profile' %}" class="ig-btn ig-btn-cancel">
+                    <i data-lucide="x"></i>
+                    Cancel
+                </a>
+                <button type="submit" class="ig-btn ig-btn-save">
+                    <i data-lucide="check"></i>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+        
+        <!-- Danger Zone -->
+        <div class="ig-danger-zone">
+            <div class="ig-danger-card">
+                <div class="ig-danger-title">
+                    <i data-lucide="alert-triangle"></i>
+                    Account Actions
+                </div>
+                <a href="{% url 'logout' %}" class="ig-logout-btn">
+                    <i data-lucide="log-out"></i>
+                    Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Crop Modal -->
+<div id="cropModal" class="ig-crop-modal">
+    <div class="ig-crop-dialog">
+        <div class="ig-crop-header">
+            <h3>Crop Profile Picture</h3>
+            <button type="button" class="ig-crop-close" onclick="closeCropper()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="ig-crop-body">
+            <img id="cropperImage" src="" alt="">
+        </div>
+        <div class="ig-crop-controls">
+            <button type="button" class="ig-crop-tool-btn" onclick="zoomImage(-0.1)" title="Zoom Out">
+                <i data-lucide="zoom-out"></i>
+            </button>
+            <button type="button" class="ig-crop-tool-btn" onclick="zoomImage(0.1)" title="Zoom In">
+                <i data-lucide="zoom-in"></i>
+            </button>
+            <button type="button" class="ig-crop-tool-btn" onclick="rotateImage(-90)" title="Rotate Left">
+                <i data-lucide="rotate-ccw"></i>
+            </button>
+            <button type="button" class="ig-crop-tool-btn" onclick="rotateImage(90)" title="Rotate Right">
+                <i data-lucide="rotate-cw"></i>
+            </button>
+        </div>
+        <div class="ig-crop-footer">
+            <button type="button" class="ig-crop-btn ig-crop-cancel" onclick="closeCropper()">Cancel</button>
+            <button type="button" class="ig-crop-btn ig-crop-apply" onclick="applyCrop()">
+                <i data-lucide="check"></i>
+                Apply
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+let cropper = null;
+
+function handleImageSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+        showToast('Please select an image file', 'error');
+        return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Image must be less than 5MB', 'error');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('cropperImage').src = e.target.result;
+        openCropper();
+    };
+    reader.readAsDataURL(file);
+}
+
+function openCropper() {
+    const modal = document.getElementById('cropModal');
+    const image = document.getElementById('cropperImage');
+    
+    modal.classList.add('show');
+    
+    // Destroy existing cropper
+    if (cropper) {
+        cropper.destroy();
+    }
+    
+    // Initialize cropper
+    setTimeout(() => {
+        cropper = new Cropper(image, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.8,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+        });
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }, 100);
+}
+
+function closeCropper() {
+    const modal = document.getElementById('cropModal');
+    modal.classList.remove('show');
+    
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    
+    // Reset file input
+    document.getElementById('profilePictureInput').value = '';
+}
+
+function zoomImage(amount) {
+    if (cropper) {
+        cropper.zoom(amount);
+    }
+}
+
+function rotateImage(degrees) {
+    if (cropper) {
+        cropper.rotate(degrees);
+    }
+}
+
+function applyCrop() {
+    if (!cropper) return;
+    
+    const canvas = cropper.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+    
+    if (!canvas) {
+        showToast('Error cropping image', 'error');
+        return;
+    }
+    
+    // Update preview
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    const preview = document.getElementById('avatarPreview');
+    const fallback = document.getElementById('avatarFallback');
+    
+    if (preview) {
+        preview.src = dataUrl;
+        preview.style.display = 'block';
+    }
+    if (fallback) {
+        fallback.style.display = 'none';
+    }
+    
+    // Store cropped data for form submission
+    document.getElementById('croppedImageData').value = dataUrl;
+    
+    closeCropper();
+    showToast('Photo updated! Click Save to apply changes.', 'success');
+}
+
+function showToast(message, type) {
+    // Use existing toast system if available
+    if (typeof showIGToast === 'function') {
+        showIGToast(message, type);
+    } else {
+        alert(message);
+    }
+}
+
+// Initialize icons
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+});
+</script>
+{% endblock %}

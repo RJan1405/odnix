@@ -1,0 +1,422 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Odnix</title>
+    <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}">
+    <style>
+        /* Instagram-style Auth Page */
+        .ig-auth-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--ig-bg);
+            padding: 16px;
+        }
+        
+        .ig-auth-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 350px;
+            width: 100%;
+        }
+        
+        .ig-auth-phone {
+            display: none;
+        }
+        
+        .ig-auth-box {
+            background: var(--ig-surface);
+            border: 1px solid var(--ig-border);
+            border-radius: 1px;
+            padding: 40px 40px 20px;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .ig-auth-logo {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 24px;
+        }
+        
+        .ig-auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .ig-auth-input {
+            width: 100%;
+            padding: 9px 8px;
+            background: var(--ig-bg);
+            border: 1px solid var(--ig-border);
+            border-radius: 3px;
+            font-size: 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .ig-auth-input:focus {
+            border-color: var(--ig-text-secondary);
+        }
+        
+        .ig-auth-input::placeholder {
+            color: var(--ig-text-secondary);
+        }
+        
+        .ig-auth-btn {
+            width: 100%;
+            padding: 7px 16px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s;
+        }
+        
+        .ig-auth-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .ig-auth-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .ig-auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 16px 0;
+            gap: 16px;
+        }
+        
+        .ig-auth-divider-line {
+            flex: 1;
+            height: 1px;
+            background: var(--ig-border);
+        }
+        
+        .ig-auth-divider-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ig-text-secondary);
+        }
+        
+        .ig-auth-forgot {
+            font-size: 12px;
+            color: var(--color-primary);
+            text-decoration: none;
+            margin-top: 16px;
+            display: inline-block;
+        }
+        
+        .ig-auth-forgot:hover {
+            text-decoration: underline;
+        }
+        
+        .ig-auth-signup-box {
+            background: var(--ig-surface);
+            border: 1px solid var(--ig-border);
+            border-radius: 1px;
+            padding: 20px 40px;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .ig-auth-signup-text {
+            font-size: 14px;
+            color: var(--ig-text-primary);
+        }
+        
+        .ig-auth-signup-link {
+            color: var(--color-primary);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .ig-auth-signup-link:hover {
+            text-decoration: underline;
+        }
+        
+        .ig-auth-apps {
+            text-align: center;
+            margin-top: 16px;
+        }
+        
+        .ig-auth-apps-text {
+            font-size: 14px;
+            color: var(--ig-text-primary);
+            margin-bottom: 16px;
+        }
+        
+        .ig-auth-apps-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .ig-auth-apps-btn {
+            height: 40px;
+        }
+        
+        .ig-auth-message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 14px;
+        }
+        
+        .ig-auth-message.error {
+            background: #ffebee;
+            color: var(--ig-error);
+            border: 1px solid var(--ig-error);
+        }
+        
+        .ig-auth-message.success {
+            background: #e8f5e9;
+            color: var(--ig-success);
+            border: 1px solid var(--ig-success);
+        }
+        
+        /* Desktop with phone mockup */
+        @media (min-width: 876px) {
+            .ig-auth-page {
+                background: var(--ig-bg);
+            }
+            
+            .ig-auth-wrapper {
+                flex-direction: row;
+                max-width: 935px;
+                gap: 32px;
+            }
+            
+            .ig-auth-phone {
+                display: block;
+                width: 380px;
+                height: 580px;
+                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 380 580"><rect fill="%23262626" width="380" height="580" rx="40"/><rect fill="%23fafafa" x="20" y="60" width="340" height="460" rx="3"/></svg>');
+                background-size: contain;
+                background-repeat: no-repeat;
+                position: relative;
+            }
+            
+            .ig-auth-phone::after {
+                content: 'Odnix';
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 48px;
+                font-weight: 700;
+                background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+        }
+        
+        /* Footer */
+        .ig-auth-footer {
+            width: 100%;
+            max-width: 935px;
+            margin: 24px auto 0;
+            padding: 0 16px;
+        }
+        
+        .ig-auth-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .ig-auth-footer-link {
+            font-size: 12px;
+            color: var(--ig-text-secondary);
+            text-decoration: none;
+        }
+        
+        .ig-auth-footer-link:hover {
+            text-decoration: underline;
+        }
+        
+        .ig-auth-footer-copyright {
+            text-align: center;
+            font-size: 12px;
+            color: var(--ig-text-secondary);
+        }
+        
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 480px) {
+            .ig-auth-page {
+                padding: 12px;
+                align-items: flex-start;
+                padding-top: 40px;
+            }
+            
+            .ig-auth-box {
+                padding: 30px 24px 20px;
+            }
+            
+            .ig-auth-logo {
+                font-size: 34px;
+                margin-bottom: 20px;
+            }
+            
+            .ig-auth-input {
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            
+            .ig-auth-btn {
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+            
+            .ig-auth-signup-box {
+                padding: 16px 24px;
+            }
+            
+            .ig-auth-apps {
+                margin-top: 12px;
+            }
+            
+            .ig-auth-apps-buttons {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .ig-auth-apps-btn {
+                width: 140px;
+                height: auto;
+            }
+            
+            .ig-auth-footer {
+                margin-top: 16px;
+            }
+            
+            .ig-auth-footer-links {
+                gap: 10px;
+            }
+            
+            .ig-auth-footer-link {
+                font-size: 11px;
+            }
+        }
+        
+        @media (max-width: 374px) {
+            .ig-auth-page {
+                padding: 8px;
+                padding-top: 24px;
+            }
+            
+            .ig-auth-box {
+                padding: 24px 16px 16px;
+            }
+            
+            .ig-auth-logo {
+                font-size: 28px;
+            }
+            
+            .ig-auth-input {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+            
+            .ig-auth-signup-box {
+                padding: 14px 16px;
+            }
+            
+            .ig-auth-signup-text {
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="ig-auth-page">
+        <div class="ig-auth-wrapper">
+            <!-- Phone mockup (desktop only) -->
+            <div class="ig-auth-phone"></div>
+            
+            <div>
+                <!-- Login Box -->
+                <div class="ig-auth-box">
+                    <h1 class="ig-auth-logo">Odnix</h1>
+                    
+                    {% if messages %}
+                    {% for message in messages %}
+                    <div class="ig-auth-message {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'login' %}" class="ig-auth-form">
+                        {% csrf_token %}
+                        <input type="text" name="username" class="ig-auth-input" placeholder="Phone number, username, or email" required>
+                        <input type="password" name="password" class="ig-auth-input" placeholder="Password" required>
+                        <button type="submit" class="ig-auth-btn">Log in</button>
+                    </form>
+                    
+                    <div class="ig-auth-divider">
+                        <div class="ig-auth-divider-line"></div>
+                        <span class="ig-auth-divider-text">OR</span>
+                        <div class="ig-auth-divider-line"></div>
+                    </div>
+                    
+                    <a href="#" class="ig-auth-forgot">Forgot password?</a>
+                </div>
+                
+                <!-- Sign up Box -->
+                <div class="ig-auth-signup-box">
+                    <p class="ig-auth-signup-text">
+                        Don't have an account? 
+                        <a href="{% url 'register' %}" class="ig-auth-signup-link">Sign up</a>
+                    </p>
+                </div>
+                
+                <!-- App download -->
+                <div class="ig-auth-apps">
+                    <p class="ig-auth-apps-text">Get the app.</p>
+                    <div class="ig-auth-apps-buttons">
+                        <img src="https://static.cdninstagram.com/rsrc.php/v3/yz/r/c5Rp7Ym-Klz.png" alt="Get it on Google Play" class="ig-auth-apps-btn">
+                        <img src="https://static.cdninstagram.com/rsrc.php/v3/yu/r/EHY6QnZYdNX.png" alt="Get it from Microsoft" class="ig-auth-apps-btn">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="ig-auth-footer">
+        <nav class="ig-auth-footer-links">
+            <a href="#" class="ig-auth-footer-link">Meta</a>
+            <a href="#" class="ig-auth-footer-link">About</a>
+            <a href="#" class="ig-auth-footer-link">Blog</a>
+            <a href="#" class="ig-auth-footer-link">Jobs</a>
+            <a href="#" class="ig-auth-footer-link">Help</a>
+            <a href="#" class="ig-auth-footer-link">API</a>
+            <a href="#" class="ig-auth-footer-link">Privacy</a>
+            <a href="#" class="ig-auth-footer-link">Terms</a>
+        </nav>
+        <p class="ig-auth-footer-copyright">© 2025 Odnix</p>
+    </footer>
+</body>
+</html>

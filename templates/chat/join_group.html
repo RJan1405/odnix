@@ -1,0 +1,386 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block title %}Join {{ chat.name }} - Odnix{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<style>
+/* Hide legacy sidebar/navbar elements */
+.sidebar-enhanced { display: none !important; }
+.bottom-navbar { display: none !important; }
+
+/* Join Group Page Styles */
+.ig-join-container {
+    padding-top: 100px;
+    padding-bottom: 80px;
+    min-height: 100vh;
+    background: var(--ig-bg);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.ig-join-card {
+    background: var(--ig-surface);
+    border: 1px solid var(--ig-border);
+    border-radius: 16px;
+    max-width: 500px;
+    width: 100%;
+    margin: 0 16px;
+    overflow: hidden;
+}
+
+.ig-join-header {
+    text-align: center;
+    padding: 32px 24px;
+    border-bottom: 1px solid var(--ig-border);
+}
+
+.ig-join-avatar {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--color-primary), #764ba2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.ig-join-avatar svg {
+    width: 48px;
+    height: 48px;
+    color: white;
+}
+
+.ig-join-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--ig-text-primary);
+    margin-bottom: 8px;
+}
+
+.ig-join-meta {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: var(--ig-text-secondary);
+    font-size: 14px;
+}
+
+.ig-join-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.ig-join-meta svg {
+    width: 14px;
+    height: 14px;
+}
+
+.ig-join-description {
+    color: var(--ig-text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.ig-join-body {
+    padding: 24px;
+}
+
+.ig-join-message-label {
+    display: block;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.ig-join-textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--ig-border);
+    border-radius: 12px;
+    background: var(--ig-input-bg);
+    color: var(--ig-text-primary);
+    font-size: 14px;
+    line-height: 1.5;
+    resize: none;
+    transition: border-color 0.2s;
+}
+
+.ig-join-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.ig-join-textarea::placeholder {
+    color: var(--ig-text-secondary);
+}
+
+.ig-join-hint {
+    font-size: 12px;
+    color: var(--ig-text-secondary);
+    margin-top: 8px;
+}
+
+.ig-join-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.ig-join-btn {
+    width: 100%;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+}
+
+.ig-join-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ig-join-btn-primary {
+    background: var(--brand-gradient);
+    color: white;
+}
+
+.ig-join-btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.ig-join-btn-secondary {
+    background: var(--ig-surface-hover);
+    color: var(--ig-text-primary);
+    border: 1px solid var(--ig-border);
+}
+
+.ig-join-btn-secondary:hover {
+    background: var(--ig-border);
+}
+
+/* Preview Section */
+.ig-join-preview {
+    border-top: 1px solid var(--ig-border);
+    padding: 24px;
+}
+
+.ig-join-preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+    margin-bottom: 16px;
+}
+
+.ig-join-preview-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: var(--ig-input-bg);
+    border-radius: 12px;
+    margin-bottom: 8px;
+}
+
+.ig-join-preview-message:last-child {
+    margin-bottom: 0;
+}
+
+.ig-join-preview-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ig-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.ig-join-preview-avatar svg {
+    width: 16px;
+    height: 16px;
+    color: var(--ig-text-secondary);
+}
+
+.ig-join-preview-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.ig-join-preview-sender {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ig-text-primary);
+    margin-bottom: 2px;
+}
+
+.ig-join-preview-text {
+    font-size: 13px;
+    color: var(--ig-text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ig-join-preview-time {
+    font-size: 11px;
+    color: var(--ig-text-secondary);
+    flex-shrink: 0;
+}
+
+.ig-join-empty {
+    text-align: center;
+    color: var(--ig-text-secondary);
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* Already Member State */
+.ig-join-already {
+    text-align: center;
+    padding: 24px;
+}
+
+.ig-join-already-icon {
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+}
+
+.ig-join-already-icon svg {
+    width: 32px;
+    height: 32px;
+    color: white;
+}
+
+.ig-join-already-text {
+    font-size: 16px;
+    color: var(--ig-text-primary);
+    margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+    .ig-join-container {
+        padding-top: 80px;
+    }
+    
+    .ig-join-card {
+        margin: 0 8px;
+        border-radius: 12px;
+    }
+    
+    .ig-join-header {
+        padding: 24px 16px;
+    }
+    
+    .ig-join-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ig-join-container">
+    <div class="ig-join-card">
+        <div class="ig-join-header">
+            <div class="ig-join-avatar">
+                <i data-lucide="users"></i>
+            </div>
+            <h1 class="ig-join-title">{{ chat.name }}</h1>
+            <div class="ig-join-meta">
+                <span><i data-lucide="users"></i> {{ chat.participant_count }}/{{ chat.max_participants }} members</span>
+                <span><i data-lucide="crown"></i> {{ chat.admin.full_name }}</span>
+            </div>
+            {% if chat.description %}
+            <p class="ig-join-description">{{ chat.description }}</p>
+            {% endif %}
+        </div>
+
+        {% if already_member %}
+        <div class="ig-join-already">
+            <div class="ig-join-already-icon">
+                <i data-lucide="check"></i>
+            </div>
+            <p class="ig-join-already-text">You're already a member of this group!</p>
+            <a href="{% url 'chat_detail' chat_id=chat.id %}" class="ig-join-btn ig-join-btn-primary">
+                <i data-lucide="message-circle"></i> Open Chat
+            </a>
+        </div>
+        {% else %}
+        <div class="ig-join-body">
+            <form method="post" id="joinForm">
+                {% csrf_token %}
+                {% if not chat.is_public %}
+                <label class="ig-join-message-label">Your Message (Optional)</label>
+                <textarea name="message" class="ig-join-textarea" rows="3" 
+                          placeholder="Hi! I'd like to join this group..."></textarea>
+                <p class="ig-join-hint">This message will be sent to the group admin with your request.</p>
+                {% else %}
+                <p style="text-align: center; color: var(--ig-text-secondary); margin-bottom: 16px;">
+                    This is a public group. Click below to join instantly!
+                </p>
+                {% endif %}
+
+                <div class="ig-join-actions">
+                    <button type="submit" class="ig-join-btn ig-join-btn-primary">
+                        {% if chat.is_public %}
+                        <i data-lucide="user-plus"></i> Join Group
+                        {% else %}
+                        <i data-lucide="send"></i> Send Join Request
+                        {% endif %}
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="ig-join-btn ig-join-btn-secondary">
+                        <i data-lucide="arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        {% if chat.messages.all|slice:":3" %}
+        <div class="ig-join-preview">
+            <h4 class="ig-join-preview-title">Recent Activity</h4>
+            {% for message in chat.messages.all|slice:":3" %}
+            <div class="ig-join-preview-message">
+                <div class="ig-join-preview-avatar">
+                    <i data-lucide="user"></i>
+                </div>
+                <div class="ig-join-preview-content">
+                    <div class="ig-join-preview-sender">
+                        {% if message.sender %}{{ message.sender.full_name }}{% else %}System{% endif %}
+                    </div>
+                    <div class="ig-join-preview-text">{{ message.content|truncatechars:50 }}</div>
+                </div>
+                <span class="ig-join-preview-time">{{ message.timestamp|timesince }} ago</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

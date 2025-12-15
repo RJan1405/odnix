@@ -1,0 +1,5732 @@
+{% extends 'chat/base.html' %}
+{% load tweet_extras %}
+
+{% block title %}
+    {% if is_own_profile %}
+        Your Profile - Odnix
+    {% else %}
+        {{ profile_user.full_name }}'s Profile - Odnix
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <!-- Desktop Sidebar -->
+    <div class="sidebar-enhanced desktop-only" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Odnix</h1>
+        </div>
+
+        <!-- Profile section -->
+        <div class="user-info-compact">
+            <div class="user-avatar-large">
+                <img src="{{ profile_user.profile_picture_url }}" alt="{{ profile_user.full_name }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="avatar-fallback">{{ profile_user.name.0 }}{{ profile_user.lastname.0 }}</div>
+            </div>
+            <div class="user-details-large">
+                <div class="user-name-large">{{ profile_user.full_name }}</div>
+                <div class="user-status-large">@{{ profile_user.username }}</div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav-compact">
+            <a href="{% url 'dashboard' %}" class="nav-item-compact">
+                <i data-lucide="home" class="nav-icon"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="{% url 'profile' %}" class="nav-item-compact active">
+                <i data-lucide="user" class="nav-icon"></i>
+                <span class="nav-text">Profile</span>
+            </a>
+        </nav>
+
+        <!-- Create Group Button -->
+        <div class="create-group-section">
+            <button id="createGroupBtn" class="btn btn--primary btn--full-width">Create Group</button>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-section-title">
+                Quick Actions
+            </h3>
+            <div class="sidebar-actions-list">
+                <a href="{% url 'dashboard' %}" class="sidebar-action-item">
+                    <i data-lucide="home" class="nav-icon"></i>
+                    <div class="action-info">
+                        <div class="action-name">Back to Dashboard</div>
+                        <div class="action-desc">View your feed</div>
+                    </div>
+                </a>
+                {% if not is_own_profile %}
+                    {% if existing_chat %}
+                        <a href="{% url 'chat_detail' existing_chat.id %}" class="sidebar-action-item">
+                            <i data-lucide="message-circle" class="action-icon"></i>
+                            <div class="action-info">
+                                <div class="action-name">Continue Chat</div>
+                                <div class="action-desc">Resume conversation</div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <button onclick="startChat('{{ profile_user.username }}')" class="sidebar-action-item sidebar-btn">
+                            <i data-lucide="message-circle" class="action-icon"></i>
+                            <div class="action-info">
+                                <div class="action-name">Start Chat</div>
+                                <div class="action-desc">Send a message</div>
+                            </div>
+                        </button>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- All Users Section -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-section-title">
+                All Users <span class="section-count">{{ other_users.count }}</span>
+            </h3>
+            <div class="sidebar-users-list">
+                {% for otheruser in other_users|slice:":8" %}
+                    <div class="sidebar-user-item">
+                        <div class="user-avatar-tiny">
+                            <img src="{{ otheruser.profile_picture_url }}" alt="{{ otheruser.full_name }}"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="avatar-fallback-tiny">{{ otheruser.name.0 }}{{ otheruser.lastname.0 }}</div>
+                        </div>
+                        <div class="user-info-tiny">
+                            <div class="user-name-tiny">
+                                <a href="{% url 'user_profile' otheruser.username %}" class="profile-link-small">
+                                    {{ otheruser.full_name }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="user-actions-tiny">
+                            <button onclick="startChat('{{ otheruser.username }}')" class="btn-tiny btn--primary">
+                                Chat
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-navbar mobile-only" id="bottomNavbar">
+        <div class="bottom-nav-container">
+            <!-- Profile Tab - Active -->
+            <a href="{% url 'profile' %}" class="bottom-nav-tab active" data-tab="profile">
+                <div class="user-avatar-nano">
+                    <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.full_name }}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-fallback-nano">{{ current_user.name.0 }}{{ current_user.lastname.0 }}</div>
+                </div>
+                <span class="bottom-nav-label">Profile</span>
+            </a>
+
+            <!-- Chats Tab -->
+            <button type="button" class="bottom-nav-tab" data-tab="chats" id="chatsBtn">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="message-circle" class="nav-icon"></i>
+                    {% if private_chats.count|add:group_chats.count > 0 %}
+                    <span class="nav-badge">{{ private_chats.count|add:group_chats.count }}</span>
+                    {% endif %}
+                </div>
+                <span class="bottom-nav-label">Chats</span>
+            </button>
+
+            <!-- Home Tab -->
+            <a href="{% url 'dashboard' %}" class="bottom-nav-tab" data-tab="home">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="home" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">Home</span>
+            </a>
+
+            <!-- Search Tab -->
+            <button type="button" class="bottom-nav-tab" data-tab="search" id="searchBtn">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="search" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">Search</span>
+            </button>
+
+            <!-- More/Actions Tab -->
+            <button type="button" class="bottom-nav-tab" data-tab="more" id="moreBtn">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="settings" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">More</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Modals -->
+    <!-- Chats Modal with Search -->
+    <div id="chatsModal" class="mobile-modal">
+        <div class="mobile-modal-header">
+            <h3>Chats <span class="section-count">{{ private_chats.count|add:group_chats.count }}</span></h3>
+        </div>
+        <div class="mobile-modal-content">
+            <!-- Search Section -->
+            <div class="mobile-search-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="userSearchInput" class="search-input" placeholder="Search chats..." onkeyup="searchUsers()">
+                        <button class="search-clear" onclick="clearSearch()" style="display: none;"><i data-lucide="x"></i></button>
+                    </div>
+                </div>
+                <div id="searchResults" class="search-results" style="display: none;">
+                    <!-- Search results will be populated here -->
+                </div>
+            </div>
+
+            <!-- Create Group Button -->
+            <div class="mobile-action-section">
+                <button id="mobileCreateGroupBtn" class="btn btn--primary btn--full-width" onclick="openCreateGroupModal()">
+                    <i data-lucide="users-round"></i> Create Group
+                </button>
+            </div>
+
+            <!-- Active Chats List -->
+            <div class="mobile-chats-list">
+                <!-- Private Chats -->
+                {% if private_chats %}
+                <h4 class="chat-section-title">Direct Messages</h4>
+                {% for chat in private_chats %}
+                    {% for participant in chat.participants.all %}
+                        {% if participant != current_user %}
+                        <a href="{% url 'chat_detail' chat.id %}" class="mobile-chat-item">
+                            <div class="user-avatar-small">
+                                <img src="{{ participant.profile_picture_url }}" alt="{{ participant.full_name }}"
+                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div class="avatar-fallback-small">{{ participant.name.0 }}{{ participant.lastname.0 }}</div>
+                            </div>
+                            <div class="chat-info-mobile">
+                                <div class="chat-name-mobile">{{ participant.full_name }}</div>
+                                <div class="chat-preview-mobile">@{{ participant.username }}</div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                {% endif %}
+
+                <!-- Group Chats -->
+                {% if group_chats %}
+                <h4 class="chat-section-title">Group Chats</h4>
+                {% for chat in group_chats %}
+                <a href="{% url 'chat_detail' chat.id %}" class="mobile-chat-item">
+                    <div class="group-avatar-small">
+                        <i data-lucide="users"></i>
+                    </div>
+                    <div class="chat-info-mobile">
+                        <div class="chat-name-mobile">{{ chat.name|default:"Group Chat" }}</div>
+                        <div class="chat-preview-mobile">{{ chat.participants.count }} members</div>
+                    </div>
+                </a>
+                {% endfor %}
+                {% endif %}
+
+                <!-- No Chats State -->
+                {% if not private_chats and not group_chats %}
+                <div class="empty-state-mobile">
+                    <i data-lucide="message-circle" class="empty-icon"></i>
+                    <h4>No Chats Yet</h4>
+                    <p>Start a conversation with someone!</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Navbar inside modal -->
+        <nav class="bottom-navbar mobile-only" style="position: absolute; bottom: 0; left: 0; right: 0;">
+            <div class="bottom-nav-container">
+                <a href="{% url 'profile' %}" class="bottom-nav-tab" data-tab="profile" onclick="closeMobileModal()">
+                    <div class="user-avatar-nano">
+                        <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.full_name }}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-fallback-nano">{{ current_user.name.0 }}{{ current_user.lastname.0 }}</div>
+                    </div>
+                    <span class="bottom-nav-label">Profile</span>
+                </a>
+                
+                <button type="button" class="bottom-nav-tab active" data-tab="chats">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="message-circle" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Chats</span>
+                </button>
+                
+                <a href="{% url 'dashboard' %}" class="bottom-nav-tab" data-tab="home">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="home" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Home</span>
+                </a>
+                
+                <button type="button" class="bottom-nav-tab" data-tab="search" id="searchBtnInChat">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="search" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Search</span>
+                </button>
+                
+                <button type="button" class="bottom-nav-tab" data-tab="more" id="moreBtnInChat">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="settings" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">More</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Search Modal -->
+    <div id="searchModal" class="mobile-modal">
+        <div class="mobile-modal-header">
+            <h3>Search Users</h3>
+            <button class="modal-close" onclick="closeMobileModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="mobile-modal-content">
+            <div class="mobile-search-section">
+                <div class="search-container">
+                    <div class="search-input-wrapper">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="userSearchInputAlt" class="search-input" placeholder="Search users..." onkeyup="searchUsersAlt()">
+                        <button class="search-clear" onclick="clearSearchAlt()" style="display: none;">✕</button>
+                    </div>
+                </div>
+                <div id="searchResultsAlt" class="search-results">
+                    <!-- Default show all users initially -->
+                    <div class="search-results-list">
+                        {% for otheruser in other_users %}
+                            <div class="search-result-item" data-username="{{ otheruser.username }}" data-fullname="{{ otheruser.full_name|lower }}">
+                                <div class="user-avatar-small">
+                                    <img src="{{ otheruser.profile_picture_url }}" alt="{{ otheruser.full_name }}"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="avatar-fallback-small">{{ otheruser.name.0 }}{{ otheruser.lastname.0 }}</div>
+                                </div>
+                                <div class="user-info-search">
+                                    <div class="user-name-search">{{ otheruser.full_name }}</div>
+                                    <div class="user-username-search">@{{ otheruser.username }}</div>
+                                </div>
+                                <div class="user-actions-search">
+                                    <button onclick="startChat('{{ otheruser.username }}')" class="btn-search btn--primary">
+                                        Chat
+                                    </button>
+                                    <a href="{% url 'user_profile' otheruser.username %}" class="btn-search btn--secondary">
+                                        Profile
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Navbar inside modal -->
+        <nav class="bottom-navbar mobile-only" style="position: absolute; bottom: 0; left: 0; right: 0;">
+            <div class="bottom-nav-container">
+                <a href="{% url 'profile' %}" class="bottom-nav-tab" data-tab="profile" onclick="closeMobileModal()">
+                    <div class="user-avatar-nano">
+                        <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.full_name }}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-fallback-nano">{{ current_user.name.0 }}{{ current_user.lastname.0 }}</div>
+                    </div>
+                    <span class="bottom-nav-label">Profile</span>
+                </a>
+                
+                <button type="button" class="bottom-nav-tab" data-tab="chats" id="chatsBtnInSearch">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="message-circle" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Chats</span>
+                </button>
+                
+                <a href="{% url 'dashboard' %}" class="bottom-nav-tab" data-tab="home">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="home" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Home</span>
+                </a>
+                
+                <button type="button" class="bottom-nav-tab active" data-tab="search">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="search" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">Search</span>
+                </button>
+                
+                <button type="button" class="bottom-nav-tab" data-tab="more" id="moreBtnInSearch">
+                    <div class="nav-icon-wrapper">
+                        <i data-lucide="settings" class="nav-icon"></i>
+                    </div>
+                    <span class="bottom-nav-label">More</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+
+    <!-- More Modal -->
+    <div id="moreModal" class="mobile-modal">
+        <div class="mobile-modal-header">
+            <h3>More Options</h3>
+            <button class="modal-close" onclick="closeMobileModal()"><i data-lucide="x"></i></button>
+        </div>
+        <div class="mobile-modal-content">
+            <nav class="mobile-nav-list">
+                <a href="{% url 'dashboard' %}" class="mobile-nav-item">
+                    <i data-lucide="home" class="nav-icon"></i>
+                    <span class="nav-text">Home</span>
+                </a>
+                <a href="{% url 'profile' %}" class="mobile-nav-item">
+                    <i data-lucide="user" class="nav-icon"></i>
+                    <span class="nav-text">My Profile</span>
+                </a>
+                <button onclick="closeMobileModal(); openCreateGroupModal();" class="mobile-nav-item">
+                    <i data-lucide="users" class="nav-icon"></i>
+                    <span class="nav-text">Create Group</span>
+                </button>
+                {% if is_own_profile %}
+                <a href="{% url 'update_profile' %}" class="mobile-nav-item">
+                    <i data-lucide="edit" class="nav-icon"></i>
+                    <span class="nav-text">Edit Profile</span>
+                </a>
+                <a href="#account-settings" class="mobile-nav-item" onclick="closeMobileModal()">
+                    <i data-lucide="settings" class="nav-icon"></i>
+                    <span class="nav-text">Account Settings</span>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content-area profile-feed">
+        <!-- Mobile Header -->
+        <div class="mobile-header mobile-only">
+            <h2 class="mobile-logo">
+                {% if is_own_profile %}
+                    Your Profile
+                {% else %}
+                    {{ profile_user.full_name }}'s Profile
+                {% endif %}
+            </h2>
+            {% comment %} <div class="mobile-header-actions">
+                <div class="mobile-user-avatar">{{ profile_user.name.0 }}{{ profile_user.lastname.0 }}</div>
+            </div> {% endcomment %}
+        </div>
+
+        <!-- Enhanced Profile Header Card -->
+        <div class="profile-header-card">
+            <div class="profile-avatar-section">
+                <div class="profile-avatar-large">
+                    <img src="{{ profile_user.profile_picture_url }}" alt="{{ profile_user.full_name }}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-fallback-large">{{ profile_user.name.0 }}{{ profile_user.lastname.0 }}</div>
+                </div>
+                {% if is_own_profile %}
+                    <!-- Story Option for Own Profile -->
+                    <div class="story-actions">
+                        {% if user_story %}
+                            <button class="story-btn story-view" onclick="viewStory({{ user_story.id }})">
+                                <div class="story-ring own-story-ring">
+                                    <span class="story-icon">👁️</span>
+                                </div>
+                                <span class="story-text">View Story</span>
+                            </button>
+                        {% else %}
+                            <button class="story-btn story-add" onclick="openStoryModal()">
+                                <div class="story-ring add-ring">
+                                    <span class="story-icon">+</span>
+                                </div>
+                                <span class="story-text">Add Story</span>
+                            </button>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info-main">
+                <div class="profile-details">
+                    <h3 class="profile-name">{{ profile_user.full_name }}</h3>
+                    <p class="profile-username">@{{ profile_user.username }}</p>
+                    <p class="profile-email">{{ profile_user.email }}</p>
+                    {% if not is_own_profile %}
+                        <div class="user-status-profile">
+                            {% if profile_user.is_online %}
+                                <span class="status-online">🟢 Online now</span>
+                            {% else %}
+                                <span class="status-offline">⚫ Last seen {{ profile_user.last_seen|timesince }} ago</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-actions">
+                    {% if not is_own_profile %}
+                        {% if is_blocked %}
+                            <!-- User is blocked -->
+                            <div class="profile-status-message blocked">
+                                <span class="status-icon">🚫</span>
+                                <span class="status-text">You have blocked this user</span>
+                            </div>
+                            <button id="unblockBtn" class="btn btn--secondary" onclick="toggleBlock('{{ profile_user.username }}')">
+                                <span class="btn-icon">🔓</span>
+                                <span class="btn-text">Unblock</span>
+                            </button>
+                        {% elif follow_request_status == 'pending' %}
+                            <!-- Follow request pending -->
+                            <div class="profile-status-message pending">
+                                <span class="status-icon">⏳</span>
+                                <span class="status-text">Follow request sent</span>
+                            </div>
+                        {% elif follow_request_status == 'declined' %}
+                            <!-- Follow request declined -->
+                            <div class="profile-status-message declined">
+                                <span class="status-icon">❌</span>
+                                <span class="status-text">Follow request declined</span>
+                            </div>
+                            <button id="followBtn" class="btn-follow" onclick="toggleFollow('{{ profile_user.username }}')" data-username="{{ profile_user.username }}">
+                                <span class="follow-icon">👤</span>
+                                <span class="follow-text">Send Follow Request</span>
+                            </button>
+                        {% else %}
+                            <!-- Normal follow/unfollow -->
+                            <button id="followBtn" class="btn-follow {% if is_following %}following{% endif %}" onclick="toggleFollow('{{ profile_user.username }}')" data-username="{{ profile_user.username }}">
+                                <span class="follow-icon">{% if is_following %}✓{% else %}👤{% endif %}</span>
+                                <span class="follow-text">{% if is_following %}Following{% else %}{% if profile_user.is_private %}Send Follow Request{% else %}Follow{% endif %}{% endif %}</span>
+                            </button>
+                        {% endif %}
+                        
+                        <!-- Block button (always available except for blocked users) -->
+                        {% if not is_blocked %}
+                            <button id="blockBtn" class="btn btn--danger" onclick="toggleBlock('{{ profile_user.username }}')">
+                                <span class="btn-icon">🚫</span>
+                                <span class="btn-text">Block</span>
+                            </button>
+                        {% endif %}
+                        
+                        <!-- Chat Button (only if not blocked and can chat) -->
+                        {% if not is_blocked %}
+                            {% if profile_user.is_private %}
+                                {% if is_following %}
+                                    {% if existing_chat %}
+                                        <a href="{% url 'chat_detail' existing_chat.id %}" class="btn btn--primary">
+                                            <span class="btn-icon">💬</span>
+                                            <span class="btn-text">Continue Chat</span>
+                                        </a>
+                                    {% else %}
+                                        <button onclick="startChat('{{ profile_user.username }}')" class="btn btn--primary">
+                                            <span class="btn-icon">💬</span>
+                                            <span class="btn-text">Start Chat</span>
+                                        </button>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                {% if existing_chat %}
+                                    <a href="{% url 'chat_detail' existing_chat.id %}" class="btn btn--primary">
+                                        <span class="btn-icon">💬</span>
+                                        <span class="btn-text">Continue Chat</span>
+                                    </a>
+                                {% else %}
+                                    <button onclick="startChat('{{ profile_user.username }}')" class="btn btn--primary">
+                                        <span class="btn-icon">💬</span>
+                                        <span class="btn-text">Start Chat</span>
+                                    </button>
+                                {% endif %}
+                            {% endif %}
+                        {% endif %}
+                    {% else %}
+                        <!-- Own profile - privacy toggle -->
+                        <a href="{% url 'update_profile' %}" class="btn btn--primary">
+                            <span class="btn-icon">✏️</span>
+                            <span class="btn-text">Edit Profile</span>
+                        </a>
+                        {% if pending_requests_count > 0 %}
+                            <button id="requestsBtn" class="btn btn--info" onclick="showFollowRequests()">
+                                <span class="btn-icon">📨</span>
+                                <span class="btn-text">Follow Requests ({{ pending_requests_count }})</span>
+                            </button>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Tweet Compose Section (Only for own profile) - FIXED FORM APPROACH -->
+        {% if is_own_profile %}
+            <div class="tweet-compose-card">
+                <h4>What's on your mind?</h4>
+                <form id="tweetForm" method="post" action="{% url 'post_tweet' %}">
+                    {% csrf_token %}
+                    <div class="tweet-input-container">
+                        <textarea id="tweetContent" name="content" placeholder="Share your thoughts with the world..." maxlength="280" class="tweet-textarea"></textarea>
+                    </div>
+                    <div class="tweet-form-footer">
+                        <span id="charCounter" class="char-counter">280 characters remaining</span>
+                        <button type="button" id="tweetBtn" class="btn btn--primary" onclick="postTweetFromProfile()">
+                            <span class="btn-icon">📝</span>
+                            <span class="btn-text">Tweet</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        {% endif %}
+
+        <!-- Inline script for profile page tweet posting -->
+        <script>
+        function postTweetFromProfile() {
+            console.log('postTweetFromProfile called');
+            
+            const tweetContent = document.getElementById('tweetContent');
+            const tweetBtn = document.getElementById('tweetBtn');
+            
+
+    {% if is_own_profile %}
+    <!-- Account Settings Section -->
+    <div id="account-settings" class="profile-settings-card">
+        <div class="settings-header">
+            <div>
+                <h3>Account Settings</h3>
+                <p>Privacy and sign-out controls</p>
+            </div>
+            <a href="{% url 'update_profile' %}" class="btn btn--ghost">
+                <i data-lucide="edit"></i> Edit profile details
+            </a>
+        </div>
+
+        <div class="settings-grid">
+            <div class="settings-item">
+                <div>
+                    <div class="settings-title">Account Privacy</div>
+                    <div class="settings-desc">Only approved followers can see your posts when private.</div>
+                </div>
+                <button id="privacyBtn" class="btn {% if profile_user.is_private %}btn--secondary{% else %}btn--primary{% endif %}" onclick="toggleAccountPrivacy()">
+                    <span class="btn-icon">{% if profile_user.is_private %}🔒{% else %}🌐{% endif %}</span>
+                    <span class="btn-text">{% if profile_user.is_private %}Private Account{% else %}Public Account{% endif %}</span>
+                </button>
+            </div>
+
+            <div class="settings-item danger">
+                <div>
+                    <div class="settings-title">Sign Out</div>
+                    <div class="settings-desc">Log out of Odnix on this device.</div>
+                </div>
+                <a href="{% url 'logout' %}" class="btn btn--secondary">
+                    <span class="btn-icon">🚪</span>
+                    <span class="btn-text">Logout</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+            if (!tweetContent || !tweetBtn) {
+                console.error('Form elements not found');
+                showNotification('Form elements not found. Please refresh the page.', 'error');
+                return;
+            }
+            
+            const content = tweetContent.value.trim();
+            console.log('Content to post:', content);
+            
+            // Validation
+            if (!content) {
+                console.log('Content is empty');
+                showNotification('Please enter some content for your tweet', 'error');
+                return;
+            }
+            
+            if (content.length > 280) {
+                console.log('Content too long');
+                showNotification('Tweet must be 280 characters or less', 'error');
+                return;
+            }
+            
+            // Set posting state
+            tweetBtn.disabled = true;
+            tweetBtn.textContent = 'Posting...';
+            
+            console.log('Preparing form data...');
+            
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('content', content);
+                
+                // Get CSRF token
+                const csrfToken = getCSRFToken();
+                if (!csrfToken) {
+                    throw new Error('No CSRF token found');
+                }
+                
+                console.log('Sending request to /api/post-tweet/');
+                
+                // Make request
+                fetch('/api/post-tweet/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    if (data.success) {
+                        // Clear form
+                        tweetContent.value = '';
+                        document.getElementById('charCounter').textContent = '280 characters remaining';
+                        document.getElementById('charCounter').className = 'char-counter';
+                        showNotification('Tweet posted successfully!', 'success');
+
+                        // Add the new tweet to the page dynamically
+                        const tweetsContainer = document.getElementById('my-tweets-content');
+                        if (tweetsContainer) {
+                            addTweetToPage(data.tweet);
+                            
+                            // Update tweet count
+                            const tweetCountEl = document.getElementById('tweetCount');
+                            if (tweetCountEl) {
+                                const currentCount = parseInt(tweetCountEl.textContent.replace(/[()]/g, '')) || 0;
+                                tweetCountEl.textContent = `(${currentCount + 1})`;
+                            }
+                        }
+                    } else {
+                        showNotification('Failed to post tweet: ' + (data.error || 'Unknown error'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error posting tweet:', error);
+                    showNotification('Network error. Please check your connection and try again.', 'error');
+                })
+                .finally(() => {
+                    tweetBtn.textContent = 'Tweet';
+                    tweetBtn.disabled = false;
+                    tweetContent.focus();
+                });
+                
+            } catch (error) {
+                console.error('Error in postTweetFromProfile:', error);
+                showNotification('An error occurred. Please try again.', 'error');
+                tweetBtn.textContent = 'Tweet';
+                tweetBtn.disabled = false;
+            }
+        }
+        </script>
+
+        <!-- Tweet Feed -->
+        <div class="tweets-section-card">
+            <div class="tweets-header">
+                <h4 class="tweets-title">
+                    <span id="feedTitle">
+                        {% if is_own_profile %}My Tweets{% else %}{{ profile_user.full_name }}'s Tweets{% endif %}
+                    </span>
+                    <span class="tweet-count" id="tweetCount">({{ tweets|length }})</span>
+                </h4>
+                
+                <!-- Feed Toggle -->
+                <div class="feed-toggle">
+                    <button class="feed-toggle-btn active" id="myTweetsBtn" onclick="showFeed('my')">
+                        {% if is_own_profile %}My Tweets{% else %}User Tweets{% endif %}
+                    </button>
+                </div>
+            </div>
+
+            <div id="tweets-container" class="tweets-container">
+                <!-- Private Account Message -->
+                {% if not is_own_profile and not can_view_profile %}
+                    <div class="private-account-message">
+                        <div class="private-icon">🔒</div>
+                        <h3>This account is private</h3>
+                        {% if profile_user.is_private %}
+                            <p>Follow this account to see their tweets and posts.</p>
+                        {% elif is_blocked %}
+                            <p>You cannot view this user's content because you are blocked or have blocked them.</p>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <!-- User Tweets Tab -->
+                    <div id="my-tweets-content">
+                        {% for tweet in tweets %}
+                            <div class="tweet-item" data-tweet-id="{{ tweet.id }}">
+                                <div class="tweet-header">
+                                    <div class="tweet-user-info">
+                                        <div class="tweet-avatar">
+                                            <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="avatar-fallback">{{ tweet.user.initials }}</div>
+                                        </div>
+                                        <div class="tweet-user-details">
+                                            <div class="tweet-full-name">{{ tweet.user.full_name }}</div>
+                                            <div class="tweet-username">@{{ tweet.user.username }} • {{ tweet.timestamp|timesince }} ago</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tweet-content">
+                                    <p>{{ tweet.content|linkify_hashtags_mentions }}</p>
+                                    {% if tweet.image_url %}
+                                    <div class="tweet-image">
+                                        <img src="{{ tweet.image_url }}" alt="Tweet image" onclick="openImageModal('{{ tweet.image_url }}')">
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="tweet-actions">
+                                    <button class="action-btn comment-btn" data-tweet-id="{{ tweet.id }}">
+                                        <i data-lucide="message-circle" class="comment-icon"></i> <span>{{ tweet.comment_count }}</span>
+                                    </button>
+                                    <button class="action-btn like-btn {% if tweet.is_liked %}liked{% endif %}" data-tweet-id="{{ tweet.id }}">
+                                        <i data-lucide="heart" class="like-icon"></i>
+                                        <span class="like-count">{{ tweet.like_count }}</span>
+                                    </button>
+                                </div>
+
+                                <!-- Comments Section -->
+                                <div id="comments-{{ tweet.id }}" class="comments-section" style="display: none;">
+                                    <div class="add-comment">
+                                        <div class="comment-avatar">
+                                            <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.full_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="avatar-fallback">{{ current_user.initials }}</div>
+                                        </div>
+                                        <div class="comment-input-container">
+                                            <textarea placeholder="Add a comment..." maxlength="500" id="comment-input-{{ tweet.id }}"></textarea>
+                                            <button onclick="addComment({{ tweet.id }})" class="btn btn--primary btn--small">Post</button>
+                                        </div>
+                                    </div>
+                                    <div class="comments-list" id="comments-list-{{ tweet.id }}">
+                                        <!-- Comments will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                        {% empty %}
+                        <div class="empty-state-tweets">
+                            <p>
+                                {% if is_own_profile %}
+                                    You haven't posted any tweets yet.<br><small>Share your first thought with the world!</small>
+                                {% else %}
+                                    {{ profile_user.full_name }} hasn't posted any tweets yet.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Story View Modal -->
+<div id="storyViewModal" class="modal story-view-modal" style="display: none;">
+    <div class="modal-content story-view-content">
+        <div class="story-header">
+            <div class="story-user-info">
+                <img id="storyUserAvatar" src="" alt="" class="story-user-avatar">
+                <div>
+                    <div id="storyUserName" class="story-user-name"></div>
+                    <div id="storyTime" class="story-time"></div>
+                </div>
+            </div>
+            <button class="story-close" onclick="closeStoryModal()">✕</button>
+        </div>
+        <div class="story-content-display" id="storyContentDisplay">
+            <!-- Story content will be populated here -->
+        </div>
+        <div class="story-footer">
+            <div id="storyViewCount" class="story-view-count"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Story Modal -->
+<div id="storyModal" class="modal" style="display: none;">
+    <div class="modal-content story-modal">
+        <div class="modal-header">
+            <h3>Create Story</h3>
+            <span class="modal-close" onclick="closeCreateStoryModal()"><i data-lucide="x"></i></span>
+        </div>
+        <div class="modal-body">
+            <!-- Story Preview Area -->
+            <div class="story-preview-container" id="storyPreviewContainer">
+                <div class="story-preview" id="storyPreview">
+                    <div class="story-preview-text" id="storyPreviewText" contenteditable="true" data-placeholder="Tap to write your story..."></div>
+                    <div class="story-preview-image" id="storyPreviewImage" style="display: none;">
+                        <img id="storyPreviewImg" src="" alt="Preview">
+                    </div>
+                    <div class="story-preview-placeholder" id="storyPreviewPlaceholder">
+                        <i data-lucide="plus-circle"></i>
+                        <span>Add text or photo</span>
+                        <small class="story-drop-hint">Drag & drop an image here</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Story Content Input -->
+            <div class="story-input-section">
+                <textarea id="storyText" placeholder="Write something..." maxlength="200"></textarea>
+                <div class="story-char-count"><span id="storyCharCount">0</span>/200</div>
+            </div>
+            
+            <!-- Story Tools Bar -->
+            <div class="story-tools-bar">
+                <div class="story-tool-group">
+                    <!-- Image Upload Button -->
+                    <label class="story-tool-btn" id="imageUploadBtn" title="Add Photo">
+                        <i data-lucide="image"></i>
+                        <input type="file" id="storyImageInput" accept="image/*" style="display: none;">
+                    </label>
+                    
+                    <!-- Remove Image Button -->
+                    <button class="story-tool-btn story-tool-danger" id="removeImageBtn" onclick="removeStoryImage()" style="display: none;" title="Remove Photo">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                
+                <!-- Image Controls (shown when image is selected) -->
+                <div class="story-tool-group" id="imageControls" style="display: none;">
+                    <button class="story-tool-btn" onclick="zoomImage(0.1)" title="Zoom In">
+                        <i data-lucide="zoom-in"></i>
+                    </button>
+                    <button class="story-tool-btn" onclick="zoomImage(-0.1)" title="Zoom Out">
+                        <i data-lucide="zoom-out"></i>
+                    </button>
+                    <button class="story-tool-btn" onclick="resetImageTransform()" title="Reset Image">
+                        <i data-lucide="maximize"></i>
+                    </button>
+                </div>
+                
+                <!-- Text Position Selector -->
+                <div class="story-tool-group text-position-group" id="textPositionGroup">
+                    <button class="story-tool-btn position-btn" data-position="top" onclick="setTextPosition('top')" title="Text on Top">
+                        <i data-lucide="arrow-up-to-line"></i>
+                    </button>
+                    <button class="story-tool-btn position-btn active" data-position="center" onclick="setTextPosition('center')" title="Text in Center">
+                        <i data-lucide="align-center-vertical"></i>
+                    </button>
+                    <button class="story-tool-btn position-btn" data-position="bottom" onclick="setTextPosition('bottom')" title="Text on Bottom">
+                        <i data-lucide="arrow-down-to-line"></i>
+                    </button>
+                </div>
+                
+                <!-- Text Styling -->
+                <div class="story-tool-group">
+                    <button class="story-tool-btn" onclick="adjustFontSize(-2)" title="Decrease Font Size">
+                        <i data-lucide="minus"></i>
+                    </button>
+                    <button class="story-tool-btn" onclick="adjustFontSize(2)" title="Increase Font Size">
+                        <i data-lucide="plus"></i>
+                    </button>
+                    <button class="story-tool-btn" onclick="toggleTextBold()" title="Bold Text" id="boldBtn">
+                        <i data-lucide="bold"></i>
+                    </button>
+                    <button class="story-tool-btn" onclick="toggleTextShadow()" title="Text Shadow" id="shadowBtn">
+                        <i data-lucide="moon"></i>
+                    </button>
+                </div>
+                
+                <!-- Text Alignment -->
+                <div class="story-tool-group text-align-group">
+                    <button class="story-tool-btn align-btn active" data-align="center" onclick="setTextAlign('center')" title="Center">
+                        <i data-lucide="align-center"></i>
+                    </button>
+                    <button class="story-tool-btn align-btn" data-align="left" onclick="setTextAlign('left')" title="Left">
+                        <i data-lucide="align-left"></i>
+                    </button>
+                    <button class="story-tool-btn align-btn" data-align="right" onclick="setTextAlign('right')" title="Right">
+                        <i data-lucide="align-right"></i>
+                    </button>
+                </div>
+                
+                <div class="story-tool-group">
+                    <!-- Background Color -->
+                    <label class="story-tool-btn color-tool" title="Background Color">
+                        <i data-lucide="palette"></i>
+                        <input type="color" id="bgColor" value="#667eea">
+                        <span class="color-indicator" id="bgColorIndicator" style="background: #667eea;"></span>
+                    </label>
+                    
+                    <!-- Text Color -->
+                    <label class="story-tool-btn color-tool" title="Text Color">
+                        <i data-lucide="type"></i>
+                        <input type="color" id="textColor" value="#ffffff">
+                        <span class="color-indicator" id="textColorIndicator" style="background: #ffffff;"></span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Hidden inputs for styling -->
+            <input type="hidden" id="textPosition" value="center">
+            <input type="hidden" id="textAlign" value="center">
+            <input type="hidden" id="textFontSize" value="20">
+            <input type="hidden" id="textBold" value="false">
+            <input type="hidden" id="textShadow" value="true">
+            <input type="hidden" id="imageZoom" value="1">
+            <input type="hidden" id="imageX" value="0">
+            <input type="hidden" id="imageY" value="0">
+            
+            <!-- Hidden legacy elements for compatibility -->
+            <div id="textStoryContent" style="display: none;"></div>
+            <div id="imageStoryContent" style="display: none;"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn--secondary" onclick="closeCreateStoryModal()">Cancel</button>
+            <button class="btn btn--primary" onclick="createStory()" id="postStoryBtn">
+                <i data-lucide="send"></i> Post Story
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal -->
+<div id="imageModal" class="modal image-modal" style="display: none;" onclick="closeImageModal()">
+    <div class="modal-content image-modal-content">
+        <img id="modalImage" src="" alt="Full size image">
+        <span class="modal-close" onclick="closeImageModal()">&times;</span>
+    </div>
+</div>
+
+<!-- Create Group Modal -->
+<div id="createGroupModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Create New Group</h3>
+            <span class="modal-close" onclick="closeCreateGroupModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="createGroupForm">
+                <div class="form-group">
+                    <label class="form-label">Group Name</label>
+                    <input type="text" id="groupName" class="form-control" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea id="groupDescription" class="form-control" rows="3" maxlength="500"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Maximum Members</label>
+                    <select id="maxParticipants" class="form-control">
+                        <option value="10">10 members</option>
+                        <option value="25">25 members</option>
+                        <option value="50" selected>50 members</option>
+                        <option value="100">100 members</option>
+                        <option value="250">250 members</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="isPublic">
+                        <span class="checkmark"></span>
+                        Make group discoverable publicly
+                    </label>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn--secondary" onclick="closeCreateGroupModal()">Cancel</button>
+            <button type="submit" class="btn btn--primary" onclick="createGroup()">Create Group</button>
+        </div>
+    </div>
+</div>
+
+<!-- Group Created Modal -->
+<div id="groupCreatedModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🎉 Group Created Successfully!</h3>
+        </div>
+        <div class="modal-body">
+            <div id="groupCreatedInfo">
+                <p>Your group <strong id="createdGroupName"></strong> has been created!</p>
+            </div>
+            <div class="invite-link-section">
+                <label class="form-label">Share this invite link:</label>
+                <div class="invite-link-container">
+                    <input type="text" id="inviteLink" class="form-control" readonly>
+                    <button onclick="copyInviteLink()" class="btn btn--primary">Copy</button>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn--primary" onclick="goToNewGroup()">Go to Group</button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* CSS VARIABLES - PRESERVED FROM ORIGINAL */
+:root {
+    --color-primary: #667eea;
+    --color-secondary: #764ba2;
+    --color-success: #28a745;
+    --color-danger: #dc3545;
+    --color-warning: #ffc107;
+    --color-info: #17a2b8;
+    --color-background: #f8f9fa;
+    --color-surface: #ffffff;
+    --color-border: #e1e5e9;
+    --color-text: #2c3e50;
+    --color-text-secondary: #6c757d;
+    --color-text-muted: #95a5a6;
+    --color-hover: rgba(102, 126, 234, 0.1);
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: var(--color-background);
+    color: var(--color-text);
+    line-height: 1.6;
+}
+
+.main-container {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+}
+
+/* DESKTOP SIDEBAR - PRESERVED STYLES */
+.sidebar-enhanced {
+    width: 350px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.logo {
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0 0 1.5rem 0;
+    text-align: center;
+}
+
+.mobile-logo {
+    font-size: 1.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+/* USER INFO SECTIONS - PRESERVED STYLES FROM DASHBOARD */
+.user-info-compact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border-radius: 1rem;
+}
+
+.user-avatar-large {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 3px solid var(--color-primary);
+    flex-shrink: 0;
+}
+
+.user-avatar-medium {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid var(--color-primary);
+    flex-shrink: 0;
+    margin-bottom: 1rem;
+}
+
+.user-avatar-small {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+    position: relative;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.user-avatar-tiny {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 0.75rem;
+    position: relative;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.user-avatar-nano {
+    width: 26px;
+    height: 26px;
+    min-width: 26px;
+    min-height: 26px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 0.65rem;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(102, 126, 234, 0.3);
+}
+
+/* Profile tab specific styling */
+a.bottom-nav-tab[data-tab="profile"],
+button.bottom-nav-tab[data-tab="profile"] {
+    padding: 0.6rem 0.25rem;
+}
+
+.user-avatar-large img,
+.user-avatar-medium img,
+.user-avatar-small img,
+.user-avatar-tiny img,
+.user-avatar-nano img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatar-fallback,
+.avatar-fallback-medium,
+.avatar-fallback-small,
+.avatar-fallback-tiny,
+.avatar-fallback-nano,
+.avatar-fallback-large {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.avatar-fallback {
+    font-size: 1.5rem;
+}
+
+.avatar-fallback-large {
+    font-size: 2rem;
+}
+
+.avatar-fallback-medium {
+    font-size: 1.2rem;
+}
+
+.avatar-fallback-small {
+    font-size: 0.9rem;
+}
+
+.avatar-fallback-tiny {
+    font-size: 0.8rem;
+}
+
+.avatar-fallback-nano {
+    font-size: 0.7rem;
+}
+
+.user-details-large,
+.user-details-mobile {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name-large {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-status-large {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* NAVIGATION - PRESERVED STYLES */
+.sidebar-nav-compact {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.nav-item-compact {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: all 0.3s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.nav-item-compact:hover,
+.nav-item-compact.active {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.nav-icon {
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* SIDEBAR SECTIONS - PRESERVED STYLES FROM DASHBOARD */
+.sidebar-section {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-count {
+    background: var(--color-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.chat-section-title {
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 1.5rem 0 1rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+/* ACTIONS LIST - NEW STYLES */
+.sidebar-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-action-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-action-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    text-decoration: none;
+    color: inherit;
+    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.sidebar-btn {
+    font-family: inherit;
+    font-size: 0.9rem;
+}
+
+.action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    margin-right: 0.75rem;
+    flex-shrink: 0;
+}
+
+.action-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.action-name {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.action-desc {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+}
+
+/* MOBILE CHAT ITEMS - For Chats Modal */
+.mobile-chats-list {
+    padding: 0 1rem;
+}
+
+.mobile-chat-item {
+    display: flex;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.2s ease;
+    background: var(--color-surface, #ffffff);
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid var(--color-border, rgba(0,0,0,0.06));
+}
+
+.mobile-chat-item:hover {
+    background: rgba(102, 126, 234, 0.08);
+    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateX(4px);
+}
+
+.chat-info-mobile {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0.75rem;
+}
+
+.chat-name-mobile {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text, #1a1a2e);
+    margin-bottom: 0.125rem;
+}
+
+.chat-preview-mobile {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+.group-avatar-small {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.group-avatar-small svg {
+    width: 22px;
+    height: 22px;
+}
+
+/* USER ITEMS - PRESERVED STYLES FROM DASHBOARD */
+.sidebar-user-item,
+.mobile-user-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.sidebar-user-item:hover,
+.mobile-user-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.user-info-tiny,
+.user-info-mobile {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name-tiny,
+.user-name-mobile {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.user-username-mobile {
+    color: var(--color-text-secondary);
+    font-size: 0.8rem;
+}
+
+.profile-link-small,
+.profile-link,
+.profile-link-card {
+    color: inherit;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
+.profile-link-small:hover,
+.profile-link:hover,
+.profile-link-card:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+/* BUTTONS - PRESERVED STYLES FROM DASHBOARD */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.btn--primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+}
+
+.btn--secondary:hover {
+    background: var(--color-background);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.btn--danger {
+    background: var(--color-danger);
+    color: white;
+}
+
+.btn--danger:hover {
+    background: #c82333;
+    transform: translateY(-1px);
+    color: white;
+}
+
+.btn--small {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+}
+
+.btn--full-width {
+    width: 100%;
+}
+
+.btn-tiny,
+.btn-mobile,
+.btn-card,
+.btn-search {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--color-border);
+    background: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-tiny.btn--primary,
+.btn-mobile.btn--primary,
+.btn-card.btn--primary,
+.btn-search.btn--primary {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+}
+
+.btn-card.btn--secondary,
+.btn-search.btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-text);
+    border-color: var(--color-border);
+}
+
+.btn-tiny:hover,
+.btn-mobile:hover,
+.btn-card:hover,
+.btn-search:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+}
+
+.btn-card.btn--primary:hover,
+.btn-search.btn--primary:hover {
+    color: white;
+}
+
+.btn-card.btn--secondary:hover,
+.btn-search.btn--secondary:hover {
+    color: var(--color-text);
+}
+
+.create-group-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.sidebar-footer-compact {
+    padding: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+/* MOBILE BOTTOM NAVBAR - PRESERVED FROM DASHBOARD */
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border);
+    z-index: 1000;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for iPhone home bar */
+    margin: 0;
+}
+
+.bottom-nav-container {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    gap: 0;
+}
+
+.bottom-nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 0.75rem;
+    position: relative;
+    flex: 1;
+    max-width: 80px;
+    text-decoration: none;
+    color: inherit;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    /* Reset button styles */
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+}
+
+.bottom-nav-tab:focus {
+    outline: none;
+}
+
+.bottom-nav-tab:active {
+    transform: scale(0.95);
+    background: rgba(102, 126, 234, 0.15);
+}
+
+.bottom-nav-tab:hover {
+    background: rgba(102, 126, 234, 0.1);
+    text-decoration: none;
+    color: inherit;
+}
+
+.bottom-nav-tab.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1)) !important;
+    color: var(--color-primary) !important;
+}
+
+.nav-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-tab .nav-icon {
+    font-size: 1.4rem;
+    margin: 0;
+    width: auto;
+}
+
+.bottom-nav-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-align: center;
+    color: inherit;
+}
+
+.nav-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--color-primary, #667eea);
+    color: white;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 2px solid var(--color-surface, #ffffff);
+}
+
+/* MOBILE MODALS - FULL SCREEN PAGES */
+.mobile-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0; /* Full screen - covers navbar */
+    background: var(--color-surface);
+    z-index: 3000; /* Above navbar (z-index: 2000) */
+    display: none;
+    flex-direction: column;
+    pointer-events: none;
+}
+
+.mobile-modal.active {
+    display: flex;
+    pointer-events: auto;
+}
+
+.mobile-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.mobile-modal-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-text);
+}
+
+.mobile-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 1rem;
+    padding-bottom: 120px; /* Extra padding for safe scrolling */
+}
+
+.user-info-mobile {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border-radius: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.mobile-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    width: 100%;
+    text-align: left;
+}
+
+.mobile-nav-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    text-decoration: none;
+    color: var(--color-text);
+}
+
+.mobile-nav-item .nav-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-primary);
+}
+
+.mobile-nav-item.logout-item {
+    margin-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+    color: var(--color-danger, #ef4444);
+}
+
+.mobile-nav-item.logout-item .nav-icon {
+    color: var(--color-danger, #ef4444);
+}
+
+/* Account Settings */
+.profile-settings-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    margin-top: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.settings-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.settings-header p {
+    margin: 0.1rem 0 0;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.settings-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: #f8fafc;
+}
+
+.settings-item.danger {
+    background: #fff5f5;
+    border: 1px solid #ffe4e6;
+}
+
+.settings-title {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+.settings-desc {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .settings-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+    .profile-settings-card {
+        margin: 1.25rem 0;
+    }
+    .settings-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.mobile-action-section {
+    margin-bottom: 1.5rem;
+}
+
+.mobile-chat-list,
+.mobile-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.user-actions-mobile {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+/* SEARCH FUNCTIONALITY - PRESERVED FROM DASHBOARD */
+.mobile-search-section {
+    margin-bottom: 1.5rem;
+}
+
+.search-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-input {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid var(--color-border);
+    border-radius: 2rem;
+    font-size: 1rem;
+    background: var(--color-surface);
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 1rem;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    z-index: 1;
+}
+
+.search-clear {
+    position: absolute;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.search-clear:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--color-danger);
+}
+
+.search-results {
+    max-height: 400px;
+    overflow-y: auto;
+    border-radius: 1rem;
+    background: var(--color-surface);
+}
+
+.search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    transition: all 0.3s ease;
+    background: var(--color-surface);
+}
+
+.search-result-item:hover {
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+}
+
+.user-info-search {
+    flex: 1;
+    margin-left: 1rem;
+    min-width: 0;
+}
+
+.user-name-search {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+    color: var(--color-text);
+}
+
+.user-username-search {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.user-actions-search {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 1rem;
+}
+
+/* MAIN CONTENT */
+.main-content-area {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--color-background);
+    min-height: 100vh;
+}
+
+.profile-feed {
+    padding: 0;
+}
+
+.mobile-header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    z-index: 100;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.mobile-user-avatar {
+    width: 35px;
+    height: 35px;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+/* ENHANCED PROFILE HEADER CARD - Desktop: Horizontal Layout */
+.profile-header-card {
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    margin: 0 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    padding: 2rem 2.5rem;
+    display: flex;
+    flex-direction: row;
+    gap: 2.5rem;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
+.profile-avatar-large {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 4px solid var(--color-primary);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.profile-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.story-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.story-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.story-btn:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.profile-info-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.profile-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.profile-name {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0;
+}
+
+.profile-username {
+    font-size: 1.1rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.profile-email {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.profile-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    margin-top: 0.75rem;
+}
+
+.user-status-profile {
+    margin-top: 0.5rem;
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--color-border);
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background 0.2s ease;
+}
+
+.stat-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.story-ring {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.own-story-ring {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+}
+
+.add-ring {
+    background: var(--color-border);
+}
+
+.story-icon {
+    font-size: 1.5rem;
+    color: white;
+    font-weight: 900;
+}
+
+.add-ring .story-icon {
+    color: var(--color-primary);
+}
+
+.story-text {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+}
+
+/* Additional profile info styling */
+.profile-details {
+    margin-bottom: 1rem;
+}
+
+.profile-email {
+    word-break: break-all;
+}
+
+.user-status-profile {
+    margin-top: 0.5rem;
+}
+
+.status-online {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.status-offline {
+    color: var(--color-text-secondary);
+}
+
+.btn-follow {
+    background: #28a745 !important;
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.btn-follow:hover {
+    background: #218838 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+.btn-follow.following {
+    background: #6c757d !important;
+    color: white !important;
+}
+
+.btn-follow.following:hover {
+    background: #dc3545 !important;
+}
+
+/* TWEET COMPOSE SECTION - FIXED TO MATCH WORKING VERSION */
+.tweet-compose-card {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: clamp(1rem, 4vw, 2rem);
+    margin: 0 1rem 2rem 1rem;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.08);
+}
+
+.tweet-compose-card h4 {
+    margin-bottom: 1rem;
+    color: var(--color-text);
+}
+
+.tweet-input-container {
+    position: relative;
+}
+
+.tweet-textarea {
+    width: 100%;
+    min-height: 120px;
+    padding: 1rem;
+    border: 2px solid var(--color-border);
+    border-radius: 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+    background: var(--color-background);
+}
+
+.tweet-textarea:focus {
+    border-color: var(--color-primary);
+}
+
+.tweet-form-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+}
+
+.char-counter {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.char-counter.warning {
+    color: #ffc107;
+}
+
+.char-counter.danger {
+    color: #dc3545;
+}
+
+/* TWEETS SECTION */
+.tweets-section-card {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    margin: 0 1rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+.tweets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.tweets-title {
+    color: var(--color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.tweet-count {
+    color: var(--color-text-secondary);
+    font-weight: normal;
+    font-size: 0.9rem;
+}
+
+.feed-toggle {
+    display: flex;
+    background: var(--color-background);
+    border-radius: 0.75rem;
+    padding: 0.25rem;
+    border: 1px solid var(--color-border);
+}
+
+.feed-toggle-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text-secondary);
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.feed-toggle-btn.active {
+    background: var(--color-primary);
+    color: white;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+}
+
+.feed-toggle-btn:hover:not(.active) {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--color-primary);
+}
+
+.tweets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* TWEET STYLING - MATCHING DASHBOARD */
+.tweet-item {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--color-border);
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.tweet-item:hover {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.tweet-header {
+    margin-bottom: 1rem;
+}
+
+.tweet-user-info {
+    display: flex;
+    align-items: center;
+}
+
+.tweet-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+    position: relative;
+    border: 2px solid var(--color-primary);
+    flex-shrink: 0;
+}
+
+.tweet-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.tweet-user-details {
+    flex: 1;
+}
+
+.tweet-full-name {
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 0.25rem;
+}
+
+.tweet-username {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.tweet-content {
+    margin-bottom: 1rem;
+}
+
+.tweet-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--color-text);
+}
+
+/* Hashtag and Mention Links */
+.hashtag-link {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.hashtag-link:hover {
+    color: #764ba2;
+    text-decoration: underline;
+}
+
+.mention-link {
+    color: #10b981;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+
+.mention-link:hover {
+    color: #059669;
+    text-decoration: underline;
+}
+
+.tweet-image {
+    margin-top: 1rem;
+    border-radius: 0.75rem;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.tweet-image img {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.tweet-image img:hover {
+    transform: scale(1.02);
+}
+
+.tweet-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+}
+
+.action-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--color-primary);
+}
+
+.action-btn.liked {
+    color: #e91e63;
+}
+
+.action-btn.liked .like-icon {
+    fill: #e91e63;
+    animation: heartbeat 0.3s ease;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.like-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.comment-icon {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+}
+
+.comments-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-card);
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+.add-comment {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    align-items: flex-start;
+}
+
+.comment-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.comment-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.comment-avatar .avatar-fallback {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+    color: white;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.comment-input-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.comment-input-container textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    resize: vertical;
+    min-height: 60px;
+    max-height: 150px;
+    font-family: inherit;
+    font-size: 0.9rem;
+    background: var(--color-background);
+    color: var(--color-text);
+    transition: border-color 0.2s;
+}
+
+.comment-input-container textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.comment-input-container .btn {
+    align-self: flex-end;
+}
+
+.btn--small {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.25rem;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.comment-time {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.comment-text {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.comment-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--color-background);
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    margin-bottom: 0.5rem;
+}
+
+.comment-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.tweet-author {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tweet-author:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.tweet-username {
+    color: var(--color-text-secondary);
+    margin-right: 0.5rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.tweet-username:hover {
+    color: var(--color-primary);
+    text-decoration: underline;
+}
+
+.tweet-time {
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+}
+
+.tweet-content {
+    color: var(--color-text);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    word-wrap: break-word;
+}
+
+.tweet-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.tweet-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tweet-like-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.tweet-like-btn:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+}
+
+.tweet-like-btn.liked {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.tweet-follow-btn {
+    background: var(--color-primary) !important;
+    color: white !important;
+    border: none;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tweet-follow-btn:hover {
+    background: #5a6fd8 !important;
+    transform: translateY(-1px);
+}
+
+.tweet-follow-btn.following {
+    background: #6c757d !important;
+}
+
+.tweet-follow-btn.following:hover {
+    background: #dc3545 !important;
+}
+
+.tweet-timestamp {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+}
+
+.empty-state-tweets {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--color-text-secondary);
+    font-style: italic;
+}
+
+/* EMPTY STATES */
+.empty-state-small,
+.empty-state-mobile,
+.empty-feed {
+    text-align: center;
+    padding: 2rem;
+    color: var(--color-text-secondary);
+}
+
+.empty-state-mobile {
+    padding: 3rem 1rem;
+}
+
+.empty-state-mobile .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-mobile h4 {
+    color: var(--color-text);
+    margin-bottom: 0.5rem;
+}
+
+.empty-feed {
+    background: var(--color-background);
+    border-radius: 1rem;
+    margin: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.empty-feed h3 {
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 50%;
+    border-top-color: var(--color-primary);
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* LOADING STATES */
+.loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* MODALS - PRESERVED FROM DASHBOARD */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: var(--color-surface);
+    border-radius: 1rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: scale(0.8) translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: var(--color-text);
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    background: rgba(220, 53, 69, 0.1);
+    color: var(--color-danger);
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Story Modal specific styles */
+.story-modal {
+    max-width: 500px;
+    width: 95%;
+}
+
+/* Story Preview Container */
+.story-preview-container {
+    margin-bottom: 1rem;
+}
+
+.story-preview {
+    position: relative;
+    width: 100%;
+    height: 280px;
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 2px dashed transparent;
+}
+
+.story-preview.drag-over {
+    border-color: rgba(102, 126, 234, 0.7);
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+}
+
+.story-preview-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.story-preview-placeholder i {
+    width: 48px;
+    height: 48px;
+    opacity: 0.6;
+}
+
+.story-preview-placeholder span {
+    font-size: 0.9rem;
+}
+
+.story-drop-hint {
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.story-preview-text {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.5;
+    word-wrap: break-word;
+    z-index: 2;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: all 0.3s ease;
+    outline: none;
+    cursor: text;
+}
+
+.story-preview-text:empty:before {
+    content: attr(data-placeholder);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Text position variants */
+.story-preview-text.position-top {
+    top: 20px;
+    bottom: auto;
+}
+
+.story-preview-text.position-center {
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.story-preview-text.position-bottom {
+    top: auto;
+    bottom: 20px;
+}
+
+.story-preview-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: hidden;
+    cursor: move;
+    user-select: none;
+}
+
+.story-preview-image:active {
+    cursor: grabbing;
+}
+
+.story-preview-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.1s ease;
+    transform-origin: center;
+    pointer-events: none;
+}
+
+/* Story Input Section */
+.story-input-section {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.story-input-section textarea {
+    width: 100%;
+    height: 80px;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1rem;
+    padding-bottom: 2rem;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    transition: border-color 0.2s ease;
+}
+
+.story-input-section textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.story-char-count {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+}
+
+/* Story Tools Bar */
+.story-tools-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    background: var(--color-surface);
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.story-tool-group {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+
+.text-position-group {
+    background: var(--color-bg);
+    border-radius: 10px;
+    padding: 4px;
+    border: 1px solid var(--color-border);
+}
+
+.text-position-group .story-tool-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+}
+
+.text-position-group .story-tool-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--color-primary);
+}
+
+.text-position-group .story-tool-btn.active,
+.text-align-group .story-tool-btn.active,
+.story-tool-btn.active {
+    background: var(--color-primary);
+    color: white;
+}
+
+.text-align-group .story-tool-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: var(--color-primary);
+}
+
+.story-tool-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: var(--color-bg);
+    border: 2px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.story-tool-btn:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+.story-tool-btn i {
+    width: 20px;
+    height: 20px;
+}
+
+.story-tool-btn.story-tool-danger:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+}
+
+.story-tool-btn.color-tool {
+    overflow: hidden;
+}
+
+.story-tool-btn.color-tool input[type="color"] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.color-indicator {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Image Modal */
+.image-modal {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.image-modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.image-modal-content img {
+    width: 100%;
+    height: auto;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.image-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    z-index: 1001;
+}
+
+/* FORM ELEMENTS - PRESERVED FROM DASHBOARD */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--color-border);
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    background: var(--color-surface);
+}
+
+.form-control:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    background: white;
+}
+
+/* STORY MODALS - PRESERVED FROM DASHBOARD */
+.story-view-modal {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.story-view-content {
+    width: 90%;
+    max-width: 400px;
+    background: #000;
+    border-radius: 1rem;
+    overflow: hidden;
+}
+
+.story-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+}
+
+.story-user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.story-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+
+.story-user-name {
+    font-weight: 600;
+    color: white;
+}
+
+.story-time {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.story-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+}
+
+.story-content-display {
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.story-content-display img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.story-content-display.text-story {
+    padding: 2rem;
+    text-align: center;
+}
+
+.story-text-content {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.story-footer {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    text-align: center;
+}
+
+.story-view-count {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.story-modal {
+    max-width: 600px;
+}
+
+.story-type-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.story-type-btn {
+    flex: 1;
+    padding: 1rem;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.story-type-btn.active,
+.story-type-btn:hover {
+    border-color: var(--color-primary);
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.story-content-section textarea {
+    width: 100%;
+    height: 120px;
+    border: 2px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: none;
+    margin-bottom: 1rem;
+}
+
+.story-content-section textarea:focus {
+    border-color: var(--color-primary);
+    outline: none;
+}
+
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.color-picker label {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.color-picker input[type="color"] {
+    width: 50px;
+    height: 40px;
+    border: 2px solid var(--color-border);
+    border-radius: 0.5rem;
+    cursor: pointer;
+}
+
+.image-modal {
+    background: rgba(0, 0, 0, 0.9);
+}
+
+.image-modal-content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.image-modal-content img {
+    width: 100%;
+    height: auto;
+    max-height: 90vh;
+    object-fit: contain;
+}
+
+.image-modal .modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    z-index: 1001;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+}
+
+.invite-link-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.invite-link-container input {
+    flex: 1;
+}
+
+/* ANIMATIONS - PRESERVED FROM DASHBOARD */
+.tweet-item,
+.story-item,
+.sidebar-user-item,
+.mobile-user-item,
+.search-result-item {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* RESPONSIVE DESIGN */
+.desktop-only {
+    display: flex;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+    
+    .mobile-only {
+        display: flex;
+    }
+    
+    .mobile-header.mobile-only {
+        display: flex;
+    }
+    
+    html, body {
+        height: 100%;
+        overflow-x: hidden;
+    }
+    
+    .main-container {
+        flex-direction: column;
+        min-height: 100vh;
+        padding-bottom: 80px; /* Space for bottom navbar */
+    }
+    
+    .main-content-area {
+        width: 100%;
+        padding-top: 0;
+        padding-bottom: 100px; /* Extra padding so content can scroll past navbar */
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Mobile: Centered vertical layout */
+    .profile-header-card {
+        padding: 1.5rem 1rem;
+        margin: 0.5rem;
+        gap: 1rem;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .profile-avatar-section {
+        align-items: center;
+    }
+    
+    .profile-avatar-large {
+        width: 100px;
+        height: 100px;
+        font-size: 2rem;
+    }
+    
+    .profile-info-main {
+        align-items: center;
+        text-align: center;
+    }
+    
+    .profile-details {
+        align-items: center;
+    }
+    
+    .profile-name {
+        font-size: 1.25rem;
+    }
+    
+    .profile-actions {
+        justify-content: center;
+    }
+    
+    .profile-stats {
+        gap: 1.5rem;
+    }
+    
+    .stat-value {
+        font-size: 1.1rem;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+    }
+
+    .tweet-compose-card {
+        margin: 0.5rem;
+    }
+    
+    .tweets-section-card {
+        margin: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 100px; /* Extra space at bottom for scrolling */
+    }
+    
+    .tweet-item {
+        padding: 1rem;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .modal-footer .btn {
+        width: 100%;
+    }
+    
+    .tweet-form-footer {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .tweet-actions {
+        justify-content: space-between;
+        padding: 0.75rem 0;
+    }
+    
+    .tweet-actions-left {
+        gap: 0.5rem;
+    }
+    
+    .tweets-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+    }
+    
+    .feed-toggle {
+        justify-content: center;
+    }
+    
+    /* Mobile Search Results */
+    .search-results {
+        max-height: 300px;
+    }
+    
+    .user-actions-search {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+    
+    .btn-search {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.75rem;
+    }
+}
+
+/* SCROLLBAR STYLING - PRESERVED FROM DASHBOARD */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-secondary);
+}
+</style>
+
+<!-- Follow Requests Modal -->
+<div id="followRequestsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Follow Requests</h3>
+            <span class="modal-close" onclick="closeFollowRequestsModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="followRequestsList">
+            <div class="loading-spinner" id="requestsLoading">
+                <div class="spinner"></div>
+                <p>Loading follow requests...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// JAVASCRIPT FOR PROFILE PAGE - FIXED TWEET POSTING IMPLEMENTATION
+let createdGroupId = null;
+let selectedStoryType = 'text';
+let activeMobileModal = null;
+let allUsers = [];
+let currentFeed = 'my';
+let followStates = new Map();
+let processedTweetIds = new Set(); // Track processed tweets to avoid duplicates
+
+// Store all users data for search functionality
+{% if other_users %}
+allUsers = [
+    {% for user in other_users %}
+    {
+        username: '{{ user.username }}',
+        full_name: '{{ user.full_name }}',
+        profile_picture_url: '{{ user.profile_picture_url }}',
+        initials: '{{ user.name.0 }}{{ user.lastname.0 }}'
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+{% endif %}
+
+// Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded fired - initializing profile page');
+    
+    // Initialize Lucide icons with retry mechanism
+    function initializeLucideIcons() {
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+            console.log('✅ Lucide icons initialized on profile page');
+            return true;
+        } else {
+            console.warn('⚠️ Lucide library not loaded yet, retrying...');
+            return false;
+        }
+    }
+
+    // Try to initialize immediately
+    if (!initializeLucideIcons()) {
+        // If not loaded, wait a bit and try again
+        setTimeout(() => {
+            if (!initializeLucideIcons()) {
+                setTimeout(() => {
+                    if (!initializeLucideIcons()) {
+                        setTimeout(() => {
+                            // Final attempt - try to call directly if available
+                            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                                lucide.createIcons();
+                                console.log('✅ Lucide icons initialized on final attempt');
+                            } else {
+                                console.error('❌ Failed to load Lucide icons');
+                            }
+                        }, 1000);
+                    }
+                }, 500);
+            }
+        }, 100);
+    }
+
+    initializeTweets();
+    initializeGroupCreation();
+    initializeMobileMenu();
+    initializeResponsiveHandling();
+    initializeFeedToggle();
+    loadFollowStates();
+
+    // Refresh Lucide icons after a short delay to ensure all content is loaded
+    setTimeout(() => {
+        if (window.refreshLucideIcons) {
+            window.refreshLucideIcons();
+        } else if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
+        // Additional refresh for any dynamically loaded content
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined' && lucide.createIcons) {
+                lucide.createIcons();
+            }
+        }, 500);
+    }, 100);
+
+    // Add event listeners for tweet actions after a delay to ensure DOM is ready
+    setTimeout(() => {
+        // Add direct event listeners to existing buttons
+        const likeButtons = document.querySelectorAll('.like-btn, .tweet-like-btn');
+        likeButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tweetId = this.getAttribute('data-tweet-id');
+                if (tweetId) {
+                    toggleLike(parseInt(tweetId));
+                }
+            });
+        });
+        
+        const commentButtons = document.querySelectorAll('.comment-btn');
+        commentButtons.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const tweetId = this.getAttribute('data-tweet-id');
+                if (tweetId) {
+                    toggleComments(parseInt(tweetId));
+                }
+            });
+        });
+    }, 500);
+});
+
+// Toggle Like Functionality
+function toggleLike(tweetId) {
+    // Find the button with the data-tweet-id
+    let likeBtn = document.querySelector(`.like-btn[data-tweet-id="${tweetId}"]`);
+    if (!likeBtn) {
+        likeBtn = document.querySelector(`.tweet-like-btn[data-tweet-id="${tweetId}"]`);
+    }
+    if (!likeBtn) {
+        console.error('Like button not found for tweet', tweetId);
+        return;
+    }
+
+    const likeCount = likeBtn.querySelector('.like-count');
+    if (!likeCount) {
+        console.error('Like count element not found');
+        return;
+    }
+
+    const isLiked = likeBtn.classList.contains('liked');
+    const originalCount = parseInt(likeCount.textContent) || 0;
+
+    // Optimistic UI update
+    likeBtn.classList.toggle('liked');
+    likeCount.textContent = isLiked ? originalCount - 1 : originalCount + 1;
+
+    fetch('/api/toggle-like/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({'tweet_id': tweetId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI with actual data
+            likeBtn.classList.toggle('liked', data.is_liked);
+            likeCount.textContent = data.like_count;
+            showNotification(data.is_liked ? 'Liked! ❤️' : 'Unliked! 🤍', 'success');
+        } else {
+            // Revert on error
+            likeBtn.classList.toggle('liked', isLiked);
+            likeCount.textContent = originalCount;
+            showNotification('Failed to update like: ' + (data.error || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Revert on error
+        likeBtn.classList.toggle('liked', isLiked);
+        likeCount.textContent = originalCount;
+        showNotification('Network error occurred', 'error');
+    });
+}
+
+// Toggle Comments Functionality
+function toggleComments(tweetId) {
+    console.log('toggleComments called with tweetId:', tweetId);
+    const commentsSection = document.getElementById(`comments-${tweetId}`);
+    if (!commentsSection) {
+        console.error('Comments section not found for tweet', tweetId);
+        return;
+    }
+    
+    console.log('Comments section found, current display:', commentsSection.style.display);
+    const isVisible = commentsSection.style.display === 'block';
+    
+    // Close all other comment sections first
+    document.querySelectorAll('.comments-section').forEach(section => {
+        if (section.id !== `comments-${tweetId}`) {
+            section.style.display = 'none';
+        }
+    });
+    
+    if (isVisible) {
+        commentsSection.style.display = 'none';
+        console.log('Hiding comments section');
+    } else {
+        commentsSection.style.display = 'block';
+        console.log('Showing comments section and loading comments');
+        loadComments(tweetId);
+        // Focus on the comment input
+        setTimeout(() => {
+            const input = document.getElementById(`comment-input-${tweetId}`);
+            if (input) input.focus();
+        }, 100);
+    }
+}
+
+// Load Comments
+function loadComments(tweetId) {
+    fetch(`/api/tweet/${tweetId}/comments/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const commentsList = document.getElementById(`comments-list-${tweetId}`);
+            let commentsHtml = '';
+            
+            data.comments.forEach(comment => {
+                commentsHtml += `
+                    <div class="comment-item">
+                        <div class="comment-avatar">
+                            <img src="${comment.user_profile_picture}" alt="${comment.user_full_name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="avatar-fallback">${comment.user_initials}</div>
+                        </div>
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <span class="comment-author">${comment.user_full_name}</span>
+                                <span class="comment-time">${comment.timestamp}</span>
+                            </div>
+                            <p class="comment-text">${comment.content}</p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            commentsList.innerHTML = commentsHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading comments:', error);
+    });
+}
+
+// Add Comment
+function addComment(tweetId) {
+    const commentInput = document.getElementById(`comment-input-${tweetId}`);
+    const content = commentInput.value.trim();
+    
+    if (!content) {
+        showNotification('Please enter a comment', 'error');
+        return;
+    }
+    
+    fetch('/api/add-comment/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({
+            tweet_id: tweetId,
+            content: content
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            commentInput.value = '';
+            showNotification('Comment added!', 'success');
+            loadComments(tweetId);
+            
+            // Update comment count
+            const commentBtn = document.querySelector(`.comment-btn[data-tweet-id="${tweetId}"] span`);
+            if (commentBtn) {
+                commentBtn.textContent = parseInt(commentBtn.textContent) + 1;
+            }
+        } else {
+            showNotification(`Failed to add comment: ${data.error}`, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error', 'error');
+    });
+}
+
+// Get CSRF Token
+function getCSRFToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    
+    const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+    if (csrfInput) return csrfInput.value;
+    
+    const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    if (csrfMeta) return csrfMeta.getAttribute('content');
+    
+    return '';
+}
+
+// Show Notification
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    const notification = document.createElement('div');
+    notification.className = `notification notification--${type}`;
+    
+    const isMobile = window.innerWidth <= 768;
+    notification.style.cssText = `
+        position: fixed;
+        ${isMobile ? 'top: 4rem; left: 1rem; right: 1rem;' : 'top: 20px; right: 20px;'}
+        padding: 1rem 1.5rem;
+        border-radius: 0.75rem;
+        color: white;
+        font-weight: 600;
+        z-index: 10000;
+        transform: ${isMobile ? 'translateY(-100px)' : 'translateX(100%)'};
+        transition: transform 0.3s ease;
+        ${isMobile ? 'width: auto;' : 'max-width: 350px;'}
+        word-wrap: break-word;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+    `;
+    
+    const colors = {
+        'success': '#28a745',
+        'error': '#dc3545',
+        'warning': '#ffc107',
+        'info': '#17a2b8'
+    };
+    
+    const icons = {
+        'success': '✅',
+        'error': '❌',
+        'warning': '⚠️',
+        'info': 'ℹ️'
+    };
+    
+    notification.style.backgroundColor = colors[type] || colors.info;
+    notification.innerHTML = `
+        <span class="notification-icon">${icons[type] || icons.info}</span>
+        <span class="notification-text">${message}</span>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateY(0) translateX(0)';
+    }, 100);
+    
+    const hideNotification = () => {
+        notification.style.transform = isMobile ? 'translateY(-100px)' : 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    };
+    
+    setTimeout(hideNotification, 4000);
+    notification.addEventListener('click', hideNotification);
+}
+
+// Escape HTML helper
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+// FIXED Tweet functionality - EXACT FROM WORKING VERSION
+function initializeTweets() {
+    const tweetForm = document.getElementById('tweetForm');
+    if (tweetForm) {
+        tweetForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const tweetContent = document.getElementById('tweetContent');
+            const content = tweetContent.value.trim();
+            
+            if (!content) {
+                showNotification('Please enter some content for your tweet', 'error');
+                return;
+            }
+            
+            if (content.length > 280) {
+                showNotification('Tweet must be 280 characters or less', 'error');
+                return;
+            }
+            
+            postTweet(content, tweetContent);
+        });
+    }
+    
+    const tweetContent = document.getElementById('tweetContent');
+    if (tweetContent) {
+        tweetContent.addEventListener('input', function() {
+            const remaining = 280 - this.value.length;
+            const charCounter = document.getElementById('charCounter');
+            
+            if (charCounter) {
+                charCounter.textContent = remaining + ' characters remaining';
+                charCounter.className = 'char-counter';
+                
+                if (remaining < 0) {
+                    charCounter.className = 'char-counter danger';
+                    charCounter.textContent = Math.abs(remaining) + ' characters over limit';
+                } else if (remaining < 20) {
+                    charCounter.className = 'char-counter danger';
+                } else if (remaining < 50) {
+                    charCounter.className = 'char-counter warning';
+                }
+            }
+            
+            // Auto-resize textarea
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+        });
+    }
+}
+
+// FIXED postTweet function - EXACT FROM WORKING VERSION
+function postTweet(content, inputElement) {
+    const submitBtn = document.querySelector('#tweetForm button[type="submit"]');
+    const originalHTML = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<div class="spinner"></div><span class="btn-text">Posting...</span>';
+    submitBtn.disabled = true;
+    
+    // Create FormData to send as form data instead of JSON
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('csrfmiddlewaretoken', getCSRFToken());
+    
+    fetch('/api/post-tweet/', {
+        method: 'POST',
+        body: formData  // Send as FormData instead of JSON
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            inputElement.value = '';
+            inputElement.style.height = 'auto';
+            inputElement.dispatchEvent(new Event('input'));
+            showNotification('Tweet posted successfully! 🎉', 'success');
+            
+            // FIXED: Only add if not already processed
+            if (currentFeed === 'my' && data.tweet && !processedTweetIds.has(data.tweet.id)) {
+                addTweetToPage(data.tweet);
+                processedTweetIds.add(data.tweet.id);
+            }
+            
+            // Reset explore tweets to force reload
+            exploreTweets = [];
+        } else {
+            showNotification('Failed to post tweet: ' + (data.error || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error posting tweet:', error);
+        showNotification('Network error. Please check your connection and try again.', 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+        inputElement.focus();
+    });
+}
+
+// FIXED addTweetToPage function - EXACT FROM WORKING VERSION
+function addTweetToPage(tweetData) {
+    const myTweetsContent = document.getElementById('my-tweets-content');
+    if (!myTweetsContent || !tweetData || !tweetData.id) return;
+    
+    // Remove empty state if exists
+    const emptyState = myTweetsContent.querySelector('.empty-state-tweets');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    // FIXED: Check for existing tweet to prevent duplicates
+    const existingTweet = myTweetsContent.querySelector(`[data-tweet-id="${tweetData.id}"]`);
+    if (existingTweet) return;
+    
+    const tweetDiv = document.createElement('div');
+    tweetDiv.className = 'tweet-item';
+    tweetDiv.setAttribute('data-tweet-id', tweetData.id);
+    tweetDiv.setAttribute('data-user', tweetData.username || 'user');
+    tweetDiv.style.animation = 'fadeInUp 0.3s ease-out';
+    
+    tweetDiv.innerHTML = `
+        <div class="tweet-header">
+            <div class="tweet-avatar" onclick="goToProfile('${tweetData.username || 'user'}')">${tweetData.initials || 'U'}</div>
+            <div class="tweet-info">
+                <a href="/profile/${tweetData.username || 'user'}/" class="tweet-author">${tweetData.name || 'User'}</a>
+                <a href="/profile/${tweetData.username || 'user'}/" class="tweet-username">@${tweetData.username || 'user'}</a>
+                <span class="tweet-time">just now</span>
+            </div>
+        </div>
+        <div class="tweet-content">${escapeHtml(tweetData.content).replace(/\n/g, '<br>')}</div>
+        <div class="tweet-actions">
+            <div class="tweet-actions-left">
+                <button class="tweet-like-btn" data-tweet-id="${tweetData.id}">
+                    <i data-lucide="heart" class="like-icon"></i>
+                    <span class="like-count">0</span>
+                </button>
+            </div>
+            <span class="tweet-timestamp">just now</span>
+        </div>
+    `;
+    
+    myTweetsContent.insertBefore(tweetDiv, myTweetsContent.firstChild);
+    
+    // Update tweet count
+    const tweetCount = document.getElementById('tweetCount');
+    if (tweetCount) {
+        const currentCount = document.querySelectorAll('#my-tweets-content .tweet-item').length;
+        tweetCount.textContent = `(${currentCount})`;
+    }
+    
+    // Refresh Lucide icons for the new tweet
+    if (window.refreshLucideIcons) {
+        window.refreshLucideIcons();
+    }
+}
+
+// Toggle Follow Functionality - EXACT FROM WORKING VERSION
+function toggleFollow(username) {
+    const followBtns = document.querySelectorAll(`[data-username="${username}"]`);
+    
+    followBtns.forEach(btn => {
+        // Optimistic UI update
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div>';
+    });
+    
+    fetch('/api/toggle-follow/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({'username': username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update followStates map with the new state
+            followStates.set(username, data.is_following);
+            
+            followBtns.forEach(btn => {
+                // Reset button state
+                btn.classList.remove('following', 'pending');
+                btn.disabled = false;
+                
+                if (data.follow_request_status === 'pending') {
+                    // Follow request sent
+                    btn.classList.add('pending');
+                    btn.innerHTML = '<span class="follow-icon">⏳</span><span class="follow-text">Request Sent</span>';
+                } else if (data.is_following) {
+                    // Currently following
+                    btn.classList.add('following');
+                    btn.innerHTML = '<span class="follow-icon">✓</span><span class="follow-text">Following</span>';
+                } else {
+                    // Not following - show appropriate text
+                    btn.innerHTML = '<span class="follow-icon">👤</span><span class="follow-text">Follow</span>';
+                }
+            });
+            
+            // Show appropriate notification
+            if (data.follow_request_status === 'pending') {
+                showNotification(`Follow request sent to ${username}!`, 'success');
+            } else if (data.is_following) {
+                showNotification(`You're now following ${username}! 🎉`, 'success');
+            } else {
+                showNotification(`You unfollowed ${username}`, 'info');
+            }
+        } else {
+            throw new Error(data.error || 'Failed to update follow status');
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling follow:', error);
+        
+        // Revert UI on error - reload follow states
+        loadFollowStates();
+        
+        showNotification('Failed to update follow status. Please try again.', 'error');
+    });
+}
+
+// Feed Toggle Functionality - EXACT FROM WORKING VERSION
+function initializeFeedToggle() {
+    const myTweetsBtn = document.getElementById('myTweetsBtn');
+    
+    if (myTweetsBtn) myTweetsBtn.addEventListener('click', () => showFeed('my'));
+}
+
+function showFeed(feedType) {
+    const myTweetsBtn = document.getElementById('myTweetsBtn');
+    const myTweetsContent = document.getElementById('my-tweets-content');
+    const feedTitle = document.getElementById('feedTitle');
+    const tweetCount = document.getElementById('tweetCount');
+    
+    if (feedType === 'my') {
+        myTweetsBtn.classList.add('active');
+        myTweetsContent.style.display = 'block';
+        
+        const profileName = document.querySelector('.profile-info-main h3');
+        feedTitle.textContent = profileName ? profileName.textContent + "'s Tweets" : 'Your Tweets';
+        tweetCount.textContent = '(' + document.querySelectorAll('#my-tweets-content .tweet-item').length + ')';
+        currentFeed = 'my';
+    }
+}
+
+// MOBILE MODAL SYSTEM - CLEAN VERSION WITH FORCED CLASS REMOVAL
+function openMobileModal(modalType) {
+    console.log('🔵 Opening modal:', modalType);
+    
+    closeMobileModal(); // Close any open modal first
+    
+    const modal = document.getElementById(modalType + 'Modal');
+    console.log('Modal element found:', modal ? 'YES' : 'NO');
+    
+    if (!modal) {
+        console.error('❌ Modal not found:', modalType + 'Modal');
+        return;
+    }
+    
+    // STEP 1: AGGRESSIVELY remove active class from ALL tabs using multiple methods
+    const allTabs = document.querySelectorAll('.bottom-nav-tab');
+    console.log('Found tabs:', allTabs.length);
+    allTabs.forEach(tab => {
+        // Method 1: classList.remove
+        tab.classList.remove('active');
+        // Method 2: setAttribute to force class update
+        const currentClass = tab.className.replace(/\bactive\b/g, '').trim();
+        tab.setAttribute('class', currentClass);
+        console.log('Cleaned tab:', tab.dataset.tab, 'new class:', tab.className);
+    });
+    
+    // STEP 2: Add active class ONLY to the clicked tab
+    const activeTab = document.querySelector(`.bottom-nav-tab[data-tab="${modalType}"]`);
+    console.log('Tab to activate:', activeTab ? activeTab.dataset.tab : 'NOT FOUND');
+    if (activeTab) {
+        activeTab.classList.add('active');
+        console.log('✅ Activated tab:', modalType, 'class:', activeTab.className);
+    }
+    
+    // STEP 3: Show the modal
+    modal.classList.add('active');
+    activeMobileModal = modalType;
+    document.body.style.overflow = 'hidden';
+    console.log('✅ Modal shown:', modalType);
+    
+    // Focus search inputs
+    if (modalType === 'chats') {
+        setTimeout(() => {
+            const searchInput = document.getElementById('userSearchInput');
+            if (searchInput) searchInput.focus();
+        }, 100);
+    } else if (modalType === 'search') {
+        setTimeout(() => {
+            const searchInputAlt = document.getElementById('userSearchInputAlt');
+            if (searchInputAlt) searchInputAlt.focus();
+        }, 100);
+    }
+    
+    // Re-init lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function closeMobileModal() {
+    console.log('🔴 Closing modal');
+    
+    if (activeMobileModal) {
+        const modal = document.getElementById(activeMobileModal + 'Modal');
+        if (modal) {
+            modal.classList.remove('active');
+        }
+    }
+    activeMobileModal = null;
+    document.body.style.overflow = 'auto';
+    
+    // Restore profile tab as active (we're on profile page)
+    document.querySelectorAll('.bottom-nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    const profileTab = document.querySelector('.bottom-nav-tab[data-tab="profile"]');
+    if (profileTab) {
+        profileTab.classList.add('active');
+        console.log('✅ Profile tab restored');
+    }
+}
+
+// Search functionality - PRESERVED FROM DASHBOARD
+function searchUsers() {
+    const searchInput = document.getElementById('userSearchInput');
+    const searchResults = document.getElementById('searchResults');
+    const query = searchInput.value.toLowerCase().trim();
+    
+    if (query.length === 0) {
+        searchResults.style.display = 'none';
+        const clearButton = document.querySelector('#chatsModal .search-clear');
+        if (clearButton) clearButton.style.display = 'none';
+        return;
+    }
+    
+    const clearButton = document.querySelector('#chatsModal .search-clear');
+    if (clearButton) clearButton.style.display = 'block';
+    
+    const filteredUsers = allUsers.filter(user => 
+        user.full_name.toLowerCase().includes(query) || 
+        user.username.toLowerCase().includes(query)
+    );
+    
+    let resultsHtml = '';
+    
+    if (filteredUsers.length > 0) {
+        resultsHtml = '<div class="search-results-list">';
+        filteredUsers.slice(0, 10).forEach(user => {
+            resultsHtml += `
+                <div class="search-result-item">
+                    <div class="user-avatar-small">
+                        <img src="${user.profile_picture_url}" alt="${user.full_name}"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="avatar-fallback-small">${user.initials}</div>
+                    </div>
+                    <div class="user-info-search">
+                        <div class="user-name-search">${user.full_name}</div>
+                        <div class="user-username-search">@${user.username}</div>
+                    </div>
+                    <div class="user-actions-search">
+                        <button onclick="startChat('${user.username}')" class="btn-search btn--primary">
+                            Chat
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        resultsHtml += '</div>';
+    } else {
+        resultsHtml = `
+            <div class="empty-state-mobile">
+                <div class="empty-icon">🔍</div>
+                <h4>No Users Found</h4>
+                <p>No users match your search "${query}"</p>
+            </div>
+        `;
+    }
+    
+    searchResults.innerHTML = resultsHtml;
+    searchResults.style.display = 'block';
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('userSearchInput');
+    const searchResults = document.getElementById('searchResults');
+    
+    searchInput.value = '';
+    searchResults.style.display = 'none';
+    const clearButton = document.querySelector('#chatsModal .search-clear');
+    if (clearButton) clearButton.style.display = 'none';
+    searchInput.focus();
+}
+
+function searchUsersAlt() {
+    const searchInput = document.getElementById('userSearchInputAlt');
+    const searchResults = document.getElementById('searchResultsAlt');
+    const query = searchInput.value.toLowerCase().trim();
+    
+    if (query.length === 0) {
+        // Show all users when search is empty
+        const resultsList = searchResults.querySelector('.search-results-list');
+        if (resultsList) resultsList.style.display = 'block';
+        
+        searchResults.querySelectorAll('.search-result-item').forEach(item => {
+            item.style.display = 'flex';
+        });
+        const clearButton = document.querySelector('#searchModal .search-clear');
+        if (clearButton) clearButton.style.display = 'none';
+        return;
+    }
+    
+    const clearButton = document.querySelector('#searchModal .search-clear');
+    if (clearButton) clearButton.style.display = 'block';
+    
+    // Filter existing results
+    const resultItems = searchResults.querySelectorAll('.search-result-item');
+    let visibleCount = 0;
+    
+    resultItems.forEach(item => {
+        const fullname = item.dataset.fullname;
+        const username = item.dataset.username;
+        
+        if (fullname && fullname.includes(query) || username && username.includes(query)) {
+            item.style.display = 'flex';
+            visibleCount++;
+        } else {
+            item.style.display = 'none';
+        }
+    });
+    
+    if (visibleCount === 0) {
+        searchResults.innerHTML = `
+            <div class="empty-state-mobile">
+                <div class="empty-icon">🔍</div>
+                <h4>No Users Found</h4>
+                <p>No users match your search "${query}"</p>
+            </div>
+        `;
+    }
+}
+
+function clearSearchAlt() {
+    const searchInput = document.getElementById('userSearchInputAlt');
+    const searchResults = document.getElementById('searchResultsAlt');
+    
+    searchInput.value = '';
+    const clearButton = document.querySelector('#searchModal .search-clear');
+    if (clearButton) clearButton.style.display = 'none';
+    
+    // Show all users again
+    searchResults.querySelectorAll('.search-result-item').forEach(item => {
+        item.style.display = 'flex';
+    });
+    
+    searchInput.focus();
+}
+
+// Navigation helper
+function goToProfile(username) {
+    window.location.href = '/profile/' + username + '/';
+}
+
+// Load initial follow states - UPDATED FOR NEW API FORMAT
+function loadFollowStates() {
+    const followBtns = document.querySelectorAll('[data-username]');
+    const usernames = [...new Set([...followBtns].map(btn => btn.dataset.username))];
+    
+    if (usernames.length === 0) return;
+    
+    fetch('/api/follow-states/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({'usernames': usernames})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            Object.entries(data.follow_states).forEach(([username, state]) => {
+                // state is now an object: {is_following, is_blocked, follow_request_status, can_follow, is_private}
+                const isFollowing = state.is_following;
+                const isBlocked = state.is_blocked;
+                const followRequestStatus = state.follow_request_status;
+                const canFollow = state.can_follow;
+                const isPrivate = state.is_private;
+                
+                followStates.set(username, isFollowing);
+                const userFollowBtns = document.querySelectorAll(`[data-username="${username}"]`);
+                
+                userFollowBtns.forEach(btn => {
+                    // Reset button state
+                    btn.classList.remove('following', 'blocked', 'pending');
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    
+                    if (isBlocked) {
+                        // User is blocked - hide follow button or show blocked state
+                        btn.style.display = 'none';
+                    } else if (followRequestStatus === 'pending') {
+                        // Follow request pending
+                        btn.classList.add('pending');
+                        const followText = btn.querySelector('.follow-text');
+                        if (followText) followText.textContent = 'Request Sent';
+                        const followIcon = btn.querySelector('.follow-icon');
+                        if (followIcon) followIcon.textContent = '⏳';
+                    } else if (followRequestStatus === 'declined') {
+                        // Previous request was declined - allow sending new request
+                        const followText = btn.querySelector('.follow-text');
+                        if (followText) followText.textContent = 'Send Follow Request';
+                        const followIcon = btn.querySelector('.follow-icon');
+                        if (followIcon) followIcon.textContent = '👤';
+                    } else if (isFollowing) {
+                        // Currently following
+                        btn.classList.add('following');
+                        const followText = btn.querySelector('.follow-text');
+                        if (followText) followText.textContent = 'Following';
+                        const followIcon = btn.querySelector('.follow-icon');
+                        if (followIcon) followIcon.textContent = '✓';
+                    } else {
+                        // Not following - show appropriate text based on privacy
+                        const followText = btn.querySelector('.follow-text');
+                        if (followText) {
+                            // Use privacy status to show correct text
+                            followText.textContent = isPrivate ? 'Send Follow Request' : 'Follow';
+                        }
+                        const followIcon = btn.querySelector('.follow-icon');
+                        if (followIcon) followIcon.textContent = '👤';
+                    }
+                    
+                    // Disable button if user cannot follow
+                    if (!canFollow && !isBlocked) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                    }
+                });
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading follow states:', error);
+    });
+}
+
+// Story functions - ENHANCED VERSION FROM DASHBOARD
+
+// ===== ADVANCED IMAGE MANIPULATION =====
+
+let imageZoom = 1;
+let imageX = 0;
+let imageY = 0;
+let isDragging = false;
+let startX, startY;
+
+// Initialize image panning on story modal
+function initImagePanning() {
+    const previewImage = document.getElementById('storyPreviewImage');
+    const previewImg = document.getElementById('storyPreviewImg');
+    
+    if (!previewImage || !previewImg) return;
+    
+    previewImage.addEventListener('mousedown', startDrag);
+    previewImage.addEventListener('touchstart', startDrag);
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('touchmove', drag);
+    document.addEventListener('mouseup', endDrag);
+    document.addEventListener('touchend', endDrag);
+}
+
+function startDrag(e) {
+    if (!document.getElementById('storyPreviewImg').src) return;
+    
+    isDragging = true;
+    const evt = e.type.includes('touch') ? e.touches[0] : e;
+    startX = evt.clientX - imageX;
+    startY = evt.clientY - imageY;
+    e.preventDefault();
+}
+
+function drag(e) {
+    if (!isDragging) return;
+    
+    const evt = e.type.includes('touch') ? e.touches[0] : e;
+    imageX = evt.clientX - startX;
+    imageY = evt.clientY - startY;
+    
+    const xInput = document.getElementById('imageX');
+    const yInput = document.getElementById('imageY');
+    if (xInput) xInput.value = imageX;
+    if (yInput) yInput.value = imageY;
+    
+    applyImageTransform();
+    e.preventDefault();
+}
+
+function endDrag() {
+    isDragging = false;
+}
+
+function zoomImage(delta) {
+    imageZoom += delta;
+    imageZoom = Math.max(0.5, Math.min(3, imageZoom)); // Clamp between 0.5x and 3x
+    
+    const zoomInput = document.getElementById('imageZoom');
+    if (zoomInput) zoomInput.value = imageZoom;
+    applyImageTransform();
+    
+    // Show/hide image controls
+    const imageControls = document.getElementById('imageControls');
+    const previewImg = document.getElementById('storyPreviewImg');
+    const hasImage = previewImg && previewImg.src && previewImg.src !== window.location.href;
+    if (imageControls && hasImage) {
+        imageControls.style.display = 'flex';
+    }
+}
+
+function resetImageTransform() {
+    imageZoom = 1;
+    imageX = 0;
+    imageY = 0;
+    
+    const zoomInput = document.getElementById('imageZoom');
+    const xInput = document.getElementById('imageX');
+    const yInput = document.getElementById('imageY');
+    
+    if (zoomInput) zoomInput.value = 1;
+    if (xInput) xInput.value = 0;
+    if (yInput) yInput.value = 0;
+    
+    applyImageTransform();
+}
+
+function applyImageTransform() {
+    const img = document.getElementById('storyPreviewImg');
+    if (img && img.src) {
+        img.style.transform = `scale(${imageZoom}) translate(${imageX / imageZoom}px, ${imageY / imageZoom}px)`;
+    }
+}
+
+// ===== TEXT STYLING FUNCTIONS =====
+
+function adjustFontSize(delta) {
+    const fontSizeInput = document.getElementById('textFontSize');
+    if (!fontSizeInput) return;
+    
+    let currentSize = parseInt(fontSizeInput.value) || 20;
+    currentSize += delta;
+    currentSize = Math.max(12, Math.min(48, currentSize)); // Clamp between 12px and 48px
+    
+    fontSizeInput.value = currentSize;
+    
+    const previewText = document.getElementById('storyPreviewText');
+    if (previewText) {
+        previewText.style.fontSize = currentSize + 'px';
+    }
+}
+
+function toggleTextBold() {
+    const boldInput = document.getElementById('textBold');
+    if (!boldInput) return;
+    
+    const isBold = boldInput.value === 'true';
+    boldInput.value = (!isBold).toString();
+    
+    const boldBtn = document.getElementById('boldBtn');
+    const previewText = document.getElementById('storyPreviewText');
+    
+    if (boldBtn) {
+        boldBtn.classList.toggle('active', !isBold);
+    }
+    
+    if (previewText) {
+        if (!isBold) {
+            previewText.classList.add('bold');
+        } else {
+            previewText.classList.remove('bold');
+        }
+    }
+}
+
+function toggleTextShadow() {
+    const shadowInput = document.getElementById('textShadow');
+    if (!shadowInput) return;
+    
+    const hasShadow = shadowInput.value === 'true';
+    shadowInput.value = (!hasShadow).toString();
+    
+    const shadowBtn = document.getElementById('shadowBtn');
+    const previewText = document.getElementById('storyPreviewText');
+    
+    if (shadowBtn) {
+        shadowBtn.classList.toggle('active', !hasShadow);
+    }
+    
+    if (previewText) {
+        if (!hasShadow) {
+            previewText.classList.remove('no-shadow');
+        } else {
+            previewText.classList.add('no-shadow');
+        }
+    }
+}
+
+function setTextAlign(align) {
+    const alignInput = document.getElementById('textAlign');
+    if (alignInput) alignInput.value = align;
+    
+    // Update button states
+    document.querySelectorAll('.align-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    const activeBtn = document.querySelector(`.align-btn[data-align="${align}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Update preview
+    const previewText = document.getElementById('storyPreviewText');
+    if (previewText) {
+        previewText.classList.remove('align-left', 'align-right');
+        if (align !== 'center') {
+            previewText.classList.add('align-' + align);
+        }
+    }
+}
+
+// ===== STORY MODAL FUNCTIONS =====
+
+function openStoryModal() {
+    document.getElementById('storyModal').style.display = 'flex';
+    initStoryModalListeners();
+    initImagePanning();
+    // Reset text position to center
+    setTextPosition('center');
+    setTextAlign('center');
+    // Reset image transform
+    resetImageTransform();
+    // Reset text styling
+    document.getElementById('textFontSize').value = 20;
+    document.getElementById('textBold').value = 'false';
+    document.getElementById('textShadow').value = 'true';
+    document.getElementById('boldBtn')?.classList.remove('active');
+    document.getElementById('shadowBtn')?.classList.add('active');
+    updateStoryPreview();
+    lucide.createIcons();
+}
+
+function closeCreateStoryModal() {
+    document.getElementById('storyModal').style.display = 'none';
+    // Reset form
+    document.getElementById('storyText').value = '';
+    document.getElementById('storyImageInput').value = '';
+    document.getElementById('bgColor').value = '#667eea';
+    document.getElementById('textColor').value = '#ffffff';
+    document.getElementById('textPosition').value = 'center';
+    document.getElementById('textAlign').value = 'center';
+    document.getElementById('textFontSize').value = 20;
+    document.getElementById('textBold').value = 'false';
+    document.getElementById('textShadow').value = 'true';
+    document.getElementById('removeImageBtn').style.display = 'none';
+    document.getElementById('imageControls').style.display = 'none';
+    // Reset buttons
+    document.querySelectorAll('.position-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.position-btn[data-position="center"]')?.classList.add('active');
+    document.querySelectorAll('.align-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector('.align-btn[data-align="center"]')?.classList.add('active');
+    document.getElementById('boldBtn')?.classList.remove('active');
+    document.getElementById('shadowBtn')?.classList.add('active');
+    // Reset image transform
+    resetImageTransform();
+    updateStoryPreview();
+}
+
+// Legacy alias for compatibility
+function closeStoryModal() {
+    closeCreateStoryModal();
+}
+
+// Set text position for story
+function setTextPosition(position) {
+    document.getElementById('textPosition').value = position;
+    
+    // Update button states
+    document.querySelectorAll('.position-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`.position-btn[data-position="${position}"]`)?.classList.add('active');
+    
+    // Update preview
+    updateStoryPreview();
+}
+
+// Initialize story modal event listeners
+function initStoryModalListeners() {
+    const storyText = document.getElementById('storyText');
+    const bgColor = document.getElementById('bgColor');
+    const textColor = document.getElementById('textColor');
+    const imageInput = document.getElementById('storyImageInput');
+    const preview = document.getElementById('storyPreview');
+    const previewTextEditable = document.getElementById('storyPreviewText');
+    
+    // Text input listener
+    storyText.addEventListener('input', function() {
+        document.getElementById('storyCharCount').textContent = this.value.length;
+        if (document.activeElement !== previewTextEditable) {
+            previewTextEditable.innerText = this.value;
+        }
+        updateStoryPreview();
+    });
+
+    // Inline editable preview -> textarea sync
+    previewTextEditable.addEventListener('input', function() {
+        storyText.value = this.innerText;
+        document.getElementById('storyCharCount').textContent = storyText.value.length;
+        updateStoryPreview();
+    });
+    
+    // Color change listeners
+    bgColor.addEventListener('input', function() {
+        document.getElementById('bgColorIndicator').style.background = this.value;
+        updateStoryPreview();
+    });
+    
+    textColor.addEventListener('input', function() {
+        document.getElementById('textColorIndicator').style.background = this.value;
+        updateStoryPreview();
+    });
+    
+    // Image input listener
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('storyPreviewImg').src = e.target.result;
+                document.getElementById('storyPreviewImage').style.display = 'block';
+                document.getElementById('removeImageBtn').style.display = 'flex';
+                document.getElementById('imageControls').style.display = 'flex';
+                resetImageTransform();
+                updateStoryPreview();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Drag & drop support for image selection
+    if (preview) {
+        const handleDragOver = (event) => {
+            event.preventDefault();
+            preview.classList.add('drag-over');
+        };
+        const clearDrag = () => preview.classList.remove('drag-over');
+        preview.addEventListener('dragenter', handleDragOver);
+        preview.addEventListener('dragover', handleDragOver);
+        preview.addEventListener('dragleave', clearDrag);
+        preview.addEventListener('drop', (event) => {
+            event.preventDefault();
+            clearDrag();
+            const file = event.dataTransfer?.files?.[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                showNotification('Please drop an image file.', 'error');
+                return;
+            }
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+            imageInput.dispatchEvent(new Event('change'));
+        });
+    }
+}
+
+// Remove selected image
+function removeStoryImage() {
+    document.getElementById('storyImageInput').value = '';
+    document.getElementById('storyPreviewImg').src = '';
+    document.getElementById('storyPreviewImage').style.display = 'none';
+    document.getElementById('removeImageBtn').style.display = 'none';
+    document.getElementById('imageControls').style.display = 'none';
+    resetImageTransform();
+    updateStoryPreview();
+}
+
+// Update the story preview
+function updateStoryPreview() {
+    const preview = document.getElementById('storyPreview');
+    const previewText = document.getElementById('storyPreviewText');
+    const previewImage = document.getElementById('storyPreviewImage');
+    const placeholder = document.getElementById('storyPreviewPlaceholder');
+    
+    const content = document.getElementById('storyText').value.trim();
+    const bgColor = document.getElementById('bgColor').value;
+    const textColor = document.getElementById('textColor').value;
+    const textPosition = document.getElementById('textPosition').value;
+    const hasImage = document.getElementById('storyPreviewImg').src && 
+                     document.getElementById('storyPreviewImg').src !== window.location.href;
+    
+    // Set background color
+    preview.style.background = hasImage ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)' : bgColor;
+    
+    // Keep inline editor in sync
+    if (document.activeElement !== previewText) {
+        previewText.innerText = content;
+    }
+
+    // Update text
+    previewText.style.color = textColor;
+    
+    // Update text position
+    previewText.className = 'story-preview-text position-' + textPosition;
+    
+    // Show/hide elements based on content
+    if (content || hasImage) {
+        placeholder.style.display = 'none';
+        previewText.style.display = content ? 'block' : 'none';
+        previewImage.style.display = hasImage ? 'block' : 'none';
+        
+        // If has image, add text overlay styling
+        if (hasImage && content) {
+            previewText.style.background = 'rgba(0, 0, 0, 0.5)';
+            previewText.style.padding = '0.75rem 1rem';
+            previewText.style.borderRadius = '8px';
+        } else {
+            previewText.style.background = 'transparent';
+            previewText.style.padding = '0';
+        }
+    } else {
+        placeholder.style.display = 'flex';
+        previewText.style.display = 'none';
+        previewImage.style.display = 'none';
+    }
+}
+
+function selectStoryType(type) {
+    selectedStoryType = type;
+    
+    document.querySelectorAll('.story-type-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelector(`[data-type="${type}"]`).classList.add('active');
+    
+    document.getElementById('textStoryContent').style.display = type === 'text' ? 'block' : 'none';
+    document.getElementById('imageStoryContent').style.display = type === 'image' ? 'block' : 'none';
+}
+
+function createStory() {
+    const formData = new FormData();
+    formData.append('story_type', selectedStoryType);
+    
+    if (selectedStoryType === 'text') {
+        const content = document.getElementById('storyText').value.trim();
+        const bgColor = document.getElementById('bgColor').value;
+        const textColor = document.getElementById('textColor').value;
+        
+        if (!content) {
+            showNotification('Please enter story content', 'error');
+            return;
+        }
+        
+        formData.append('content', content);
+        formData.append('background_color', bgColor);
+        formData.append('text_color', textColor);
+    } else {
+        const imageFile = document.getElementById('storyImageInput').files[0];
+        if (!imageFile) {
+            showNotification('Please select an image', 'error');
+            return;
+        }
+        formData.append('media', imageFile);
+    }
+    
+    fetch('/api/create-story/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeStoryModal();
+            showNotification('Story created successfully!', 'success');
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Failed to create story: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+
+function viewStory(storyId) {
+    fetch(`/api/story/${storyId}/`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const story = data.story;
+            
+            document.getElementById('storyUserAvatar').src = story.user.profile_picture_url;
+            document.getElementById('storyUserName').textContent = story.user.full_name;
+            document.getElementById('storyTime').textContent = story.created_at;
+            document.getElementById('storyViewCount').textContent = `${story.view_count} views`;
+            
+            const contentDisplay = document.getElementById('storyContentDisplay');
+            if (story.story_type === 'text') {
+                contentDisplay.className = 'story-content-display text-story';
+                contentDisplay.style.backgroundColor = story.background_color;
+                contentDisplay.innerHTML = `<div class="story-text-content" style="color: ${story.text_color}">${story.content}</div>`;
+            } else if (story.story_type === 'image') {
+                contentDisplay.className = 'story-content-display';
+                contentDisplay.style.backgroundColor = '#000';
+                contentDisplay.innerHTML = `<img src="${story.media_url}" alt="Story image">`;
+            }
+            
+            document.getElementById('storyViewModal').style.display = 'flex';
+        } else {
+            showNotification('Failed to load story: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+
+// Group functions - PRESERVED FROM DASHBOARD
+function initializeGroupCreation() {
+    const createGroupBtn = document.getElementById('createGroupBtn');
+    if (createGroupBtn) {
+        createGroupBtn.addEventListener('click', openCreateGroupModal);
+    }
+}
+
+function openCreateGroupModal() {
+    closeMobileModal();
+    document.getElementById('createGroupModal').style.display = 'flex';
+}
+
+function closeCreateGroupModal() {
+    document.getElementById('createGroupModal').style.display = 'none';
+    document.getElementById('createGroupForm').reset();
+}
+
+function createGroup() {
+    const name = document.getElementById('groupName').value.trim();
+    const description = document.getElementById('groupDescription').value.trim();
+    const maxParticipants = parseInt(document.getElementById('maxParticipants').value);
+    const isPublic = document.getElementById('isPublic').checked;
+    
+    if (!name) {
+        showNotification('Group name is required', 'error');
+        return;
+    }
+    
+    fetch('/api/create-group/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            'name': name,
+            'description': description,
+            'maxparticipants': maxParticipants,
+            'ispublic': isPublic
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeCreateGroupModal();
+            createdGroupId = data.group.id;
+            document.getElementById('createdGroupName').textContent = data.group.name;
+            document.getElementById('inviteLink').value = data.group.invite_link;
+            document.getElementById('groupCreatedModal').style.display = 'flex';
+        } else {
+            showNotification('Failed to create group: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+
+function startChat(username) {
+    fetch('/api/create-chat/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({'username': username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            closeMobileModal();
+            window.location.href = `/chat/${data.chat_id}/`;
+        } else {
+            showNotification('Error starting chat: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+
+// Mobile menu functionality
+function initializeMobileMenu() {
+    // Mobile menu setup - add event listeners for bottom nav buttons
+    console.log('Initializing mobile menu...');
+    
+    // Profile button - scroll to top since we're already on profile
+    const profileBtn = document.getElementById('profileBtn');
+    if (profileBtn) {
+        profileBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Profile button clicked');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        profileBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Profile button touched');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+    
+    // Chats button
+    const chatsBtn = document.getElementById('chatsBtn');
+    if (chatsBtn) {
+        chatsBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('🔵 Chats button clicked');
+            openMobileModal('chats');
+        };
+    }
+    
+    // Home button
+    const homeBtn = document.getElementById('homeBtn');
+    if (homeBtn) {
+        homeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('Home button clicked');
+            window.location.href = '/dashboard/';
+        });
+        homeBtn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            console.log('Home button touched');
+            window.location.href = '/dashboard/';
+        });
+    }
+    
+    // Search button
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('🔍 Search button clicked');
+            openMobileModal('search');
+        };
+    }
+    
+    // More button
+    const moreBtn = document.getElementById('moreBtn');
+    if (moreBtn) {
+        moreBtn.onclick = function(e) {
+            e.preventDefault();
+            console.log('⚙️ More button clicked');
+            openMobileModal('more');
+        };
+    }
+    
+    // Setup navbar buttons inside modals
+    const searchBtnInChat = document.getElementById('searchBtnInChat');
+    const moreBtnInChat = document.getElementById('moreBtnInChat');
+    const chatsBtnInSearch = document.getElementById('chatsBtnInSearch');
+    const moreBtnInSearch = document.getElementById('moreBtnInSearch');
+    
+    if (searchBtnInChat) {
+        searchBtnInChat.onclick = function(e) {
+            e.preventDefault();
+            openMobileModal('search');
+        };
+    }
+    if (moreBtnInChat) {
+        moreBtnInChat.onclick = function(e) {
+            e.preventDefault();
+            openMobileModal('more');
+        };
+    }
+    if (chatsBtnInSearch) {
+        chatsBtnInSearch.onclick = function(e) {
+            e.preventDefault();
+            openMobileModal('chats');
+        };
+    }
+    if (moreBtnInSearch) {
+        moreBtnInSearch.onclick = function(e) {
+            e.preventDefault();
+            openMobileModal('more');
+        };
+    }
+    
+    console.log('Mobile menu initialized with event listeners');
+}
+
+function initializeResponsiveHandling() {
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            closeMobileModal();
+        }
+    });
+}
+
+function escapeHtml(text) {
+    if (!text) return '';
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
+function copyInviteLink() {
+    const linkInput = document.getElementById('inviteLink');
+    linkInput.select();
+    document.execCommand('copy');
+    showNotification('Invite link copied to clipboard!', 'success');
+}
+
+function goToNewGroup() {
+    document.getElementById('groupCreatedModal').style.display = 'none';
+    if (createdGroupId) {
+        window.location.href = `/chat/${createdGroupId}/`;
+    }
+}
+
+function openImageModal(imageUrl) {
+    document.getElementById('modalImage').src = imageUrl;
+    document.getElementById('imageModal').style.display = 'flex';
+}
+
+function closeImageModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+// Close modals and handle escape key
+document.addEventListener('click', function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (modal.style.display === 'flex' && event.target === modal) {
+            if (modal.id === 'createGroupModal') {
+                closeCreateGroupModal();
+            } else {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+    });
+    
+    if (event.target.classList.contains('mobile-modal') && event.target.classList.contains('active')) {
+        closeMobileModal();
+    }
+});
+
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const openModal = document.querySelector('.modal[style*="flex"]');
+        if (openModal) {
+            if (openModal.id === 'createGroupModal') {
+                closeCreateGroupModal();
+            } else {
+                openModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        if (activeMobileModal) {
+            closeMobileModal();
+        }
+    }
+});
+
+// Block/Unblock user function
+function toggleBlock(username) {
+    fetch('/api/toggle-block/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({'username': username})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(
+                data.is_blocked ? `You have blocked ${username}` : `You have unblocked ${username}`,
+                data.is_blocked ? 'warning' : 'success'
+            );
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+
+// Toggle account privacy function
+function toggleAccountPrivacy() {
+    const privacyBtn = document.getElementById('privacyBtn');
+    if (!privacyBtn) {
+        console.error('Privacy button not found');
+        return;
+    }
+
+    // Disable button during request
+    privacyBtn.disabled = true;
+    privacyBtn.style.opacity = '0.6';
+
+    fetch('/api/toggle-account-privacy/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Toggle privacy response:', data);
+        if (data.success) {
+            const btnText = privacyBtn.querySelector('.btn-text');
+            const btnIcon = privacyBtn.querySelector('.btn-icon');
+
+            if (!btnText || !btnIcon) {
+                console.error('Button text or icon elements not found');
+                return;
+            }
+
+            if (data.is_private) {
+                privacyBtn.className = 'btn btn--secondary';
+                btnIcon.textContent = '🔒';
+                btnText.textContent = 'Private Account';
+                showNotification('Your account is now private', 'info');
+            } else {
+                privacyBtn.className = 'btn btn--primary';
+                btnIcon.textContent = '🌐';
+                btnText.textContent = 'Public Account';
+                showNotification('Your account is now public', 'info');
+            }
+        } else {
+            showNotification('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error toggling privacy:', error);
+        showNotification('Network error. Please try again.', 'error');
+    })
+    .finally(() => {
+        // Re-enable button
+        privacyBtn.disabled = false;
+        privacyBtn.style.opacity = '1';
+    });
+}
+
+// Show follow requests modal (for own profile)
+function showFollowRequests() {
+    const modal = document.getElementById('followRequestsModal');
+    const requestsList = document.getElementById('followRequestsList');
+    const loading = document.getElementById('requestsLoading');
+
+    modal.style.display = 'flex';
+    loading.style.display = 'block';
+    requestsList.innerHTML = '<div class="loading-spinner" id="requestsLoading"><div class="spinner"></div><p>Loading follow requests...</p></div>';
+
+    // Fetch pending follow requests
+    fetch('/api/follow-requests/', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': getCSRFToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        loading.style.display = 'none';
+
+        if (data.success) {
+            if (data.requests.length === 0) {
+                requestsList.innerHTML = '<div class="no-requests"><p>No pending follow requests</p></div>';
+                return;
+            }
+
+            let html = '';
+            data.requests.forEach(request => {
+                html += `
+                    <div class="follow-request-item" data-username="${request.username}">
+                        <div class="request-user-info">
+                            <img src="${request.profile_pic || '/static/images/default_profile.png'}" alt="${request.username}" class="request-avatar">
+                            <div class="request-details">
+                                <div class="request-username">${request.username}</div>
+                                <div class="request-name">${request.full_name || request.username}</div>
+                                <div class="request-time">${request.requested_at}</div>
+                            </div>
+                        </div>
+                        <div class="request-actions">
+                            <button class="btn btn--primary btn--small" onclick="handleFollowRequest('${request.username}', 'accept')">
+                                <span class="btn-icon">✓</span>
+                                <span class="btn-text">Accept</span>
+                            </button>
+                            <button class="btn btn--danger btn--small" onclick="handleFollowRequest('${request.username}', 'decline')">
+                                <span class="btn-icon">✕</span>
+                                <span class="btn-text">Decline</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            requestsList.innerHTML = html;
+        } else {
+            requestsList.innerHTML = '<div class="error-message"><p>Failed to load follow requests</p></div>';
+        }
+    })
+    .catch(error => {
+        console.error('Error loading follow requests:', error);
+        loading.style.display = 'none';
+        requestsList.innerHTML = '<div class="error-message"><p>Network error. Please try again.</p></div>';
+    });
+}
+
+function closeFollowRequestsModal() {
+    const modal = document.getElementById('followRequestsModal');
+    modal.style.display = 'none';
+}
+
+function handleFollowRequest(username, action) {
+    const requestItem = document.querySelector(`.follow-request-item[data-username="${username}"]`);
+    const buttons = requestItem.querySelectorAll('button');
+
+    // Disable buttons during processing
+    buttons.forEach(btn => {
+        btn.disabled = true;
+        btn.innerHTML = '<div class="spinner"></div>';
+    });
+
+    fetch('/api/manage-follow-request/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            'username': username,
+            'action': action
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the request item
+            requestItem.remove();
+
+            // Update notification count if it exists
+            const requestsBtn = document.getElementById('requestsBtn');
+            if (requestsBtn) {
+                const countSpan = requestsBtn.querySelector('.request-count');
+                if (countSpan) {
+                    const currentCount = parseInt(countSpan.textContent) || 0;
+                    if (currentCount > 1) {
+                        countSpan.textContent = currentCount - 1;
+                    } else {
+                        // Hide the button if no more requests
+                        requestsBtn.style.display = 'none';
+                    }
+                }
+            }
+
+            showNotification(data.message, 'success');
+
+            // Check if no more requests
+            const remainingRequests = document.querySelectorAll('.follow-request-item');
+            if (remainingRequests.length === 0) {
+                document.getElementById('followRequestsList').innerHTML = '<div class="no-requests"><p>No pending follow requests</p></div>';
+            }
+        } else {
+            // Re-enable buttons on error
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                if (btn.classList.contains('btn--primary')) {
+                    btn.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">Accept</span>';
+                } else {
+                    btn.innerHTML = '<span class="btn-icon">✕</span><span class="btn-text">Decline</span>';
+                }
+            });
+            showNotification('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error handling follow request:', error);
+        // Re-enable buttons on error
+        buttons.forEach(btn => {
+            btn.disabled = false;
+            if (btn.classList.contains('btn--primary')) {
+                btn.innerHTML = '<span class="btn-icon">✓</span><span class="btn-text">Accept</span>';
+            } else {
+                btn.innerHTML = '<span class="btn-icon">✕</span><span class="btn-text">Decline</span>';
+            }
+        });
+        showNotification('Network error. Please try again.', 'error');
+    });
+}
+</script>
+{% endblock %}

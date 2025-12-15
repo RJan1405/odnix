@@ -1,0 +1,1905 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Update Profile - Odnix{% endblock %}
+
+{% block content %}
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+
+<div class="main-container">
+    <!-- Desktop Sidebar -->
+    <div class="sidebar-enhanced desktop-only" id="sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">Odnix</h1>
+        </div>
+
+        <!-- Profile section -->
+        <div class="user-info-compact">
+            <div class="user-avatar-large">
+                <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                <div class="avatar-fallback">{{ request.user.name.0 }}{{ request.user.lastname.0 }}</div>
+            </div>
+            <div class="user-details-large">
+                <div class="user-name-large">{{ request.user.full_name }}</div>
+                <div class="user-status-large">@{{ request.user.username }}</div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav-compact">
+            <div class="sidebar-section-label">Navigation</div>
+            <a href="{% url 'dashboard' %}" class="nav-item-compact">
+                <i data-lucide="home" class="nav-icon"></i>
+                <span class="nav-text">Home</span>
+            </a>
+            <a href="{% url 'profile' %}" class="nav-item-compact">
+                <i data-lucide="user" class="nav-icon"></i>
+                <span class="nav-text">Profile</span>
+            </a>
+            <a href="{% url 'update_profile' %}" class="nav-item-compact active">
+                <i data-lucide="settings" class="nav-icon"></i>
+                <span class="nav-text">Edit Profile</span>
+            </a>
+        </nav>
+
+        <!-- Create Group Button -->
+        <div class="create-group-section">
+            <button id="createGroupBtn" class="btn btn--primary btn--full-width" onclick="if (window.openCreateGroupModal) { openCreateGroupModal(); } else { window.location.href='{% url 'dashboard' %}#chats'; }">
+                Create Group
+            </button>
+        </div>
+
+        <!-- Quick Actions Section -->
+        <div class="sidebar-section">
+            <h3 class="sidebar-section-title">
+                Quick Actions
+            </h3>
+            <div class="sidebar-actions-list">
+                <a href="{% url 'dashboard' %}" class="sidebar-action-item">
+                    <i data-lucide="home" class="nav-icon"></i>
+                    <div class="action-info">
+                        <div class="action-name">Back to Dashboard</div>
+                        <div class="action-desc">View your feed</div>
+                    </div>
+                </a>
+                <a href="{% url 'profile' %}" class="sidebar-action-item">
+                    <i data-lucide="user" class="nav-icon"></i>
+                    <div class="action-info">
+                        <div class="action-name">View Profile</div>
+                        <div class="action-desc">See your public view</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- All Users Section -->
+        {% with other_users_count=other_users|length %}
+        {% if other_users_count %}
+        <div class="sidebar-section">
+            <h3 class="sidebar-section-title">
+                All Users <span class="section-count">{{ other_users_count }}</span>
+            </h3>
+            <div class="sidebar-users-list">
+                {% for otheruser in other_users|slice:":8" %}
+                    <div class="sidebar-user-item">
+                        <div class="user-avatar-tiny">
+                            <img src="{{ otheruser.profile_picture_url }}" alt="{{ otheruser.full_name }}"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                            <div class="avatar-fallback-tiny">{{ otheruser.name.0 }}{{ otheruser.lastname.0 }}</div>
+                        </div>
+                        <div class="user-info-tiny">
+                            <div class="user-name-tiny">
+                                <a href="{% url 'user_profile' otheruser.username %}" class="profile-link-small">
+                                    {{ otheruser.full_name }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="user-actions-tiny">
+                            <button onclick="startChat('{{ otheruser.username }}')" class="btn-tiny btn--primary">
+                                Chat
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Mobile Header -->
+    <header class="mobile-header mobile-only">
+        <a href="{% url 'profile' %}" class="mobile-back-btn">
+            <i data-lucide="arrow-left"></i>
+        </a>
+        <h1 class="mobile-title">Edit Profile</h1>
+        <div class="mobile-header-spacer"></div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="main-content-area">
+        <div class="profile-update-container">
+            <div class="profile-update-card">
+                <!-- Header with back button (desktop) -->
+                <div class="profile-update-header desktop-only">
+                    <a href="{% url 'profile' %}" class="back-btn">
+                        <i data-lucide="arrow-left"></i>
+                    </a>
+                    <div class="header-content">
+                        <h1>Edit Profile</h1>
+                        <p>Update your personal information</p>
+                    </div>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" class="profile-update-form" id="profileForm">
+                    {% csrf_token %}
+                    
+                    <!-- Profile Picture Section -->
+                    <div class="profile-picture-section">
+                        <div class="profile-picture-wrapper">
+                            <div class="profile-picture-preview" id="profilePicturePreview">
+                                <img src="{{ request.user.profile_picture_url }}" alt="Profile picture" id="previewImage"
+                                     onerror="this.style.display='none'; document.getElementById('avatarFallback').style.display='flex';">
+                                <div class="avatar-fallback" id="avatarFallback" style="display: none;">
+                                    {{ request.user.name.0 }}{{ request.user.lastname.0 }}
+                                </div>
+                            </div>
+                            <label for="id_profile_picture" class="profile-picture-overlay">
+                                <i data-lucide="camera"></i>
+                                <span>Change</span>
+                            </label>
+                        </div>
+                        <!-- Hidden file input - completely custom -->
+                        <input type="file" name="profile_picture_temp" id="id_profile_picture" accept="image/*" class="hidden-file-input">
+                        <!-- Hidden input for cropped image data -->
+                        <input type="hidden" name="profile_picture_cropped" id="croppedImageData">
+                        <div class="profile-picture-actions">
+                            <button type="button" class="photo-action-btn" onclick="document.getElementById('id_profile_picture').click()">
+                                <i data-lucide="upload"></i>
+                                Upload New Photo
+                            </button>
+                        </div>
+                    </div>
+
+<!-- Image Cropper Modal -->
+<div class="image-crop-modal" id="cropperModal">
+    <div class="crop-dialog">
+        <div class="crop-header">
+            <h3>Crop Profile Picture</h3>
+            <button type="button" class="crop-close-btn" onclick="closeCropper()">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+        <div class="crop-body">
+            <div class="crop-image-wrapper">
+                <img id="cropperImage" src="" alt="Crop preview">
+            </div>
+        </div>
+        <div class="crop-controls">
+            <div class="crop-zoom-controls">
+                <button type="button" class="crop-tool-btn" onclick="zoomImage(-0.1)" title="Zoom Out">
+                    <i data-lucide="zoom-out"></i>
+                </button>
+                <button type="button" class="crop-tool-btn" onclick="zoomImage(0.1)" title="Zoom In">
+                    <i data-lucide="zoom-in"></i>
+                </button>
+                <button type="button" class="crop-tool-btn" onclick="rotateImage(-90)" title="Rotate Left">
+                    <i data-lucide="rotate-ccw"></i>
+                </button>
+                <button type="button" class="crop-tool-btn" onclick="rotateImage(90)" title="Rotate Right">
+                    <i data-lucide="rotate-cw"></i>
+                </button>
+                <button type="button" class="crop-tool-btn" onclick="resetCropper()" title="Reset">
+                    <i data-lucide="refresh-cw"></i>
+                </button>
+            </div>
+        </div>
+        <div class="crop-footer">
+            <button type="button" class="crop-btn crop-btn--cancel" onclick="closeCropper()">
+                Cancel
+            </button>
+            <button type="button" class="crop-btn crop-btn--apply" onclick="applyCrop()">
+                <i data-lucide="check"></i>
+                Apply
+            </button>
+        </div>
+    </div>
+</div>
+                
+                <!-- Form Fields -->
+                <div class="form-fields">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.name.id_for_label }}">
+                                <i data-lucide="user"></i>
+                                First Name
+                            </label>
+                            <div class="input-wrapper">
+                                {{ form.name }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.lastname.id_for_label }}">
+                                <i data-lucide="user"></i>
+                                Last Name
+                            </label>
+                            <div class="input-wrapper">
+                                {{ form.lastname }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.username.id_for_label }}">
+                                <i data-lucide="at-sign"></i>
+                                Username
+                            </label>
+                            <div class="input-wrapper">
+                                {{ form.username }}
+                            </div>
+                            <div class="form-hint">Your unique username. People can find you with @{{ request.user.username }}</div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Account Settings -->
+                <div class="account-settings-card">
+                    {% comment %} <div class="account-settings-header">
+                        <div>
+                            <h3>Account Settings</h3>
+                            <p>Manage privacy and sign out</p>
+                        </div>
+                        <a href="{% url 'profile' %}" class="btn btn--ghost">
+                            <i data-lucide="user"></i> View profile
+                        </a>
+                    </div> {% endcomment %}
+                    <div class="account-settings-row">
+                        <div>
+                            <div class="account-settings-title">Private Account</div>
+                            <div class="account-settings-desc">Only approved followers can see your posts.</div>
+                        </div>
+                        <label class="toggle-switch">
+                            {{ form.is_private }}
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="account-settings-row">
+                        <div>
+                            <div class="account-settings-desc" style="color: var(--color-text-secondary); font-size: 0.85rem;">
+                                Need to sign out? <a href="{% url 'logout' %}" style="color: var(--color-text-secondary); text-decoration: underline;">Logout</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'profile' %}" class="btn btn--cancel">
+                        <i data-lucide="x"></i>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn--save" id="saveBtn">
+                        <i data-lucide="check"></i>
+                        <span>Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    </div> <!-- Close main-content-area -->
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-navbar mobile-only" id="bottomNavbar">
+        <div class="bottom-nav-container">
+            <!-- Profile Tab -->
+            <a href="{% url 'profile' %}" class="bottom-nav-tab" data-tab="profile">
+                <div class="user-avatar-nano">
+                    <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="avatar-fallback-nano">{{ request.user.name.0 }}{{ request.user.lastname.0 }}</div>
+                </div>
+                <span class="bottom-nav-label">Profile</span>
+            </a>
+
+            <!-- Chats Tab -->
+            <a href="{% url 'dashboard' %}#chats" class="bottom-nav-tab" data-tab="chats">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="message-circle" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">Chats</span>
+            </a>
+
+            <!-- Home Tab -->
+            <a href="{% url 'dashboard' %}" class="bottom-nav-tab" data-tab="home">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="home" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">Home</span>
+            </a>
+
+            <!-- Settings Tab - Active on Edit Profile -->
+            <a href="{% url 'update_profile' %}" class="bottom-nav-tab active" data-tab="settings">
+                <div class="nav-icon-wrapper">
+                    <i data-lucide="settings" class="nav-icon"></i>
+                </div>
+                <span class="bottom-nav-label">Settings</span>
+            </a>
+        </div>
+    </nav>
+</div> <!-- Close main-container -->
+
+<style>
+/* Main Container Layout */
+.main-container {
+    display: flex;
+    min-height: 100vh;
+    background: var(--color-background, #f8fafc);
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        {% comment %} min-height: 100vh; {% endcomment %}
+        height: 100vh;
+        overflow: hidden;
+    }
+}
+
+/* Desktop/Mobile Visibility */
+.desktop-only {
+    display: block;
+}
+
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none !important;
+    }
+    
+    .mobile-only {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    /* Hard-hide mobile-only bars on desktop to avoid duplicate titles */
+    .mobile-header.mobile-only,
+    .bottom-navbar.mobile-only {
+        display: none !important;
+    }
+}
+
+/* Desktop Sidebar */
+.sidebar-enhanced {
+    width: 280px;
+    min-width: 280px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-right: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: sticky;
+    top: 0;
+    box-shadow: 6px 0 24px rgba(15, 23, 42, 0.06);
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+
+.sidebar-header .logo {
+    font-size: 1.75rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--color-primary, #667eea), #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+}
+
+.user-info-compact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+
+.user-avatar-large {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.user-avatar-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-avatar-large .avatar-fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary, #667eea), #764ba2);
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.user-details-large {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name-large {
+    font-weight: 600;
+    color: var(--color-text, #1a1a2e);
+    font-size: 0.95rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-status-large {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+.sidebar-nav-compact {
+    flex: 1;
+    padding: 1rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.sidebar-section-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--color-text-muted, #64748b);
+    padding: 0.25rem 1rem 0.5rem;
+}
+
+.nav-item-compact {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.875rem 1rem;
+    border-radius: 0.75rem;
+    color: var(--color-text-muted, #64748b);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.nav-item-compact:hover {
+    background: rgba(102, 126, 234, 0.08);
+    color: var(--color-primary, #667eea);
+}
+
+.nav-item-compact.active {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.16), rgba(118, 75, 162, 0.12));
+    color: var(--color-primary, #667eea);
+    font-weight: 600;
+    box-shadow: 0 6px 14px rgba(102, 126, 234, 0.12);
+    border: 1px solid rgba(102, 126, 234, 0.25);
+}
+
+.nav-item-compact .nav-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+
+/* Sidebar sections to match profile page */
+.create-group-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+
+.sidebar-section {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+
+.sidebar-section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text, #0f172a);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.section-count {
+    background: var(--color-primary, #667eea);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.sidebar-actions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-action-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+    background: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-action-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.action-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.action-name {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.action-desc {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+.sidebar-users-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sidebar-user-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.sidebar-user-item:hover {
+    background: rgba(102, 126, 234, 0.05);
+    border-color: rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.user-avatar-tiny {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    background: #e2e8f0;
+}
+
+.user-avatar-tiny img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-fallback-tiny {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary, #667eea), #764ba2);
+    color: white;
+    font-weight: 600;
+}
+
+.user-info-tiny {
+    flex: 1;
+    min-width: 0;
+    margin-left: 0.75rem;
+}
+
+.user-name-tiny {
+    font-weight: 600;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-actions-tiny {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sidebar-footer {
+    padding: 0.75rem;
+    border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+}
+
+.sidebar-footer .logout-btn {
+    color: #ef4444;
+}
+
+.sidebar-footer .logout-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile Header */
+.mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    background: var(--color-surface, #ffffff);
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.mobile-back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--color-background, #f8fafc);
+    color: var(--color-text, #1a1a2e);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.mobile-back-btn:hover {
+    background: var(--color-primary, #667eea);
+    color: white;
+}
+
+.mobile-back-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.mobile-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text, #1a1a2e);
+    margin: 0;
+}
+
+.mobile-header-spacer {
+    width: 36px;
+}
+
+/* Main Content Area */
+.main-content-area {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+}
+
+@media (max-width: 768px) {
+    .main-content-area {
+        flex: 1;
+        overflow-y: auto;
+        padding-bottom: 70px; /* Space for bottom navbar */
+    }
+}
+
+/* Mobile Bottom Navbar */
+.bottom-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--color-surface, #ffffff);
+    border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.08));
+    z-index: 1000;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bottom-nav-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem 0;
+}
+
+.bottom-nav-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    background: none;
+    border: none;
+    color: var(--color-text-muted, #64748b);
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 60px;
+}
+
+.bottom-nav-tab:hover {
+    color: var(--color-primary, #667eea);
+}
+
+.bottom-nav-tab.active {
+    color: var(--color-primary, #667eea);
+}
+
+.bottom-nav-tab .nav-icon-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-nav-tab .nav-icon {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
+.bottom-nav-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+}
+
+.user-avatar-nano {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid transparent;
+}
+
+.bottom-nav-tab.active .user-avatar-nano {
+    border-color: var(--color-primary, #667eea);
+}
+
+.user-avatar-nano img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-fallback-nano {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary, #667eea), #764ba2);
+    color: white;
+    font-weight: 600;
+    font-size: 0.55rem;
+}
+
+/* COMPLETELY HIDE any Django file input elements */
+.hidden-file-input,
+.profile-picture-input,
+input[type="file"].profile-picture-input,
+#id_profile_picture {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+    opacity: 0 !important;
+    pointer-events: none;
+}
+
+.profile-update-container {
+    padding: 2rem;
+    max-width: 600px;
+    margin: 55px auto;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .profile-update-container {
+        padding: 1rem;
+        padding-top: 0.5rem;
+    }
+}
+
+.profile-update-card {
+    background: var(--color-surface, #ffffff);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border, rgba(0, 0, 0, 0.05));
+}
+
+/* Header */
+.profile-update-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.06));
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.04), rgba(118, 75, 162, 0.04));
+}
+
+.back-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #1a1a2e);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.back-btn:hover {
+    background: var(--color-primary, #667eea);
+    color: white;
+    transform: translateX(-2px);
+}
+
+.back-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.header-content h1 {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-text, #1a1a2e);
+    margin: 0;
+}
+
+.header-content p {
+    font-size: 0.8rem;
+    color: var(--color-text-muted, #64748b);
+    margin: 0.15rem 0 0;
+}
+
+/* Profile Picture Section */
+.profile-picture-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1.5rem 1.5rem;
+    background: linear-gradient(180deg, rgba(102, 126, 234, 0.02), transparent);
+    border-bottom: 1px solid var(--color-border, rgba(0, 0, 0, 0.04));
+}
+
+.profile-picture-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 1rem;
+}
+
+.profile-picture-preview {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--color-surface, #ffffff);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.2), 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: #f0f0f0;
+}
+
+.profile-picture-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.avatar-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.profile-picture-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: 0;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    color: white;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.25s ease;
+}
+
+.profile-picture-overlay svg {
+    width: 24px;
+    height: 24px;
+}
+
+.profile-picture-overlay span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-picture-wrapper:hover .profile-picture-overlay {
+    opacity: 1;
+}
+
+.profile-picture-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.photo-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: 1.5px solid var(--color-border, #e2e8f0);
+    border-radius: 2rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-primary, #667eea);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.photo-action-btn:hover {
+    background: var(--color-primary, #667eea);
+    border-color: var(--color-primary, #667eea);
+    color: white;
+}
+
+.photo-action-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+/* ==========================================
+   IMAGE CROPPER MODAL STYLES
+   ========================================== */
+.image-crop-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.92) !important;
+    z-index: 99999 !important;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.image-crop-modal.active {
+    display: flex !important;
+    animation: cropFadeIn 0.2s ease;
+}
+
+@keyframes cropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.crop-dialog {
+    background: #ffffff !important;
+    border-radius: 1rem;
+    width: 100%;
+    max-width: 460px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+    animation: cropSlideUp 0.3s ease;
+    position: relative;
+    z-index: 100000;
+}
+
+@keyframes cropSlideUp {
+    from { 
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to { 
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.crop-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #e2e8f0;
+    background: #ffffff;
+}
+
+.crop-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.crop-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f1f5f9;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.crop-close-btn:hover {
+    background: #fee2e2;
+    color: #ef4444;
+}
+
+.crop-close-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.crop-body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a !important;
+    height: 320px;
+    overflow: hidden;
+    position: relative;
+}
+
+.crop-image-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+#cropperImage {
+    max-width: 100%;
+    display: block;
+}
+
+.crop-controls {
+    padding: 0.75rem 1.25rem;
+    background: #f8fafc;
+    border-top: 1px solid #e2e8f0;
+}
+
+.crop-zoom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.crop-tool-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border: 1.5px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    color: #374151;
+    transition: all 0.2s ease;
+}
+
+.crop-tool-btn:hover {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+}
+
+.crop-tool-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.crop-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.crop-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 0.625rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.crop-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.crop-btn--cancel {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.crop-btn--cancel:hover {
+    background: #e2e8f0;
+    color: #374151;
+}
+
+.crop-btn--apply {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.crop-btn--apply:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* Cropper.js custom styling */
+.cropper-view-box,
+.cropper-face {
+    border-radius: 50% !important;
+}
+
+.cropper-view-box {
+    box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(102, 126, 234, 0.6) !important;
+    outline: none !important;
+}
+
+.cropper-line {
+    background-color: rgba(102, 126, 234, 0.6) !important;
+}
+
+.cropper-point {
+    background-color: #667eea !important;
+    width: 10px !important;
+    height: 10px !important;
+    border-radius: 50% !important;
+}
+
+.cropper-point.point-se {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+.cropper-dashed {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.cropper-bg {
+    background-image: none !important;
+}
+
+/* Form Fields */
+.form-fields {
+    padding: 1.5rem;
+}
+
+.form-row {
+    display: grid;
+    {% comment %} grid-template-columns: 1fr 1fr; {% endcomment %}
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #64748b);
+    margin-bottom: 0.4rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.form-label svg {
+    width: 14px;
+    height: 14px;
+    color: var(--color-primary, #667eea);
+}
+
+.input-wrapper {
+    position: relative;
+}
+
+.input-wrapper input,
+.profile-update-form .form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid var(--color-border, #e2e8f0);
+    border-radius: 0.625rem;
+    font-size: 0.95rem;
+    color: var(--color-text, #1a1a2e);
+    background: var(--color-surface, #ffffff);
+    transition: all 0.2s ease;
+}
+
+.input-wrapper input:focus,
+.profile-update-form .form-control:focus {
+    border-color: var(--color-primary, #667eea);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Privacy Section */
+.privacy-section {
+    margin-top: 0.25rem;
+}
+
+.privacy-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.875rem 1rem;
+    background: var(--color-background, #f8fafc);
+    border-radius: 0.625rem;
+    border: 1px solid var(--color-border, #e2e8f0);
+}
+
+.privacy-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.privacy-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    color: var(--color-primary, #667eea);
+}
+
+.privacy-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.privacy-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.privacy-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-text, #1a1a2e);
+}
+
+.privacy-description {
+    font-size: 0.75rem;
+    color: var(--color-text-muted, #64748b);
+}
+
+/* Account Settings */
+.account-settings-card {
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-border, #e2e8f0);
+    border-radius: 0.875rem;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.account-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.account-settings-header h3 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.account-settings-header p {
+    margin: 0.15rem 0 0;
+    color: var(--color-text-muted, #64748b);
+}
+
+.account-settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--color-border, #e2e8f0);
+}
+
+.account-settings-row:first-of-type {
+    border-top: none;
+}
+
+.account-settings-row.danger {
+    border: 1px solid #ffe4e6;
+    border-radius: 0.75rem;
+    padding: 0.9rem 0.9rem;
+    background: #fff5f5;
+}
+
+.account-settings-title {
+    font-weight: 600;
+    color: var(--color-text, #1a1a2e);
+}
+
+.account-settings-desc {
+    color: var(--color-text-muted, #64748b);
+    font-size: 0.9rem;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #cbd5e1;
+    border-radius: 26px;
+    transition: all 0.3s ease;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(20px);
+}
+
+/* Form Actions */
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--color-border, rgba(0, 0, 0, 0.05));
+    background: var(--color-background, #fafbfc);
+}
+
+.btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 0.625rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn--primary {
+    background: linear-gradient(135deg, var(--color-primary, #667eea), #764ba2);
+    color: white;
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.25);
+}
+
+.btn--primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.35);
+    color: white;
+}
+
+.btn--secondary {
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text, #0f172a);
+    border: 1.5px solid var(--color-border, #e2e8f0);
+}
+
+.btn--secondary:hover {
+    background: var(--color-background, #f8fafc);
+    transform: translateY(-1px);
+}
+
+.btn--full-width {
+    width: 100%;
+}
+
+.btn-tiny {
+    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--color-border, #e2e8f0);
+    background: none;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-tiny.btn--primary {
+    background: var(--color-primary, #667eea);
+    color: white;
+    border-color: var(--color-primary, #667eea);
+}
+
+.btn-tiny:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.btn--cancel {
+    background: var(--color-surface, #ffffff);
+    color: var(--color-text-muted, #64748b);
+    border: 1.5px solid var(--color-border, #e2e8f0);
+}
+
+.btn--cancel:hover {
+    background: var(--color-background, #f1f5f9);
+    border-color: #cbd5e1;
+    color: var(--color-text, #374151);
+}
+
+.btn--save {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+}
+
+.btn--save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+}
+
+.btn--save:active {
+    transform: translateY(0);
+}
+
+/* Loading State */
+.btn--save.loading {
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.btn--save.loading span {
+    display: none;
+}
+
+.btn--save.loading::after {
+    content: 'Saving...';
+}
+
+/* Image Preview Animation */
+.profile-picture-preview.updating {
+    animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+    .profile-update-container {
+        padding: 0;
+    }
+    
+    .profile-update-card {
+        border-radius: 0;
+        {% comment %} min-height: 100vh; {% endcomment %}
+    }
+    
+    .profile-update-header {
+        padding: 1rem 1.25rem;
+    }
+    
+    .header-content h1 {
+        font-size: 1.25rem;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-fields {
+        padding: 1.25rem;
+    }
+    
+    .form-actions {
+        padding: 1.25rem;
+    }
+    
+    .privacy-toggle {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .toggle-switch {
+        align-self: flex-end;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .profile-update-card {
+        background: var(--color-surface, #1e293b);
+    }
+    
+    .privacy-toggle {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .form-actions {
+        background: rgba(0, 0, 0, 0.2);
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+<script>
+let cropper = null;
+let originalFile = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('id_profile_picture');
+    const previewImage = document.getElementById('previewImage');
+    const avatarFallback = document.getElementById('avatarFallback');
+    const profilePicturePreview = document.getElementById('profilePicturePreview');
+    const saveBtn = document.getElementById('saveBtn');
+    const form = document.getElementById('profileForm');
+    const cropperModal = document.getElementById('cropperModal');
+    const cropperImage = document.getElementById('cropperImage');
+    
+    // Handle file selection - open cropper
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = this.files[0];
+            
+            if (file) {
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    showNotification('Please select a valid image file (JPG, PNG, GIF, or WebP)', 'error');
+                    this.value = '';
+                    return;
+                }
+                
+                // Validate file size (10MB max for original, will be compressed after crop)
+                if (file.size > 10 * 1024 * 1024) {
+                    showNotification('Image size must be less than 10MB', 'error');
+                    this.value = '';
+                    return;
+                }
+                
+                originalFile = file;
+                
+                // Load image into cropper
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    cropperImage.src = e.target.result;
+                    openCropper();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Handle form submission
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            saveBtn.classList.add('loading');
+        });
+    }
+    
+    // Initialize Lucide icons
+    if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
+    }
+});
+
+function openCropper() {
+    const cropperModal = document.getElementById('cropperModal');
+    const cropperImage = document.getElementById('cropperImage');
+    
+    cropperModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Destroy existing cropper if any
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+    
+    // Wait for modal to be visible, then initialize cropper
+    setTimeout(() => {
+        cropper = new Cropper(cropperImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.85,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+            minCropBoxWidth: 80,
+            minCropBoxHeight: 80,
+            background: true,
+            modal: true,
+            ready: function() {
+                // Re-init icons after cropper is ready
+                if (window.lucide && window.lucide.createIcons) {
+                    window.lucide.createIcons();
+                }
+            }
+        });
+    }, 100);
+    
+    // Re-init lucide icons for modal
+    setTimeout(() => {
+        if (window.lucide && window.lucide.createIcons) {
+            window.lucide.createIcons();
+        }
+    }, 150);
+}
+
+function closeCropper() {
+    const cropperModal = document.getElementById('cropperModal');
+    const fileInput = document.getElementById('id_profile_picture');
+    
+    cropperModal.classList.remove('active');
+    document.body.style.overflow = '';
+    
+    // Clear file input
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // Destroy cropper
+    if (cropper) {
+        cropper.destroy();
+        cropper = null;
+    }
+}
+
+function zoomImage(ratio) {
+    if (cropper) {
+        cropper.zoom(ratio);
+    }
+}
+
+function rotateImage(degree) {
+    if (cropper) {
+        cropper.rotate(degree);
+    }
+}
+
+function resetCropper() {
+    if (cropper) {
+        cropper.reset();
+    }
+}
+
+function applyCrop() {
+    if (!cropper) return;
+    
+    const previewImage = document.getElementById('previewImage');
+    const avatarFallback = document.getElementById('avatarFallback');
+    const croppedDataInput = document.getElementById('croppedImageData');
+    
+    // Get cropped canvas
+    const canvas = cropper.getCroppedCanvas({
+        width: 400,
+        height: 400,
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+    });
+    
+    if (canvas) {
+        // Convert to blob and create data URL
+        canvas.toBlob(function(blob) {
+            // Create data URL for preview
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            
+            // Update preview
+            previewImage.src = dataUrl;
+            previewImage.style.display = 'block';
+            avatarFallback.style.display = 'none';
+            
+            // Store cropped image data for form submission
+            croppedDataInput.value = dataUrl;
+            
+            // Close cropper
+            closeCropper();
+            
+            showNotification('Photo cropped successfully!', 'success');
+        }, 'image/jpeg', 0.9);
+    }
+}
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `crop-notification ${type}`;
+    notification.innerHTML = `
+        <span>${message}</span>
+    `;
+    
+    // Style the notification
+    Object.assign(notification.style, {
+        position: 'fixed',
+        bottom: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '12px 24px',
+        borderRadius: '8px',
+        color: 'white',
+        fontWeight: '500',
+        fontSize: '14px',
+        zIndex: '10001',
+        animation: 'slideInUp 0.3s ease',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+    });
+    
+    if (type === 'success') {
+        notification.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+    } else if (type === 'error') {
+        notification.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+    } else {
+        notification.style.background = 'linear-gradient(135deg, #667eea, #764ba2)';
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOutDown 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Add animation keyframes
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInUp {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes slideOutDown {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

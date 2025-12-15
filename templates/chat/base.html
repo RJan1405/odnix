@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>{% block title %}Odnix{% endblock %}</title>
+    <!-- Theme initialization - runs before CSS to prevent flash -->
+    <script>
+        (function() {
+            // Check localStorage first for instant theme application
+            const savedTheme = localStorage.getItem('odnix-theme');
+            const userTheme = '{{ user.theme|default:"light" }}';
+            const theme = savedTheme || userTheme;
+            if (theme === 'dark') {
+                document.documentElement.classList.add('theme-dark');
+            }
+        })();
+    </script>
+    <!-- Legacy styles for backwards compatibility -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251210c">
+    <!-- Instagram-style CSS (new) -->
+    <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}?v=20251210c">
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="{% if user.theme == 'dark' %}theme-dark{% endif %}">
+    <!-- Toast Notifications Container -->
+    <div id="ig-toast-container"></div>
+    
+    <!-- Navbar block - can be overridden by child templates -->
+    {% block navbar %}
+    {% if user.is_authenticated %}
+    {% include 'chat/partials/navbar.html' %}
+    {% endif %}
+    {% endblock %}
+    
+    <!-- Django messages (hidden, handled by JS) -->
+    {% if messages %}
+        <script>
+            window.djangoMessages = [
+                {% for message in messages %}
+                    { text: "{{ message|escapejs }}", type: "{{ message.tags }}" }{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
+        </script>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="{% static 'js/app.js' %}?v=20251209"></script>
+    <script>
+        // Initialize Lucide icons
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            // Show Django messages as toasts
+            if (window.djangoMessages) {
+                window.djangoMessages.forEach(function(msg) {
+                    showIGToast(msg.text, msg.type);
+                });
+            }
+        });
+        
+        // Expose as global function
+        window.toggleThemeGlobal = toggleTheme;
+        
+        function toggleTheme() {
+            const body = document.body;
+            const html = document.documentElement;
+            const isDark = body.classList.contains('theme-dark') || html.classList.contains('theme-dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            
+            // Apply theme to both html and body for consistency
+            if (newTheme === 'dark') {
+                body.classList.add('theme-dark');
+                html.classList.add('theme-dark');
+            } else {
+                body.classList.remove('theme-dark');
+                html.classList.remove('theme-dark');
+            }
+            
+            // Save to localStorage for instant loading next time
+            localStorage.setItem('odnix-theme', newTheme);
+            
+            // Update any toggle switches in the UI
+            const toggles = document.querySelectorAll('.ig-toggle#themeToggle');
+            toggles.forEach(toggle => {
+                if (newTheme === 'dark') {
+                    toggle.classList.add('active');
+                } else {
+                    toggle.classList.remove('active');
+                }
+            });
+            
+            // Update theme icon if present
+            const themeIcon = document.querySelector('#themeIcon');
+            if (themeIcon) {
+                themeIcon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+            
+            // Update theme label if present
+            const themeLabel = document.querySelector('#themeLabel');
+            if (themeLabel) {
+                themeLabel.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
+            }
+            
+            // Save preference to server
+            fetch('/api/user/update-theme/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ theme: newTheme })
+            }).catch(err => console.log('Theme save error:', err));
+        }
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Instagram-style toast notification - disabled, just log to console
+        function showIGToast(message, type) {
+            console.log(`[${type || 'info'}] ${message}`);
+            // Toasts disabled per user request
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
