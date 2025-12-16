@@ -708,3 +708,46 @@ class P2PSignal(models.Model):
         from datetime import timedelta
         cutoff = timezone.now() - timedelta(minutes=5)
         cls.objects.filter(created_at__lt=cutoff).delete()
+
+class Reel(models.Model):
+    """Model for short video reels"""
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reels')
+    video_file = models.FileField(upload_to='reels/')
+    caption = models.TextField(max_length=500, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    views_count = models.PositiveIntegerField(default=0)
+    
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Reel by {self.user.username} at {self.created_at}"
+
+    @property
+    def like_count(self):
+        return self.likes.count()
+
+    @property
+    def comment_count(self):
+        return self.comments.count()
+
+    def is_liked_by(self, user):
+        if not user.is_authenticated:
+            return False
+        return self.likes.filter(user=user).exists()
+
+class ReelLike(models.Model):
+    """Model for reel likes"""
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='liked_reels')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('reel', 'user')
+
+class ReelComment(models.Model):
+    """Model for reel comments"""
+    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reel_comments')
+    content = models.TextField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)

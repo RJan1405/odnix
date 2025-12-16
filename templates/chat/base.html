@@ -1,14 +1,16 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>{% block title %}Odnix{% endblock %}</title>
     <!-- Theme initialization - runs before CSS to prevent flash -->
     <script>
-        (function() {
+        (function () {
             // Check localStorage first for instant theme application
             const savedTheme = localStorage.getItem('odnix-theme');
             const userTheme = '{{ user.theme|default:"light" }}';
@@ -24,26 +26,27 @@
     <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}?v=20251210c">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="{% if user.theme == 'dark' %}theme-dark{% endif %}">
     <!-- Toast Notifications Container -->
     <div id="ig-toast-container"></div>
-    
+
     <!-- Navbar block - can be overridden by child templates -->
     {% block navbar %}
     {% if user.is_authenticated %}
     {% include 'chat/partials/navbar.html' %}
     {% endif %}
     {% endblock %}
-    
+
     <!-- Django messages (hidden, handled by JS) -->
     {% if messages %}
-        <script>
-            window.djangoMessages = [
-                {% for message in messages %}
-                    { text: "{{ message|escapejs }}", type: "{{ message.tags }}" }{% if not forloop.last %},{% endif %}
-                {% endfor %}
+    <script>
+        window.djangoMessages = [
+            {% for message in messages %}
+        { text: "{{ message|escapejs }}", type: "{{ message.tags }}" } {% if not forloop.last %}, {% endif %}
+        {% endfor %}
             ];
-        </script>
+    </script>
     {% endif %}
 
     {% block content %}
@@ -53,27 +56,27 @@
     <script src="{% static 'js/app.js' %}?v=20251209"></script>
     <script>
         // Initialize Lucide icons
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
             // Show Django messages as toasts
             if (window.djangoMessages) {
-                window.djangoMessages.forEach(function(msg) {
+                window.djangoMessages.forEach(function (msg) {
                     showIGToast(msg.text, msg.type);
                 });
             }
         });
-        
+
         // Expose as global function
         window.toggleThemeGlobal = toggleTheme;
-        
+
         function toggleTheme() {
             const body = document.body;
             const html = document.documentElement;
             const isDark = body.classList.contains('theme-dark') || html.classList.contains('theme-dark');
             const newTheme = isDark ? 'light' : 'dark';
-            
+
             // Apply theme to both html and body for consistency
             if (newTheme === 'dark') {
                 body.classList.add('theme-dark');
@@ -82,10 +85,10 @@
                 body.classList.remove('theme-dark');
                 html.classList.remove('theme-dark');
             }
-            
+
             // Save to localStorage for instant loading next time
             localStorage.setItem('odnix-theme', newTheme);
-            
+
             // Update any toggle switches in the UI
             const toggles = document.querySelectorAll('.ig-toggle#themeToggle');
             toggles.forEach(toggle => {
@@ -95,20 +98,20 @@
                     toggle.classList.remove('active');
                 }
             });
-            
+
             // Update theme icon if present
             const themeIcon = document.querySelector('#themeIcon');
             if (themeIcon) {
                 themeIcon.setAttribute('data-lucide', newTheme === 'dark' ? 'sun' : 'moon');
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }
-            
+
             // Update theme label if present
             const themeLabel = document.querySelector('#themeLabel');
             if (themeLabel) {
                 themeLabel.textContent = newTheme === 'dark' ? 'Light Mode' : 'Dark Mode';
             }
-            
+
             // Save preference to server
             fetch('/api/user/update-theme/', {
                 method: 'POST',
@@ -119,7 +122,7 @@
                 body: JSON.stringify({ theme: newTheme })
             }).catch(err => console.log('Theme save error:', err));
         }
-        
+
         function getCookie(name) {
             let cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -134,14 +137,127 @@
             }
             return cookieValue;
         }
-        
+
         // Instagram-style toast notification - disabled, just log to console
         function showIGToast(message, type) {
             console.log(`[${type || 'info'}] ${message}`);
             // Toasts disabled per user request
         }
     </script>
-    
+
     {% block extra_js %}{% endblock %}
-</body>
+
+    <!-- Create Selection Modal (Global) -->
+    <div id="createSelectionModal" class="ig-modal-overlay"
+        style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);"
+        onclick="closeCreateSelectionModal(event)">
+        <div class="ig-create-modal"
+            style="max-width: 320px; border-radius: 12px; margin: auto; position: relative; top: 50%; transform: translateY(-50%); background: var(--bg-primary, #fff); padding: 20px;"
+            onclick="event.stopPropagation()">
+            <header
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color, #dbdbdb); padding-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-primary, #000);">Create</h3>
+                <button onclick="closeCreateSelectionModal()"
+                    style="background: none; border: none; padding: 5px; cursor: pointer; color: var(--text-primary, #000);">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+                </button>
+            </header>
+
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <button onclick="triggerGlobalPostCreate()"
+                    style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
+                    <i data-lucide="image" style="width: 20px; height: 20px;"></i>
+                    <span style="font-weight: 500; font-size: 15px;">Post</span>
+                </button>
+                <button onclick="triggerGlobalReelCreate()"
+                    style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
+                    <i data-lucide="play-square" style="width: 20px; height: 20px;"></i>
+                    <span style="font-weight: 500; font-size: 15px;">Reel</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="globalReelInput" accept="video/*" style="display: none;"
+        onchange="handleGlobalReelUpload(this)">
+
+    <script>
+        function openCreateMenu() {
+            const modal = document.getElementById('createSelectionModal');
+            if (modal) {
+                modal.style.display = 'block';
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        }
+
+        function closeCreateSelectionModal(e) {
+            if (e && e.type === 'click' && e.target !== e.currentTarget) return;
+            const modal = document.getElementById('createSelectionModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        function triggerGlobalPostCreate() {
+            closeCreateSelectionModal();
+            if (typeof window.openCreatePostModal === 'function') {
+                window.openCreatePostModal();
+            } else {
+                window.location.href = '{% url "dashboard" %}?action=create';
+            }
+        }
+
+        function triggerGlobalReelCreate() {
+            closeCreateSelectionModal();
+            const input = document.getElementById('globalReelInput');
+            if (input) input.click();
+        }
+
+        function handleGlobalReelUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                if (file.size > 100 * 1024 * 1024) {
+                    alert("Video too large. Please upload under 100MB.");
+                    return;
+                }
+
+                const caption = prompt("Write a caption for your reel:");
+                if (caption === null) return;
+
+                const formData = new FormData();
+                formData.append('video', file);
+                formData.append('caption', caption);
+
+                alert("Uploading Reel... this may take a moment.");
+
+                fetch('/chat/api/reels/upload/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (window.location.pathname.includes('/reels')) {
+                                location.reload();
+                            } else {
+                                window.location.href = '{% url "reels" %}';
+                            }
+                        } else {
+                            alert('Upload failed: ' + (data.error || 'Unknown error'));
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Upload failed');
+                    });
+            }
+        }
+
+        // Ensure navCreatePost works globally if not defined
+        if (typeof window.navCreatePost === 'undefined') {
+            window.navCreatePost = openCreateMenu;
+        }
+    </script>
+
 </html>

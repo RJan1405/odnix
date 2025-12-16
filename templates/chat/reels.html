@@ -1,0 +1,375 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block title %}Reels - Odnix{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Reels specific styles */
+    .reels-wrapper {
+        background: #000;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+    }
+
+    .reels-container {
+        height: 100vh;
+        /* Fallback */
+        height: 100dvh;
+        /* Dynamic viewport height */
+        width: 100%;
+        max-width: 450px;
+        /* Mobile width constraint on desktop */
+        overflow-y: scroll;
+        scroll-snap-type: y mandatory;
+        background: #000;
+        position: relative;
+        /* Hide scrollbar */
+        scrollbar-width: none;
+        /* Firefox */
+        -ms-overflow-style: none;
+        /* IE and Edge */
+    }
+
+    .reels-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .reel-item {
+        height: 100%;
+        width: 100%;
+        scroll-snap-align: start;
+        scroll-snap-stop: always;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #111;
+    }
+
+    .reel-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* Immersive full screen */
+    }
+
+    /* Overlays */
+    .reel-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        color: white;
+        z-index: 10;
+        padding-bottom: 80px;
+        /* Space for navbar if visible */
+        pointer-events: none;
+        /* Let clicks pass through to video */
+    }
+
+    .reel-info {
+        pointer-events: auto;
+    }
+
+    .reel-actions {
+        position: absolute;
+        right: 16px;
+        bottom: 120px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        z-index: 20;
+    }
+
+    .action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: white;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    }
+
+    .action-btn i {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 6px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        transition: transform 0.2s;
+    }
+
+    .action-btn:active i {
+        transform: scale(0.8);
+    }
+
+    .reel-user {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+
+    .reel-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+
+    .reel-caption {
+        font-size: 14px;
+        margin-bottom: 10px;
+        line-height: 1.4;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    }
+
+    .reel-audio {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        opacity: 0.9;
+    }
+
+    .upload-fab {
+        position: fixed;
+        top: 90px;
+        right: 30px;
+        z-index: 100;
+        background: var(--odnix-gradient);
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        transition: transform 0.2s;
+    }
+
+    .upload-fab:hover {
+        transform: scale(1.1);
+    }
+
+    /* Hide desktop navbar elements for immersion */
+    .sidebar-enhanced {
+        display: none !important;
+    }
+
+    /* Adjust bottom nav for mobile immersion */
+    .liked-heart {
+        fill: #ff3040;
+        color: #ff3040;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reels-wrapper">
+    <!-- Navbar is included in base. For reels we might want a minimal transparent header or just use absolute positioning -->
+
+    <div class="reels-container" id="reelsContainer">
+        {% for reel in reels %}
+        <div class="reel-item" data-id="{{ reel.id }}">
+            <video class="reel-video" loop playsinline src="{{ reel.url }}" onclick="togglePlay(this)"></video>
+
+            <div class="reel-actions">
+                <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)">
+                    <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
+                    <span class="like-count">{{ reel.likes }}</span>
+                </button>
+                <button class="action-btn">
+                    <i data-lucide="message-circle"></i>
+                    <span>{{ reel.comments_count }}</span>
+                </button>
+                <button class="action-btn" onclick="shareReel('{{ reel.url }}')">
+                    <i data-lucide="share-2"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+
+            <div class="reel-overlay">
+                <div class="reel-info">
+                    <div class="reel-user">
+                        <img src="{% if reel.user.profile_picture %}{{ reel.user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ reel.user.username }}{% endif %}"
+                            class="reel-avatar">
+                        <span>{{ reel.user.username }}</span>
+                        {% if user != reel.user %}
+                        <button
+                            style="background: transparent; border: 1px solid rgba(255,255,255,0.8); color: white; border-radius: 6px; padding: 4px 12px; font-size: 12px; font-weight: 600; margin-left: 10px; cursor: pointer;">Follow</button>
+                        {% endif %}
+                    </div>
+                    {% if reel.caption %}
+                    <p class="reel-caption">{{ reel.caption }}</p>
+                    {% endif %}
+                    <div class="reel-audio">
+                        <i data-lucide="music-2" style="width: 14px; height: 14px;"></i>
+                        <span style="font-weight: 500;">Original Audio • {{ reel.user.username }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="reel-item" style="background: #000; color: white;">
+            <div style="text-align: center; padding: 20px;">
+                <i data-lucide="film" style="width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px;"></i>
+                <h3>No Reels yet</h3>
+                <p style="opacity: 0.7; margin-top: 10px;">Be the first to create one!</p>
+                <button onclick="document.getElementById('uploadReelInput').click()"
+                    style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
+                    Reel</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Upload FAB removed as per requirement -->
+    <input type="file" id="uploadReelInput" accept="video/*" style="display: none;" onchange="handleReelUpload(this)">
+</div>
+
+<script>
+    function togglePlay(video) {
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+
+    // Auto play on scroll logic
+    document.addEventListener('DOMContentLoaded', () => {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        let observerOptions = {
+            root: document.querySelector('.reels-container'),
+            threshold: 0.6
+        };
+
+        let observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                let video = entry.target.querySelector('video');
+                if (!video) return;
+
+                if (entry.isIntersecting) {
+                    // Play video
+                    video.currentTime = 0;
+                    video.play().catch(e => console.log("Auto-play prevented:", e));
+                } else {
+                    // Pause video
+                    video.pause();
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.reel-item').forEach(item => observer.observe(item));
+    });
+
+    function toggleReelLike(reelId, btn) {
+        fetch('/chat/api/reels/like/', {
+            method: 'POST',
+            body: JSON.stringify({ reel_id: reelId }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = btn.querySelector('i');
+                    const count = btn.querySelector('.like-count');
+
+                    if (data.is_liked) {
+                        icon.style.fill = '#ff3040';
+                        icon.style.color = '#ff3040';
+                    } else {
+                        icon.style.fill = 'none';
+                        icon.style.color = 'white';
+                    }
+                    count.textContent = data.likes_count;
+                }
+            });
+    }
+
+    function handleReelUpload(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Check file size (e.g., max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                alert("Video too large. Please upload under 50MB.");
+                return;
+            }
+
+            const caption = prompt("Write a caption for your reel:");
+            if (caption === null) return; // Cancelled
+
+            const formData = new FormData();
+            formData.append('video', file);
+            formData.append('caption', caption);
+
+            // Show loading state
+            const fab = document.querySelector('.upload-fab');
+            const originalContent = fab.innerHTML;
+            fab.innerHTML = '<div style="width:24px;height:24px;border:3px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>';
+            fab.style.pointerEvents = 'none';
+
+            // Add style for spinner
+            if (!document.getElementById('spinStyle')) {
+                const style = document.createElement('style');
+                style.id = 'spinStyle';
+                style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
+                document.head.appendChild(style);
+            }
+
+            fetch('/chat/api/reels/upload/', {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Upload failed: ' + (data.error || 'Unknown error'));
+                        fab.innerHTML = originalContent;
+                        fab.style.pointerEvents = 'auto';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert('Upload failed');
+                    fab.innerHTML = originalContent;
+                    fab.style.pointerEvents = 'auto';
+                });
+        }
+    }
+
+    function shareReel(url) {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Check out this reel on Odnix',
+                url: window.location.origin + url
+            });
+        } else {
+            // Fallback
+            navigator.clipboard.writeText(window.location.origin + url);
+            alert('Link copied to clipboard!');
+        }
+    }
+</script>
+{% endblock %}

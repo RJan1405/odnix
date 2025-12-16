@@ -31,13 +31,13 @@ def login_view(request):
         
         user = authenticate(request, username=username, password=password)
         if user is not None:
-            if user.is_email_verified:
-                login(request, user)
-                user.mark_online()
-                messages.success(request, f'Welcome back, {user.full_name}!')
-                return redirect('dashboard')
-            else:
-                messages.error(request, 'Please verify your email before logging in.')
+            # if user.is_email_verified:
+            login(request, user)
+            user.mark_online()
+            messages.success(request, f'Welcome back, {user.full_name}!')
+            return redirect('dashboard')
+            # else:
+            #     messages.error(request, 'Please verify your email before logging in.')
         else:
             try:
                 existing_user = CustomUser.objects.get(username=username)
@@ -55,7 +55,7 @@ def register_view(request):
         if form.is_valid():
             try:
                 user = form.save(commit=False)
-                user.is_email_verified = False  # Require email verification
+                user.is_email_verified = True  # Auto-verify email for now
                 
                 user.save()
                 

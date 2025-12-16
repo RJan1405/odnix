@@ -139,6 +139,11 @@ urlpatterns = [
     path('api/p2p/send-signal/', views.p2p_send_signal, name='p2p_send_signal'),
     path('api/p2p/<int:chat_id>/signals/', views.p2p_get_signals, name='p2p_get_signals'),
     path('api/p2p/<int:chat_id>/participants/', views.get_chat_participants_for_p2p, name='p2p_participants'),
+    
+    # Reels
+    path('reels/', views.reels_view, name='reels'),
+    path('api/reels/upload/', views.upload_reel, name='upload_reel'),
+    path('api/reels/like/', views.toggle_reel_like, name='toggle_reel_like'),
 ]
 
 # Serve media files in development

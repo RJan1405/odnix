@@ -16,7 +16,7 @@ from django.db import models as db_models
 from chat.models import (
     CustomUser, Chat, Tweet, Comment, Like, Follow, Block, FollowRequest,
     Hashtag, TweetHashtag, Mention, Message, StoryReply, StoryLike, Story,
-    SavedPost, PostReport
+    SavedPost, PostReport, Reel, ReelLike, ReelComment
 )
 from chat.forms import TweetForm, ProfileUpdateForm
 
@@ -247,9 +247,15 @@ def profile_view(request, username=None):
                 'saved_at': saved.created_at,
             })
     
+    # Get Reels if profile is viewable
+    reels = []
+    if can_view_profile:
+        reels = Reel.objects.filter(user=profile_user).order_by('-created_at')
+
     context = {
         'profile_user': profile_user,
         'tweets': tweets,
+        'reels': reels,
         'is_own_profile': is_own_profile,
         'existing_chat': existing_chat,
         'is_following': is_following,
@@ -1592,3 +1598,76 @@ def get_profile_following(request, username):
     except Exception as e:
         logger.error(f"Error getting following: {str(e)}")
         return JsonResponse({'success': False, 'error': 'Failed to get following'})
+
+@login_required
+def reels_view(request):
+    """View to watch and scroll through reels"""
+    reels = Reel.objects.select_related('user').prefetch_related('likes', 'comments').order_by('-created_at')[:50]
+    
+    # Process reels for the frontend
+    reels_data = []
+    for reel in reels:
+        reels_data.append({
+            'id': reel.id,
+            'url': reel.video_file.url,
+            'caption': reel.caption,
+            'user': reel.user,
+            'likes': reel.like_count,
+            'comments_count': reel.comment_count,
+            'is_liked': reel.is_liked_by(request.user),
+            'views': reel.views_count,
+            'timestamp': reel.created_at,
+        })
+    
+    return render(request, 'chat/reels.html', {
+        'reels': reels_data
+    })
+
+@login_required
+@require_POST
+def upload_reel(request):
+    """API to upload a new reel"""
+    try:
+        video_file = request.FILES.get('video')
+        caption = request.POST.get('caption', '')
+        
+        if not video_file:
+            return JsonResponse({'success': False, 'error': 'No video provided'})
+            
+        reel = Reel.objects.create(
+            user=request.user,
+            video_file=video_file,
+            caption=caption
+        )
+        
+        return JsonResponse({'success': True, 'message': 'Reel uploaded successfully'})
+    except Exception as e:
+        logger.error(f"Error uploading reel: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Failed to upload reel'})
+
+@login_required
+@require_POST
+def toggle_reel_like(request):
+    """API to like/unlike a reel"""
+    try:
+        data = json.loads(request.body)
+        reel_id = data.get('reel_id')
+        reel = get_object_or_404(Reel, id=reel_id)
+        
+        like = ReelLike.objects.filter(reel=reel, user=request.user).first()
+        if like:
+            like.delete()
+            is_liked = False
+        else:
+            ReelLike.objects.create(reel=reel, user=request.user)
+            is_liked = True
+            
+        return JsonResponse({
+            'success': True, 
+            'is_liked': is_liked,
+            'likes_count': reel.like_count
+        })
+    except Exception as e:
+        logger.error(f"Error toggling reel like: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Action failed'})
+
