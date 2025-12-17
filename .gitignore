@@ -1,0 +1,25 @@
+# Media files
+media/
+!media/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code
+.vscode/
+
+# Environment
+.env
+venv/
+env/
+
+# Django
+db.sqlite3
+*.log
+
+# Documentation/Artifacts
+SECURITY_IMPLEMENTATION.txt
+test_security_uploads.py
+MEDIA_COMPRESSION_DETAILS.md

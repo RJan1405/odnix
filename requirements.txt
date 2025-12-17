@@ -4,7 +4,8 @@ sqlparse==0.4.4
 tzdata==2024.1
 
 # Production dependencies
-Pillow==10.1.0
+# Pillow 10.x fails on Python 3.13; use 11.x
+Pillow==11.0.0
 channels==4.0.0
 channels-redis==4.1.0
 redis==5.0.1
@@ -13,5 +14,6 @@ gunicorn==21.2.0
 daphne==4.0.0
 whitenoise==6.6.0
 python-dotenv==1.0.0
-psycopg2-binary==2.9.9
 dj-database-url==2.1.0
+moviepy==1.0.3
+imageio-ffmpeg==0.4.9

@@ -2037,3 +2037,281 @@ Traceback (most recent call last):
 django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2521: 'endblock'. Did you forget to register or load this tag?
 "GET /chat/profile/ HTTP/1.1" 500 215283
 Error in get_chats_api: Cannot resolve keyword 'read_by' into field. Choices are: chat, chat_id, consumed_at, content, deletions, edited_at, id, is_edited, is_pinned, is_read, media_filename, media_size, media_type, media_url, message_reactions, message_type, one_time, original_content, pinned_at, pinned_by, pinned_by_id, reactions, read_receipts, replies, reply_to, reply_to_id, sender, sender_id, starred_by, timestamp
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Internal Server Error: /chat/api/reels/upload/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\social.py", line 1757, in upload_reel
+    from moviepy.editor import VideoFileClip
+ModuleNotFoundError: No module named 'moviepy.editor'
+"POST /chat/api/reels/upload/ HTTP/1.1" 500 82279
+Internal Server Error: /chat/api/reels/upload/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 59, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\social.py", line 1757, in upload_reel
+    from moviepy.editor import VideoFileClip
+ModuleNotFoundError: No module named 'moviepy.editor'
+"POST /chat/api/reels/upload/ HTTP/1.1" 500 82276
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Internal Server Error: /chat/profile/update/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\social.py", line 304, in update_profile
+    if form.is_valid():
+       ~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 197, in is_valid
+    return self.is_bound and not self.errors
+                                 ^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 192, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 327, in full_clean
+    self._clean_fields()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 342, in _clean_fields
+    value = getattr(self, "clean_%s" % name)()
+  File "D:\VulnTech3\odnix\chat\forms.py", line 212, in clean_profile_picture
+    if profile_picture.size > 5 * 1024 * 1024:
+       ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\db\models\fields\files.py", line 74, in size
+    return self.storage.size(self.name)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\files\storage\filesystem.py", line 182, in size
+    return os.path.getsize(self.path(name))
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "<frozen genericpath>", line 86, in getsize
+FileNotFoundError: [WinError 2] The system cannot find the file specified: 'D:\\VulnTech3\\odnix\\media\\profile_pics\\profile_1_5f03da16.jpg'
+"POST /chat/profile/update/ HTTP/1.1" 500 144416
+Internal Server Error: /chat/profile/update/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\social.py", line 312, in update_profile
+    if form.is_valid():
+       ~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 197, in is_valid
+    return self.is_bound and not self.errors
+                                 ^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 192, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 327, in full_clean
+    self._clean_fields()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 342, in _clean_fields
+    value = getattr(self, "clean_%s" % name)()
+  File "D:\VulnTech3\odnix\chat\forms.py", line 212, in clean_profile_picture
+    if profile_picture.size > 5 * 1024 * 1024:
+       ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\db\models\fields\files.py", line 74, in size
+    return self.storage.size(self.name)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\files\storage\filesystem.py", line 182, in size
+    return os.path.getsize(self.path(name))
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "<frozen genericpath>", line 86, in getsize
+FileNotFoundError: [WinError 2] The system cannot find the file specified: 'D:\\VulnTech3\\odnix\\media\\profile_pics\\profile_1_5f03da16.jpg'
+"POST /chat/profile/update/ HTTP/1.1" 500 144145
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Internal Server Error: /chat/profile/update/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\social.py", line 312, in update_profile
+    if form.is_valid():
+       ~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 197, in is_valid
+    return self.is_bound and not self.errors
+                                 ^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 192, in errors
+    self.full_clean()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 327, in full_clean
+    self._clean_fields()
+    ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\forms\forms.py", line 342, in _clean_fields
+    value = getattr(self, "clean_%s" % name)()
+  File "D:\VulnTech3\odnix\chat\forms.py", line 212, in clean_profile_picture
+    if profile_picture.size > 5 * 1024 * 1024:
+       ^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\db\models\fields\files.py", line 74, in size
+    return self.storage.size(self.name)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\files\storage\filesystem.py", line 182, in size
+    return os.path.getsize(self.path(name))
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "<frozen genericpath>", line 86, in getsize
+FileNotFoundError: [WinError 2] The system cannot find the file specified: 'D:\\VulnTech3\\odnix\\media\\profile_pics\\profile_1_5f03da16.jpg'
+"POST /chat/profile/update/ HTTP/1.1" 500 139573
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found

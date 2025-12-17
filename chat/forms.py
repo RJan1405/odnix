@@ -1,9 +1,10 @@
-# forms.py - COMPLETE NEW VERSION WITH ALL FIXES
-
+# forms.py - SECURE VERSION
 from django import forms
 from django.core.exceptions import ValidationError
 from .models import CustomUser, Tweet
+from chat.security import validate_media_file
 import os
+from django.core.files.uploadedfile import UploadedFile
 
 class CustomUserCreationForm(forms.ModelForm):
     """Enhanced user registration form"""
@@ -77,6 +78,15 @@ class CustomUserCreationForm(forms.ModelForm):
             if profile_picture.size > 5 * 1024 * 1024:
                 raise ValidationError("Profile picture file too large. Maximum size is 5MB.")
             
+            # Security: Validate Magic Bytes
+            if isinstance(profile_picture, UploadedFile):
+                try:
+                    validate_media_file(profile_picture)
+                except ValidationError as e:
+                    raise e
+                except Exception:
+                    pass
+
             # Check file extension
             ext = os.path.splitext(profile_picture.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
@@ -109,11 +119,11 @@ class LoginForm(forms.Form):
     )
 
 class TweetForm(forms.ModelForm):
-    """FIXED - Tweet form with image support - THIS WAS THE MAIN ISSUE"""
+    """FIXED - Tweet form with image support"""
     
     class Meta:
         model = Tweet
-        fields = ['content', 'image']  # CRITICAL FIX: Added 'image' field!
+        fields = ['content', 'image']
         widgets = {
             'content': forms.Textarea(attrs={
                 'id': 'id_content',
@@ -127,7 +137,7 @@ class TweetForm(forms.ModelForm):
                 'id': 'id_image',
                 'class': 'form-control-file',
                 'accept': 'image/*',
-                'style': 'display: none;'  # Hide default input
+                'style': 'display: none;'
             })
         }
     
@@ -144,6 +154,15 @@ class TweetForm(forms.ModelForm):
             if image.size > 5 * 1024 * 1024:
                 raise ValidationError("Image file too large. Maximum size is 5MB.")
             
+            # Security: Validate Magic Bytes
+            if isinstance(image, UploadedFile):
+                try:
+                    validate_media_file(image)
+                except ValidationError as e:
+                    raise e
+                except Exception:
+                    pass
+
             # Check file extension
             ext = os.path.splitext(image.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
@@ -157,7 +176,6 @@ class TweetForm(forms.ModelForm):
         content = cleaned_data.get('content', '').strip()
         image = cleaned_data.get('image')
         
-        # At least content or image must be provided
         if not content and not image:
             raise ValidationError("Tweet must have either text content or an image.")
         
@@ -166,7 +184,6 @@ class TweetForm(forms.ModelForm):
 class ProfileUpdateForm(forms.ModelForm):
     """Form for updating user profile"""
     
-    # Override profile_picture to use simple FileInput (no clear checkbox, no path display)
     profile_picture = forms.ImageField(
         required=False,
         widget=forms.FileInput(attrs={
@@ -199,7 +216,6 @@ class ProfileUpdateForm(forms.ModelForm):
     
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        # Check if username is being changed
         if username != self.instance.username:
             if CustomUser.objects.filter(username=username).exists():
                 raise ValidationError("Username already taken. Please choose another.")
@@ -209,8 +225,21 @@ class ProfileUpdateForm(forms.ModelForm):
         profile_picture = self.cleaned_data.get('profile_picture')
         if profile_picture:
             # Check file size (max 5MB)
-            if profile_picture.size > 5 * 1024 * 1024:
-                raise ValidationError("Profile picture file too large. Maximum size is 5MB.")
+            try:
+                if profile_picture.size > 5 * 1024 * 1024:
+                    raise ValidationError("Profile picture file too large. Maximum size is 5MB.")
+                
+                # Security: Validate Magic Bytes
+                if isinstance(profile_picture, UploadedFile):
+                    validate_media_file(profile_picture)
+                    
+            except FileNotFoundError:
+                # Missing existing file, harmless
+                pass
+            except ValidationError as e:
+                raise e
+            except Exception:
+                pass
             
             # Check file extension
             ext = os.path.splitext(profile_picture.name)[1].lower()

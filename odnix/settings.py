@@ -184,3 +184,20 @@ LOGGING = {
         },
     },
 }
+
+# --- Reels Compression Settings ---
+# Tunable knobs for server-side reel compression. You can override via env vars
+# or directly edit here per environment.
+REELS_MAX_WIDTH = int(os.getenv('REELS_MAX_WIDTH', 720))           # px
+REELS_MAX_DURATION = int(os.getenv('REELS_MAX_DURATION', 90))      # seconds
+# frames per second (cap)
+REELS_MAX_FPS = int(os.getenv('REELS_MAX_FPS', 30))
+# 18-32 (lower=better quality)
+REELS_CRF = int(os.getenv('REELS_CRF', 28))
+# ultrafast..veryslow
+REELS_PRESET = os.getenv('REELS_PRESET', 'veryfast')
+REELS_AUDIO_BITRATE = os.getenv(
+    'REELS_AUDIO_BITRATE', '96k')      # e.g. '96k', '128k'
+REELS_SMART_FALLBACK = os.getenv(
+    'REELS_SMART_FALLBACK', '1') in ('1', 'true', 'True')
+REELS_FORCE_MP4 = os.getenv('REELS_FORCE_MP4', '1') in ('1', 'true', 'True')
