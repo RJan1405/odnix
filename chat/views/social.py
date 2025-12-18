@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.db.models import Count, Q, Max
 from django.core.cache import cache
 from django.core.files.base import ContentFile
+from django.core.exceptions import ValidationError
 import json
 import hashlib
 import logging
@@ -16,8 +17,8 @@ from django.db import models as db_models
 
 from chat.models import (
     CustomUser, Chat, Tweet, Comment, Like, Follow, Block, FollowRequest,
-    Hashtag, TweetHashtag, Mention, Message, StoryReply, StoryLike, Story,
-    SavedPost, PostReport, Reel, ReelLike, ReelComment
+    Hashtag, TweetHashtag, Mention, StoryReply, StoryLike, Story,
+    SavedPost, PostReport, Reel, ReelLike
 )
 from chat.forms import TweetForm, ProfileUpdateForm
 
@@ -300,7 +301,7 @@ def update_profile(request):
 
         # Check for cropped image data (base64)
         cropped_image_data = request.POST.get('profile_picture_cropped', '')
-        
+
         # Capture old profile picture path safely
         old_profile_pic_path = None
         if request.user.profile_picture:
@@ -335,7 +336,8 @@ def update_profile(request):
                         try:
                             os.remove(old_profile_pic_path)
                         except Exception as e:
-                            logger.warning(f"Failed to delete old profile pic: {e}")
+                            logger.warning(
+                                f"Failed to delete old profile pic: {e}")
 
                     # Save new cropped image
                     # Compress before saving
@@ -1735,7 +1737,7 @@ def get_profile_following(request, username):
 def reels_view(request):
     """View to watch and scroll through reels"""
     from chat.recommendations import ContentRecommender
-    
+
     # Use Recommendation Engine
     recommender = ContentRecommender(request.user)
     reels = recommender.get_reels(limit=50)
@@ -1767,6 +1769,21 @@ def upload_reel(request):
     import os
     import tempfile
     from django.core.files import File
+    from datetime import datetime, timedelta
+
+    # CHECK DAILY LIMIT (5 reels per day)
+    today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    today_count = Reel.objects.filter(
+        user=request.user,
+        created_at__gte=today_start
+    ).count()
+
+    if today_count >= 5:
+        return JsonResponse({
+            'success': False,
+            'error': 'Daily reel limit reached. You can upload up to 5 reels per day. Try again tomorrow!'
+        })
+
     # Try to import MoviePy lazily so missing dependency won't 500
     moviepy_available = True
     try:
@@ -1792,7 +1809,8 @@ def upload_reel(request):
         # Create temp file for original video
         # Create temp file for original video
         # On Windows, we must close the file before MoviePy can open it
-        temp_in = tempfile.NamedTemporaryFile(suffix=os.path.splitext(video_file.name)[1], delete=False)
+        temp_in = tempfile.NamedTemporaryFile(
+            suffix=os.path.splitext(video_file.name)[1], delete=False)
         try:
             for chunk in video_file.chunks():
                 temp_in.write(chunk)
@@ -1843,7 +1861,7 @@ def upload_reel(request):
                     except:
                         pass
                     return JsonResponse({
-                        'success': False, 
+                        'success': False,
                         'error': f'Reel is too long. Maximum allowed duration is {max_duration // 60} minutes.'
                     })
             except Exception:
@@ -1866,25 +1884,25 @@ def upload_reel(request):
             # Target Size: 8MB = 8 * 1024 * 1024 bytes = 8388608 bytes = 67108864 bits
             # Audio Bitrate: 96k = 96000 bps
             # Duration: clip.duration (seconds)
-            
+
             target_size_bytes = 8 * 1024 * 1024
             duration = clip.duration if clip.duration else 1
             audio_bitrate_kbps = 96
-            
+
             # Calculate video bitrate
             total_bits = target_size_bytes * 8
             audio_bits = audio_bitrate_kbps * 1000 * duration
             video_bits_available = total_bits - audio_bits
-            
+
             # Safety margin (5%) for container overhead
             video_bits_available = video_bits_available * 0.95
-            
+
             target_video_bitrate_bps = video_bits_available / duration
-            
+
             # Convert to string with 'k' suffix for moviepy/ffmpeg
             # Ensure at least 100k bitrate so it doesn't break completely
             video_bitrate = f"{max(int(target_video_bitrate_bps / 1000), 100)}k"
-            
+
             preset = str(getattr(settings, 'REELS_PRESET', 'veryfast'))
             audio_bitrate = f"{audio_bitrate_kbps}k"
 

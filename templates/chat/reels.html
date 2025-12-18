@@ -55,6 +55,24 @@
         /* Immersive full screen */
     }
 
+    .reel-play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        z-index: 15;
+    }
+
+    .reel-video:paused ~ .reel-play-overlay {
+        display: flex;
+    }
+
     /* Overlays */
     .reel-overlay {
         position: absolute;
@@ -182,9 +200,15 @@
     <div class="reels-container" id="reelsContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
+            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
+            <div class="reel-play-overlay" onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
+                <i data-lucide="play-circle" style="width: 80px; height: 80px; color: white; opacity: 0.8;"></i>
+            </div>
 
             <div class="reel-actions">
+                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false">
+                    <i data-lucide="volume-2"></i>
+                </button>
                 <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)">
                     <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
                     <span class="like-count">{{ reel.likes }}</span>
@@ -264,20 +288,80 @@
 </div>
 
 <script>
+    // Global mute state - default is unmuted (sound on)
+    let globalMuted = false;
+
+    function toggleGlobalMute(btn) {
+        globalMuted = !globalMuted;
+        const icon = btn.querySelector('i');
+        
+        // Update all videos
+        document.querySelectorAll('.reel-video').forEach(video => {
+            video.muted = globalMuted;
+        });
+
+        // Update icon
+        if (icon) {
+            icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    }
+
+    function toggleReelMute(btn, event) {
+        event.stopPropagation();
+        const reel = btn.closest('.reel-item');
+        const video = reel.querySelector('video');
+        const icon = btn.querySelector('i');
+        
+        // Toggle mute state for this specific reel
+        video.muted = !video.muted;
+        btn.setAttribute('data-muted', video.muted);
+        
+        // Update icon
+        if (icon) {
+            icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    }
+
     function togglePlay(video) {
         if (video.paused) {
             video.play();
         } else {
             video.pause();
         }
-        // Ensure sound is on when user interacts
-        video.muted = false;
+        // Use global mute state when user interacts
+        video.muted = globalMuted;
     }
 
     // Auto play on scroll logic
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
+        }
+
+        // Helper to safely play video
+        function safePlay(video) {
+            if (video.paused) {
+                video.muted = true;
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        // Unmute after successful play if not globally muted
+                        setTimeout(() => {
+                            if (!globalMuted) {
+                                video.muted = false;
+                            }
+                        }, 100);
+                    }).catch(err => {
+                        console.log("Autoplay failed:", err);
+                    });
+                }
+            }
         }
 
         let observerOptions = {
@@ -291,19 +375,47 @@
                 if (!video) return;
 
                 if (entry.isIntersecting) {
-                    // Play video
                     video.currentTime = 0;
-                    // Ensure muted so autoplay works
-                    video.muted = true;
-                    video.play().catch(e => console.log("Auto-play prevented:", e));
+                    safePlay(video);
                 } else {
-                    // Pause video
                     video.pause();
                 }
             });
         }, observerOptions);
 
-        document.querySelectorAll('.reel-item').forEach(item => observer.observe(item));
+        const reelItems = document.querySelectorAll('.reel-item');
+        reelItems.forEach(item => {
+            const video = item.querySelector('video');
+            const overlay = item.querySelector('.reel-play-overlay');
+            
+            // Hide overlay when video plays
+            video.addEventListener('play', () => {
+                if (overlay) overlay.style.display = 'none';
+            });
+            
+            // Show overlay when video pauses
+            video.addEventListener('pause', () => {
+                if (overlay && video.currentTime > 0 && !video.ended) {
+                    overlay.style.display = 'flex';
+                }
+            });
+            
+            observer.observe(item);
+        });
+        
+        // Auto-play the first reel immediately on page load
+        const firstReel = document.querySelector('.reel-item');
+        if (firstReel) {
+            const firstVideo = firstReel.querySelector('video');
+            if (firstVideo) {
+                // Play immediately if loaded, or when it loads
+                if (firstVideo.readyState >= 2) {
+                    safePlay(firstVideo);
+                } else {
+                    firstVideo.addEventListener('canplay', () => safePlay(firstVideo), { once: true });
+                }
+            }
+        }
     });
 
     function toggleReelLike(reelId, btn) {
