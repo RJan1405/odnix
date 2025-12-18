@@ -188,8 +188,8 @@ LOGGING = {
 # --- Reels Compression Settings ---
 # Tunable knobs for server-side reel compression. You can override via env vars
 # or directly edit here per environment.
-REELS_MAX_WIDTH = int(os.getenv('REELS_MAX_WIDTH', 720))           # px
-REELS_MAX_DURATION = int(os.getenv('REELS_MAX_DURATION', 90))      # seconds
+REELS_MAX_WIDTH = int(os.getenv('REELS_MAX_WIDTH', 480))           # px
+REELS_MAX_DURATION = int(os.getenv('REELS_MAX_DURATION', 120))      # seconds
 # frames per second (cap)
 REELS_MAX_FPS = int(os.getenv('REELS_MAX_FPS', 30))
 # 18-32 (lower=better quality)

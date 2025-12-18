@@ -226,3 +226,56 @@ class PostReportAdmin(admin.ModelAdmin):
         from django.utils import timezone
         queryset.update(reviewed=True, reviewed_at=timezone.now())
     mark_as_reviewed.short_description = "Mark selected reports as reviewed"
+
+from .models import Reel, ReelLike, ReelComment
+
+@admin.register(Reel)
+class ReelAdmin(admin.ModelAdmin):
+    list_display = ['id', 'user', 'caption_preview', 'views_count', 'like_count', 'comment_count', 'rank_score', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'caption']
+    readonly_fields = ['created_at', 'views_count', 'like_count', 'comment_count']
+    
+    def caption_preview(self, obj):
+        return obj.caption[:50] + "..." if len(obj.caption) > 50 else obj.caption
+    caption_preview.short_description = 'Caption'
+    
+    def like_count(self, obj):
+        return obj.likes.count()
+    like_count.short_description = 'Likes'
+    
+    def comment_count(self, obj):
+        return obj.comments.count()
+    comment_count.short_description = 'Comments'
+
+    def rank_score(self, obj):
+        """Calculate the engagement score used by the recommendation engine"""
+        from django.utils import timezone
+        
+        # Calculate raw engagement score (Likes*2 + Comments*4 + Views*0.1)
+        likes = obj.likes.count()
+        comments = obj.comments.count()
+        views = obj.views_count
+        
+        engagement = (likes * 2.0) + (comments * 4.0) + (views * 0.1)
+        
+        # Calculate freshness score
+        now = timezone.now()
+        age_hours = (now - obj.created_at).total_seconds() / 3600
+        freshness = 1000 / ((age_hours + 2) ** 1.8)
+        
+        total_score = engagement + freshness
+        return f"{total_score:.2f} (E:{engagement:.1f} + F:{freshness:.1f})"
+    rank_score.short_description = 'Rank Score (Eng + Fresh)'
+
+@admin.register(ReelLike)
+class ReelLikeAdmin(admin.ModelAdmin):
+    list_display = ['user', 'reel', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'reel__caption']
+
+@admin.register(ReelComment)
+class ReelCommentAdmin(admin.ModelAdmin):
+    list_display = ['user', 'reel', 'content', 'created_at']
+    list_filter = ['created_at']
+    search_fields = ['user__username', 'content']

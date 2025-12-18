@@ -182,7 +182,7 @@
     <div class="reels-container" id="reelsContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline src="{{ reel.url }}" onclick="togglePlay(this)"></video>
+            <video class="reel-video" loop playsinline muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
 
             <div class="reel-actions">
                 <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)">
@@ -226,13 +226,38 @@
                 <i data-lucide="film" style="width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px;"></i>
                 <h3>No Reels yet</h3>
                 <p style="opacity: 0.7; margin-top: 10px;">Be the first to create one!</p>
-                <button onclick="document.getElementById('uploadReelInput').click()"
-                    style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px; border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
+                <button onclick="document.getElementById('uploadReelInput').click()" style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px;
+                border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
                     Reel</button>
+                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Reels should be 2
+                    mins max</p>
             </div>
         </div>
         {% endfor %}
     </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
+        <div
+            style="background: #1e1e1e; padding: 25px; border-radius: 12px; max-width: 90%; width: 350px; text-align: center; border: 1px solid #333;">
+            <div
+                style="width: 50px; height: 50px; background: rgba(255, 68, 68, 0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                <i data-lucide="alert-circle" style="color: #ff4444; width: 28px; height: 28px;"></i>
+            </div>
+            <h3 style="color: white; margin: 0 0 10px; font-size: 18px;">Video Too Long</h3>
+            <p id="errorModalText" style="color: #bbb; font-size: 14px; margin-bottom: 20px; line-height: 1.5;"></p>
+            <p
+                style="color: #ff4444; font-size: 12px; margin-bottom: 20px; font-weight: 500; background: rgba(255, 68, 68, 0.05); padding: 8px; border-radius: 6px;">
+                Note: Upload reels only of 2 mins
+            </p>
+            <button onclick="closeErrorModal()"
+                style="background: white; color: black; border: none; padding: 10px 24px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%;">Got
+                it</button>
+        </div>
+    </div>
+
+
 
     <!-- Upload FAB removed as per requirement -->
     <input type="file" id="uploadReelInput" accept="video/*" style="display: none;" onchange="handleReelUpload(this)">
@@ -245,6 +270,8 @@
         } else {
             video.pause();
         }
+        // Ensure sound is on when user interacts
+        video.muted = false;
     }
 
     // Auto play on scroll logic
@@ -266,6 +293,8 @@
                 if (entry.isIntersecting) {
                     // Play video
                     video.currentTime = 0;
+                    // Ensure muted so autoplay works
+                    video.muted = true;
                     video.play().catch(e => console.log("Auto-play prevented:", e));
                 } else {
                     // Pause video
@@ -289,86 +318,44 @@
             .then(r => r.json())
             .then(data => {
                 if (data.success) {
-                    const icon = btn.querySelector('i');
+                    // Lucide replaces <i> with <svg>, so we must look for the SVG or fallback
+                    const icon = btn.querySelector('svg') || btn.querySelector('i');
                     const count = btn.querySelector('.like-count');
 
                     if (data.is_liked) {
                         icon.style.fill = '#ff3040';
                         icon.style.color = '#ff3040';
+                        icon.classList.add('liked-heart');
                     } else {
                         icon.style.fill = 'none';
                         icon.style.color = 'white';
+                        icon.classList.remove('liked-heart');
                     }
                     count.textContent = data.likes_count;
                 }
             });
     }
 
-    function handleReelUpload(input) {
-        if (input.files && input.files[0]) {
-            const file = input.files[0];
-
-            // Check file size (e.g., max 50MB)
-            if (file.size > 50 * 1024 * 1024) {
-                alert("Video too large. Please upload under 50MB.");
-                return;
-            }
-
-            const caption = prompt("Write a caption for your reel:");
-            if (caption === null) return; // Cancelled
-
-            const formData = new FormData();
-            formData.append('video', file);
-            formData.append('caption', caption);
-
-            // Show loading state
-            const fab = document.querySelector('.upload-fab');
-            const originalContent = fab.innerHTML;
-            fab.innerHTML = '<div style="width:24px;height:24px;border:3px solid white;border-top-color:transparent;border-radius:50%;animation:spin 1s linear infinite;"></div>';
-            fab.style.pointerEvents = 'none';
-
-            // Add style for spinner
-            if (!document.getElementById('spinStyle')) {
-                const style = document.createElement('style');
-                style.id = 'spinStyle';
-                style.innerHTML = '@keyframes spin { to { transform: rotate(360deg); } }';
-                document.head.appendChild(style);
-            }
-
-            fetch('/chat/api/reels/upload/', {
-                method: 'POST',
-                body: formData,
-                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-            })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        alert('Upload failed: ' + (data.error || 'Unknown error'));
-                        fab.innerHTML = originalContent;
-                        fab.style.pointerEvents = 'auto';
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                    alert('Upload failed');
-                    fab.innerHTML = originalContent;
-                    fab.style.pointerEvents = 'auto';
-                });
-        }
-    }
-
     function shareReel(url) {
+        const fullUrl = window.location.origin + url;
+
+        // Prefer modern share API if available (Mobile)
         if (navigator.share) {
             navigator.share({
                 title: 'Check out this reel on Odnix',
-                url: window.location.origin + url
-            });
+                url: fullUrl
+            }).catch(console.error);
         } else {
-            // Fallback
-            navigator.clipboard.writeText(window.location.origin + url);
-            alert('Link copied to clipboard!');
+            // Desktop fallback
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                // Show a nice toast or reuse error modal for success info?
+                // For now, simpler alert is standard, but let's make it look like a confirmation
+                const originalText = document.activeElement.innerText;
+                alert('Link copied to clipboard!');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy link.');
+            });
         }
     }
 </script>

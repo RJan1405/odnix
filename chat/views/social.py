@@ -1734,8 +1734,11 @@ def get_profile_following(request, username):
 @login_required
 def reels_view(request):
     """View to watch and scroll through reels"""
-    reels = Reel.objects.select_related('user').prefetch_related(
-        'likes', 'comments').order_by('-created_at')[:50]
+    from chat.recommendations import ContentRecommender
+    
+    # Use Recommendation Engine
+    recommender = ContentRecommender(request.user)
+    reels = recommender.get_reels(limit=50)
 
     # Process reels for the frontend
     reels_data = []
@@ -1787,10 +1790,15 @@ def upload_reel(request):
             return JsonResponse({'success': False, 'error': str(e)})
 
         # Create temp file for original video
-        with tempfile.NamedTemporaryFile(suffix=os.path.splitext(video_file.name)[1], delete=False) as temp_in:
+        # Create temp file for original video
+        # On Windows, we must close the file before MoviePy can open it
+        temp_in = tempfile.NamedTemporaryFile(suffix=os.path.splitext(video_file.name)[1], delete=False)
+        try:
             for chunk in video_file.chunks():
                 temp_in.write(chunk)
             temp_in_path = temp_in.name
+        finally:
+            temp_in.close()
 
         # If MoviePy isn't available, save original without compression
         if not moviepy_available:
@@ -1825,14 +1833,19 @@ def upload_reel(request):
                 pass
 
             # 2) Limit duration
+            # 2) Limit duration
             try:
                 max_duration = max(
-                    int(getattr(settings, 'REELS_MAX_DURATION', 90)), 1)
+                    int(getattr(settings, 'REELS_MAX_DURATION', 120)), 1)
                 if getattr(clip, 'duration', 0) and clip.duration > max_duration:
-                    if hasattr(clip, 'subclip'):
-                        clip = clip.subclip(0, max_duration)
-                    else:
-                        clip = clip.subclipped(0, max_duration)
+                    try:
+                        clip.close()
+                    except:
+                        pass
+                    return JsonResponse({
+                        'success': False, 
+                        'error': f'Reel is too long. Maximum allowed duration is {max_duration // 60} minutes.'
+                    })
             except Exception:
                 pass
 
@@ -1849,24 +1862,43 @@ def upload_reel(request):
             ), f"compressed_{os.path.basename(temp_in_path)}")
             temp_out_path = os.path.splitext(temp_out_path)[0] + ".mp4"
 
-            # 4) Write compressed file using CRF for size control
-            #    Values configurable via settings.py
-            #    yuv420p + +faststart: broad compatibility and progressive playback
-            crf = str(int(getattr(settings, 'REELS_CRF', 28)))
+            # 4) Calculate target bitrate for 8MB limit
+            # Target Size: 8MB = 8 * 1024 * 1024 bytes = 8388608 bytes = 67108864 bits
+            # Audio Bitrate: 96k = 96000 bps
+            # Duration: clip.duration (seconds)
+            
+            target_size_bytes = 8 * 1024 * 1024
+            duration = clip.duration if clip.duration else 1
+            audio_bitrate_kbps = 96
+            
+            # Calculate video bitrate
+            total_bits = target_size_bytes * 8
+            audio_bits = audio_bitrate_kbps * 1000 * duration
+            video_bits_available = total_bits - audio_bits
+            
+            # Safety margin (5%) for container overhead
+            video_bits_available = video_bits_available * 0.95
+            
+            target_video_bitrate_bps = video_bits_available / duration
+            
+            # Convert to string with 'k' suffix for moviepy/ffmpeg
+            # Ensure at least 100k bitrate so it doesn't break completely
+            video_bitrate = f"{max(int(target_video_bitrate_bps / 1000), 100)}k"
+            
             preset = str(getattr(settings, 'REELS_PRESET', 'veryfast'))
-            audio_bitrate = str(
-                getattr(settings, 'REELS_AUDIO_BITRATE', '96k'))
+            audio_bitrate = f"{audio_bitrate_kbps}k"
+
             clip.write_videofile(
                 temp_out_path,
                 codec='libx264',
                 audio_codec='aac',
                 audio_bitrate=audio_bitrate,
+                bitrate=video_bitrate,
                 temp_audiofile='temp-audio.m4a',
                 remove_temp=True,
                 fps=target_fps,
                 logger=None,
                 ffmpeg_params=[
-                    '-crf', crf,
                     '-preset', preset,
                     '-pix_fmt', 'yuv420p',
                     '-movflags', '+faststart'
@@ -1931,7 +1963,7 @@ def upload_reel(request):
         return JsonResponse({'success': True, 'message': 'Reel uploaded successfully'})
     except Exception as e:
         logger.error(f"Error uploading reel: {str(e)}")
-        return JsonResponse({'success': False, 'error': 'Failed to upload reel'})
+        return JsonResponse({'success': False, 'error': f'Failed to upload reel: {str(e)}'})
 
 
 @login_required
