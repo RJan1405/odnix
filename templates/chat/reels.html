@@ -387,10 +387,32 @@
         reelItems.forEach(item => {
             const video = item.querySelector('video');
             const overlay = item.querySelector('.reel-play-overlay');
+            const reelId = item.dataset.id;
+            let viewTracked = false;
             
             // Hide overlay when video plays
             video.addEventListener('play', () => {
                 if (overlay) overlay.style.display = 'none';
+                
+                // Track view only once per reel
+                if (!viewTracked && reelId) {
+                    viewTracked = true;
+                    fetch('/chat/api/reels/track-view/', {
+                        method: 'POST',
+                        body: JSON.stringify({ reel_id: reelId }),
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            console.log('View tracked for reel ' + reelId + '. Total views:', data.views);
+                        }
+                    })
+                    .catch(err => console.error('Error tracking view:', err));
+                }
             });
             
             // Show overlay when video pauses

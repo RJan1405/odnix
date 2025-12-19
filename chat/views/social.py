@@ -1764,13 +1764,38 @@ def reels_view(request):
 
 @login_required
 @require_POST
+def track_reel_view(request):
+    """API endpoint to track when a user watches a specific reel"""
+    try:
+        data = json.loads(request.body)
+        reel_id = data.get('reel_id')
+
+        if not reel_id:
+            return JsonResponse({'error': 'reel_id required'}, status=400)
+
+        reel = get_object_or_404(Reel, id=reel_id)
+
+        # Increment view count only for this reel
+        reel.views_count += 1
+        reel.save(update_fields=['views_count'])
+
+        return JsonResponse({
+            'status': 'success',
+            'views': reel.views_count
+        })
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    except Exception as e:
+        logger.error(f"Error tracking reel view: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
 def upload_reel(request):
     """API to upload a new reel with compression"""
     import os
     import tempfile
-    from django.core.files import File
-    from datetime import datetime, timedelta
-
     # CHECK DAILY LIMIT (5 reels per day)
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = Reel.objects.filter(
