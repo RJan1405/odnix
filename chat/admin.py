@@ -1,6 +1,6 @@
 # admin.py - FIXED VERSION
 
-from .models import Reel, ReelLike, ReelComment
+from .models import Reel, ReelLike, ReelComment, ReelReport
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from .models import (
@@ -294,3 +294,18 @@ class ReelCommentAdmin(admin.ModelAdmin):
     list_display = ['user', 'reel', 'content', 'created_at']
     list_filter = ['created_at']
     search_fields = ['user__username', 'content']
+
+
+@admin.register(ReelReport)
+class ReelReportAdmin(admin.ModelAdmin):
+    list_display = ['reporter', 'reel', 'reason', 'created_at', 'reviewed']
+    list_filter = ['reason', 'reviewed', 'created_at']
+    search_fields = ['reporter__username', 'reel__caption', 'description']
+    raw_id_fields = ['reporter', 'reel']
+    readonly_fields = ['created_at', 'reviewed_at']
+    actions = ['mark_as_reviewed']
+
+    def mark_as_reviewed(self, request, queryset):
+        from django.utils import timezone
+        queryset.update(reviewed=True, reviewed_at=timezone.now())
+    mark_as_reviewed.short_description = "Mark selected reports as reviewed"

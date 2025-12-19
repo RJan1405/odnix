@@ -1,7 +1,7 @@
 {% extends 'chat/base.html' %}
 {% load static %}
 
-{% block title %}Reels - Odnix{% endblock %}
+{% block title %}Omzo - Odnix{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -69,7 +69,7 @@
         z-index: 15;
     }
 
-    .reel-video:paused ~ .reel-play-overlay {
+    .reel-video:paused~.reel-play-overlay {
         display: flex;
     }
 
@@ -95,12 +95,13 @@
 
     .reel-actions {
         position: absolute;
-        right: 16px;
-        bottom: 120px;
+        right: 12px;
+        bottom: 100px;
         display: flex;
         flex-direction: column;
-        gap: 24px;
+        gap: 20px;
         z-index: 20;
+        align-items: center;
     }
 
     .action-btn {
@@ -111,21 +112,26 @@
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 13px;
-        font-weight: 500;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        font-size: 12px;
+        font-weight: 600;
+        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+        padding: 0;
+        position: relative;
     }
 
-    .action-btn i {
-        width: 32px;
-        height: 32px;
-        margin-bottom: 6px;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-        transition: transform 0.2s;
+    .action-btn i,
+    .action-btn svg {
+        width: 28px;
+        height: 28px;
+        margin-bottom: 4px;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
+        transition: transform 0.15s;
+        stroke-width: 2.5;
     }
 
-    .action-btn:active i {
-        transform: scale(0.8);
+    .action-btn:active i,
+    .action-btn:active svg {
+        transform: scale(0.85);
     }
 
     .reel-user {
@@ -190,6 +196,299 @@
         fill: #ff3040;
         color: #ff3040;
     }
+
+    /* Bottom-sheet Comments UI */
+    .rc-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 10020;
+        backdrop-filter: blur(2px);
+    }
+
+    .rc-overlay.show {
+        display: block;
+    }
+
+    .rc-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 450px;
+        margin: 0 auto;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+        background: #000;
+        color: #fff;
+        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
+        border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        max-height: 70vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .rc-sheet-panel {
+        transform: translateY(100%);
+        transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .rc-overlay.show .rc-sheet-panel {
+        transform: translateY(0);
+    }
+
+    .rc-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px 4px;
+        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .rc-header .title {
+        font-weight: 600;
+        font-size: 16px;
+        flex: 1;
+        text-align: center;
+    }
+
+    .rc-header::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 36px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .rc-close-btn {
+        position: absolute;
+        right: 12px;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .rc-list {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Themed dark scrollbar - Instagram style */
+    .rc-list::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .rc-list::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .rc-list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 2px;
+    }
+
+    .rc-list::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    .rc-list {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+    }
+
+    .rc-comment-item {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .rc-comment-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #1a1a1a;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+    .rc-comment-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .rc-comment-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rc-comment-username {
+        font-weight: 600;
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .rc-comment-text {
+        font-size: 13px;
+        line-height: 18px;
+        opacity: 0.9;
+        word-wrap: break-word;
+    }
+
+    .rc-input-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 16px;
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+        border-top: 0.5px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        background: #000;
+        flex-shrink: 0;
+    }
+
+    .rc-input-avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #1a1a1a;
+        flex-shrink: 0;
+    }
+
+    .rc-input-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .rc-input {
+        flex: 1;
+        background: transparent;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 9px 36px 9px 12px;
+        outline: none;
+        font-size: 14px;
+    }
+
+    .rc-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .rc-emoji-btn {
+        position: absolute;
+        right: 70px;
+        width: 28px;
+        height: 28px;
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+    }
+
+    .rc-send {
+        background: transparent;
+        color: #0095f6;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .rc-send:disabled {
+        opacity: 0.3;
+    }
+
+    .rc-emoji-picker {
+        position: absolute;
+        right: 12px;
+        bottom: 64px;
+        width: 320px;
+        display: none;
+        z-index: 10030;
+        background: #111;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .rc-emoji-picker.show {
+        display: block;
+    }
+
+    /* Mobile adjustments for IG-like feel */
+    @media (max-width: 768px) {
+        .reel-actions {
+            right: 10px;
+            bottom: 80px;
+            gap: 18px;
+        }
+
+        .action-btn i,
+        .action-btn svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .action-btn span {
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .mute-btn {
+            display: none !important;
+        }
+
+        .rc-sheet {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 12px 12px 0 0;
+        }
+
+        .rc-list {
+            padding: 12px 16px;
+        }
+
+        .reels-container {
+            height: 100dvh;
+        }
+
+        .reel-overlay {
+            padding-bottom: 90px;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -200,8 +499,10 @@
     <div class="reels-container" id="reelsContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
-            <div class="reel-play-overlay" onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
+            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}"
+                onclick="togglePlay(this)"></video>
+            <div class="reel-play-overlay"
+                onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
                 <i data-lucide="play-circle" style="width: 80px; height: 80px; color: white; opacity: 0.8;"></i>
             </div>
 
@@ -213,13 +514,16 @@
                     <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
                     <span class="like-count">{{ reel.likes }}</span>
                 </button>
-                <button class="action-btn">
+                <button class="action-btn" onclick="openReelComments({{ reel.id }}, this)">
                     <i data-lucide="message-circle"></i>
-                    <span>{{ reel.comments_count }}</span>
+                    <span class="comment-count">{{ reel.comments_count }}</span>
                 </button>
                 <button class="action-btn" onclick="shareReel('{{ reel.url }}')">
                     <i data-lucide="share-2"></i>
                     <span>Share</span>
+                </button>
+                <button class="action-btn" onclick="openReelOptions({{ reel.id }})">
+                    <i data-lucide="more-horizontal"></i>
                 </button>
             </div>
 
@@ -248,12 +552,12 @@
         <div class="reel-item" style="background: #000; color: white;">
             <div style="text-align: center; padding: 20px;">
                 <i data-lucide="film" style="width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px;"></i>
-                <h3>No Reels yet</h3>
+                <h3>No Omzos yet</h3>
                 <p style="opacity: 0.7; margin-top: 10px;">Be the first to create one!</p>
                 <button onclick="document.getElementById('uploadReelInput').click()" style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px;
                 border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
-                    Reel</button>
-                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Reels should be 2
+                    Omzo</button>
+                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Omzos should be 2
                     mins max</p>
             </div>
         </div>
@@ -273,7 +577,7 @@
             <p id="errorModalText" style="color: #bbb; font-size: 14px; margin-bottom: 20px; line-height: 1.5;"></p>
             <p
                 style="color: #ff4444; font-size: 12px; margin-bottom: 20px; font-weight: 500; background: rgba(255, 68, 68, 0.05); padding: 8px; border-radius: 6px;">
-                Note: Upload reels only of 2 mins
+                Note: Upload omzos only of 2 mins
             </p>
             <button onclick="closeErrorModal()"
                 style="background: white; color: black; border: none; padding: 10px 24px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%;">Got
@@ -285,16 +589,168 @@
 
     <!-- Upload FAB removed as per requirement -->
     <input type="file" id="uploadReelInput" accept="video/*" style="display: none;" onchange="handleReelUpload(this)">
+
+    <!-- Options Modal -->
+    <div id="reelOptionsModal" class="rc-overlay" style="z-index: 10040;">
+        <div class="rc-sheet rc-sheet-panel">
+            <div class="rc-list" style="padding: 0;">
+                <button onclick="openReelReport()"
+                    style="width: 100%; padding: 16px; background: none; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: #ff4444; font-weight: 700; cursor: pointer; text-align: left;">
+                    Report
+                </button>
+                <button onclick="closeReelOptions()"
+                    style="width: 100%; padding: 16px; background: none; border: none; color: white; cursor: pointer;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div id="reelReportModal" class="rc-overlay" style="z-index: 10050;">
+        <div class="rc-sheet rc-sheet-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="rc-header"
+                style="justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <span style="font-weight: 700; font-size: 16px;">Report</span>
+                <button onclick="closeReelReport()"
+                    style="position: absolute; right: 10px; background: none; border: none; color: white; cursor: pointer;">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h4 style="margin: 0 0 8px 0;">Why are you reporting this post?</h4>
+                <p style="margin: 0; color: #888; font-size: 14px;">Your report is anonymous, except if you're reporting
+                    an intellectual property infringement.</p>
+            </div>
+            <div class="rc-list" style="flex: 1; overflow-y: auto;">
+                <button class="report-reason-btn" onclick="submitReelReport('copyright')"
+                    style="color: #ff4444; font-weight: 600;">Copyright</button>
+                <button class="report-reason-btn" onclick="submitReelReport('spam')">It's spam</button>
+                <button class="report-reason-btn" onclick="submitReelReport('inappropriate')">Nudity or sexual
+                    activity</button>
+                <button class="report-reason-btn" onclick="submitReelReport('hate_speech')">Hate speech or
+                    symbols</button>
+                <button class="report-reason-btn" onclick="submitReelReport('violence')">Violence or dangerous
+                    organizations</button>
+                <button class="report-reason-btn" onclick="submitReelReport('harassment')">Bullying or
+                    harassment</button>
+                <button class="report-reason-btn" onclick="submitReelReport('false_info')">False information</button>
+                <button class="report-reason-btn" onclick="submitReelReport('other')">I just don't like it</button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .report-reason-btn {
+            width: 100%;
+            padding: 16px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .report-reason-btn:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .report-reason-btn::after {
+            content: '›';
+            font-size: 24px;
+            color: #666;
+            margin-left: 8px;
+        }
+
+        .report-reason-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
 </div>
 
 <script>
     // Global mute state - default is unmuted (sound on)
     let globalMuted = false;
+    let currentReelIdForOptions = null;
+
+    function openReelOptions(reelId) {
+        currentReelIdForOptions = reelId;
+        const modal = document.getElementById('reelOptionsModal');
+        modal.classList.add('show');
+        // Close on background click
+        modal.onclick = (e) => {
+            if (e.target === modal) closeReelOptions();
+        };
+    }
+
+    function closeReelOptions() {
+        document.getElementById('reelOptionsModal').classList.remove('show');
+    }
+
+    function openReelReport() {
+        closeReelOptions();
+        const modal = document.getElementById('reelReportModal');
+        modal.classList.add('show');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function closeReelReport() {
+        document.getElementById('reelReportModal').classList.remove('show');
+    }
+
+    function submitReelReport(reason) {
+        if (!currentReelIdForOptions) return;
+
+        fetch('/chat/api/reels/report/', {
+            method: 'POST',
+            body: JSON.stringify({
+                reel_id: currentReelIdForOptions,
+                reason: reason
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+            .then(r => r.json())
+            .then(data => {
+                closeReelReport();
+                if (data.success) {
+                    // Show simple toast or alert
+                    const toast = document.createElement('div');
+                    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 24px;border-radius:24px;z-index:10060;box-shadow:0 4px 12px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;';
+                    toast.innerHTML = '<i data-lucide="check-circle" style="color:#10b981;width:20px;"></i> <span>Report submitted</span>';
+                    document.body.appendChild(toast);
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                    setTimeout(() => toast.remove(), 3000);
+                } else {
+                    alert(data.error || 'Failed to report');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred');
+            });
+    }
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, tag => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            "'": '&#39;',
+            '"': '&quot;'
+        }[tag]));
+    }
 
     function toggleGlobalMute(btn) {
         globalMuted = !globalMuted;
         const icon = btn.querySelector('i');
-        
+
         // Update all videos
         document.querySelectorAll('.reel-video').forEach(video => {
             video.muted = globalMuted;
@@ -314,11 +770,11 @@
         const reel = btn.closest('.reel-item');
         const video = reel.querySelector('video');
         const icon = btn.querySelector('i');
-        
+
         // Toggle mute state for this specific reel
         video.muted = !video.muted;
         btn.setAttribute('data-muted', video.muted);
-        
+
         // Update icon
         if (icon) {
             icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
@@ -389,11 +845,11 @@
             const overlay = item.querySelector('.reel-play-overlay');
             const reelId = item.dataset.id;
             let viewTracked = false;
-            
+
             // Hide overlay when video plays
             video.addEventListener('play', () => {
                 if (overlay) overlay.style.display = 'none';
-                
+
                 // Track view only once per reel
                 if (!viewTracked && reelId) {
                     viewTracked = true;
@@ -405,26 +861,26 @@
                             'X-CSRFToken': '{{ csrf_token }}'
                         }
                     })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            console.log('View tracked for reel ' + reelId + '. Total views:', data.views);
-                        }
-                    })
-                    .catch(err => console.error('Error tracking view:', err));
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                console.log('View tracked for reel ' + reelId + '. Total views:', data.views);
+                            }
+                        })
+                        .catch(err => console.error('Error tracking view:', err));
                 }
             });
-            
+
             // Show overlay when video pauses
             video.addEventListener('pause', () => {
                 if (overlay && video.currentTime > 0 && !video.ended) {
                     overlay.style.display = 'flex';
                 }
             });
-            
+
             observer.observe(item);
         });
-        
+
         // Auto-play the first reel immediately on page load
         const firstReel = document.querySelector('.reel-item');
         if (firstReel) {
@@ -476,7 +932,7 @@
         // Prefer modern share API if available (Mobile)
         if (navigator.share) {
             navigator.share({
-                title: 'Check out this reel on Odnix',
+                title: 'Check out this omzo on Odnix',
                 url: fullUrl
             }).catch(console.error);
         } else {
@@ -492,5 +948,221 @@
             });
         }
     }
+
+    // =============================
+    // Reel Comments (Fetch & Post)
+    // =============================
+    function openReelComments(reelId, iconEl) {
+        // Build bottom-sheet lazily
+        let overlay = document.getElementById('rcOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'rcOverlay';
+            overlay.className = 'rc-overlay';
+            const currentUserAvatar = '{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}{% endif %}';
+            overlay.innerHTML = `
+                <div class="rc-sheet rc-sheet-panel">
+                    <div class="rc-header">
+                        <span class="title">Comments</span>
+                        <button class="rc-close-btn" id="rcClose" aria-label="Close">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div id="rcList" class="rc-list"></div>
+                    <div class="rc-input-row">
+                        <div class="rc-input-avatar">
+                            <img src="${currentUserAvatar}" alt="You">
+                        </div>
+                        <input id="rcInput" class="rc-input" type="text" placeholder="Add a comment..." maxlength="500">
+                        <button class="rc-emoji-btn" id="rcEmojiBtn" aria-label="Emoji">
+                            <i data-lucide="smile"></i>
+                        </button>
+                        <button id="rcSend" class="rc-send" disabled>Post</button>
+                        <emoji-picker id="rcEmojiPicker" class="rc-emoji-picker"></emoji-picker>
+                    </div>
+                </div>`;
+            document.body.appendChild(overlay);
+            // Close on button or background click
+            overlay.querySelector('#rcClose').onclick = () => closeRcOverlay();
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeRcOverlay(); });
+        }
+        overlay.classList.add('show');
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        const rcList = overlay.querySelector('#rcList');
+        rcList.innerHTML = '<div style="opacity:.7;text-align:center;padding:20px;">Loading...</div>';
+        fetch(`/chat/api/reels/${reelId}/comments/?limit=30`, {
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Accept': 'application/json'
+            },
+            credentials: 'same-origin'
+        })
+            .then(async r => {
+                let data = null; try { data = await r.json(); } catch (e) { }
+                if (!r.ok || !data) throw new Error('Failed to load comments');
+                return data;
+            })
+            .then(data => {
+                rcList.innerHTML = '';
+                if (data.success && data.comments && data.comments.length) {
+                    data.comments.forEach(c => {
+                        const row = document.createElement('div');
+                        row.className = 'rc-comment-item';
+                        const avatar = document.createElement('div');
+                        avatar.className = 'rc-comment-avatar';
+                        if (c.user.avatar) {
+                            avatar.innerHTML = `<img src="${c.user.avatar}" alt="${c.user.username}">`;
+                        } else {
+                            const initials = (c.user.full_name || c.user.username || '?').split(' ').map(s => s[0] || '').join('').substring(0, 2).toUpperCase();
+                            avatar.textContent = initials || '?';
+                        }
+                        const body = document.createElement('div');
+                        body.className = 'rc-comment-body';
+                        const username = document.createElement('div');
+                        username.className = 'rc-comment-username';
+                        username.textContent = c.user.username || c.user.full_name;
+                        const text = document.createElement('div');
+                        text.className = 'rc-comment-text';
+                        text.textContent = c.content;
+                        body.appendChild(username);
+                        body.appendChild(text);
+                        row.appendChild(avatar);
+                        row.appendChild(body);
+                        rcList.appendChild(row);
+                    });
+                } else {
+                    // Render an identifiable empty-state so we can remove it later
+                    rcList.innerHTML = '';
+                    const empty = document.createElement('div');
+                    empty.className = 'rc-empty';
+                    empty.style.cssText = 'opacity:.7;text-align:center;padding:40px 20px;';
+                    empty.textContent = 'No comments yet. Be the first to comment!';
+                    rcList.appendChild(empty);
+                }
+            }).catch(() => rcList.innerHTML = '<div style="opacity:.7;color:#ef4444;text-align:center;padding:20px;">Failed to load comments</div>');
+
+        const sendBtn = overlay.querySelector('#rcSend');
+        const input = overlay.querySelector('#rcInput');
+        const emojiBtn = overlay.querySelector('#rcEmojiBtn');
+        const emojiPicker = overlay.querySelector('#rcEmojiPicker');
+        
+        // Enable/disable send button based on input
+        input.oninput = () => {
+            sendBtn.disabled = !input.value.trim();
+        };
+        
+        emojiBtn.onclick = () => {
+            emojiPicker.classList.toggle('show');
+        };
+        // Send on Enter key
+        input.onkeydown = (e) => {
+            if (e.isComposing) return; // ignore IME composition
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!sendBtn.disabled) {
+                    sendBtn.click();
+                }
+            }
+        };
+        // When user picks an emoji, append to input
+        if (!emojiPicker.__wired) {
+            emojiPicker.addEventListener('emoji-click', (event) => {
+                const unicode = event?.detail?.unicode || '';
+                input.value += unicode;
+                input.focus();
+            });
+            emojiPicker.__wired = true;
+        }
+
+        sendBtn.onclick = () => {
+            const content = input.value.trim();
+            if (!content) return;
+            sendBtn.disabled = true;
+            fetch('/chat/api/reels/comment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Accept': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ reel_id: reelId, content })
+            })
+                .then(async r => {
+                    let data = null; try { data = await r.json(); } catch (e) { }
+                    return { ok: r.ok, data };
+                })
+                .then(({ ok, data }) => {
+                    sendBtn.disabled = false;
+                    if (ok && data && data.success) {
+                        input.value = '';
+                        sendBtn.disabled = true; // Re-disable until user types again
+                        emojiPicker.classList.remove('show');
+                        // prepend new comment
+                        const existingEmpty = rcList.querySelector('.rc-empty');
+                        if (existingEmpty) existingEmpty.remove();
+                        const c = data.comment;
+                        const row = document.createElement('div');
+                        row.className = 'rc-comment-item';
+                        const avatar = document.createElement('div');
+                        avatar.className = 'rc-comment-avatar';
+                        if (c.user.avatar) {
+                            avatar.innerHTML = `<img src="${c.user.avatar}" alt="${c.user.username}">`;
+                        } else {
+                            const initials = (c.user.full_name || c.user.username || '?').split(' ').map(s => s[0] || '').join('').substring(0, 2).toUpperCase();
+                            avatar.textContent = initials || '?';
+                        }
+                        const body = document.createElement('div');
+                        body.className = 'rc-comment-body';
+                        const username = document.createElement('div');
+                        username.className = 'rc-comment-username';
+                        username.textContent = c.user.username || c.user.full_name;
+                        const text = document.createElement('div');
+                        text.className = 'rc-comment-text';
+                        text.textContent = c.content;
+                        body.appendChild(username);
+                        body.appendChild(text);
+                        row.appendChild(avatar);
+                        row.appendChild(body);
+                        rcList.prepend(row);
+                        // update count on original button
+                        const btn = (iconEl && iconEl.closest) ? iconEl.closest('.action-btn') : null;
+                        const countEl = btn ? btn.querySelector('.comment-count') : null;
+                        if (countEl) { countEl.textContent = data.comments_count; }
+                    } else {
+                        // Show a subtle inline error without a popup
+                        const err = (data && data.error) ? data.error : 'Failed to add comment';
+                        const msg = document.createElement('div');
+                        msg.style.cssText = 'color:#ef4444; opacity:.9; padding:6px 0;text-align:center;';
+                        msg.textContent = err;
+                        rcList.prepend(msg);
+                        setTimeout(() => msg.remove(), 2500);
+                    }
+                })
+                .catch(() => {
+                    sendBtn.disabled = false;
+                    const msg = document.createElement('div');
+                    msg.style.cssText = 'color:#ef4444; opacity:.9; padding:6px 0;text-align:center;';
+                    msg.textContent = 'Network error';
+                    rcList.prepend(msg);
+                    setTimeout(() => msg.remove(), 2500);
+                });
+        };
+    }
+
+    function closeRcOverlay() {
+        const overlay = document.getElementById('rcOverlay');
+        if (!overlay) return;
+        // Remove show class; CSS controls visibility and animation
+        overlay.classList.remove('show');
+    }
+
+    function escapeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
 </script>
+<!-- Emoji picker web component -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 {% endblock %}

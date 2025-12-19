@@ -190,6 +190,10 @@ urlpatterns = [
     path('api/reels/upload/', views.upload_reel, name='upload_reel'),
     path('api/reels/like/', views.toggle_reel_like, name='toggle_reel_like'),
     path('api/reels/track-view/', views.track_reel_view, name='track_reel_view'),
+    path('api/reels/<int:reel_id>/comments/',
+         views.get_reel_comments, name='get_reel_comments'),
+    path('api/reels/comment/', views.add_reel_comment, name='add_reel_comment'),
+    path('api/reels/report/', views.report_reel, name='report_reel'),
 ]
 
 # Serve media files in development

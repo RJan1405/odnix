@@ -1,0 +1,144 @@
+
+# P2P Video Call Structure and Implementation Details
+
+This document explains the Peer-to-Peer (P2P) video call implementation in the Odnix codebase. The system uses **WebRTC** for the direct media connection between users and **Django Channels (WebSockets)** to act as the signaling server for exchanging connection details.
+
+## 1. High-Level Architecture
+
+1.  **Signaling Server (Backend)**:
+    *   **Role**: Relays "signals" (offers, answers, ICE candidates) between peers. It does not touch the video/audio stream itself.
+    *   **Implementation**: `chat/consumers.py` (specifically `CallConsumer`).
+2.  **Peer Client (Frontend)**:
+    *   **Role**: Captures media (camera/mic), creates the connection, and renders the remote stream.
+    *   **Implementation**: `static/js/call.js`.
+
+---
+
+## 2. File-to-File, Code-to-Code Walkthrough
+
+### Step 1: Initiating the Call (Frontend)
+**File**: `static/js/call.js`
+**Function**: `startCall()` (Line 169)
+
+When a user clicks the video/audio call button:
+1.  **UI Setup**: The call modal is shown (`ensureUI()`).
+2.  **Media Capture**: `getMedia()` (Line 159) calls `navigator.mediaDevices.getUserMedia()` to access the camera and microphone.
+3.  **WebSocket Connection**: `openWS()` (Line 101) connects to the backend signaling channel.
+4.  **Peer Connection Creation**: `setupPeer()` (Line 138) initializes the `RTCPeerConnection`.
+    ```javascript
+    // Line 139: Create the connection with STUN/TURN servers
+    pc = new RTCPeerConnection(rtcConfig);
+    ```
+5.  **Create Offer**:
+    ```javascript
+    // Line 181: Create SDP Offer
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    // Line 183: Send offer via WebSocket
+    send('webrtc.offer', { sdp: offer.sdp, type: offer.type, audioOnly });
+    ```
+
+### Step 2: Signaling & Notification (Backend)
+**File**: `chat/consumers.py`
+**Class**: `CallConsumer` (Line 276)
+
+The backend receives the JSON message from the caller.
+1.  **Receive Message**: The `receive` method (Line 297) parses the data.
+2.  **Forwarding**: It rebroadcasts the message to the chat group so any open chat windows receive it.
+    ```python
+    # Line 307-316: Forwarding signaling messages
+    await self.channel_layer.group_send(
+        self.group_name,
+        {
+            'type': 'signal.forward',
+            'event_type': msg_type, # 'webrtc.offer'
+            'payload': payload,
+            # ...
+        }
+    )
+    ```
+3.  **Global Notification**: If it is an offer, it also notifies the recipient system-wide (even if they aren't in that specific chat window).
+    ```python
+    # Line 340: Sending notification to specific user's channel
+    await self.channel_layer.group_send(
+        f'user_notify_{uid}',
+        { 'type': 'notify.call', ... }
+    )
+    ```
+
+### Step 3: Receiving the Call (Frontend)
+**File**: `static/js/call.js`
+**Function**: `onOffer()` (Line 202)
+
+The recipient receives the `webrtc.offer` via WebSocket.
+1.  **UI Display**: The "Incoming Call" modal appears (`incomingCallModal`).
+2.  **User Acceptance**: When the user clicks "Accept" (Line 254):
+    *   `getMedia()` is called to get their own camera stream.
+    *   `setupPeer()` is called to initialize their `RTCPeerConnection`.
+3.  **Handling Remote Description**:
+    ```javascript
+    // Line 271: Set the Caller's SDP as the remote description
+    await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer));
+    ```
+4.  **Sending Answer**:
+    ```javascript
+    // Line 272: Create SDP Answer
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    // Line 274: Send answer back to caller
+    send('webrtc.answer', { sdp: answer.sdp, type: answer.type });
+    ```
+
+### Step 4: Completing the Handshake (Frontend)
+**File**: `static/js/call.js`
+**Function**: `onAnswer()` (Line 292)
+
+The original caller receives the `webrtc.answer`.
+1.  **Set Remote Description**:
+    ```javascript
+    // Line 294: Complete the handshake
+    await pc.setRemoteDescription(new RTCSessionDescription({ sdp, type }));
+    ```
+
+### Step 5: ICE Candidate Exchange (Connectivity)
+**File**: `static/js/call.js`
+
+While the handshake happens, both sides find network paths (ICE candidates).
+1.  **Sending Candidates**:
+    ```javascript
+    // Line 141 inside setupPeer():
+    pc.onicecandidate = (e) => {
+        if (e.candidate) send('webrtc.ice', { candidate: e.candidate });
+    };
+    ```
+2.  **Receiving Candidates**:
+    The `onRemoteIce` function (Line 300) adds the candidate to the connection.
+    ```javascript
+    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+    ```
+
+### Step 6: Media Streaming (Frontend)
+**File**: `static/js/call.js`
+
+Once the connection is established:
+1.  **Remote Stream**:
+    ```javascript
+    // Line 144 inside setupPeer():
+    pc.ontrack = (e) => {
+        // Line 146: Attach remote stream to HTML video element
+        const remoteVideo = document.getElementById('remoteVideo');
+        remoteVideo.srcObject = remoteStream;
+    };
+    ```
+
+## 3. Full Structure Summary
+
+*   **Signaling Channel**: `ws://<host>/ws/call/<chatId>/`
+    *   Identified in `chat/routing.py` (implied) and handled by `CallConsumer` in `chat/consumers.py`.
+*   **Global Notification Channel**: `ws://<host>/ws/notify/` (or similar, handled by `NotifyConsumer`).
+    *   Ensures users get calls even if they are browsing other pages.
+*   **STUN Servers**: Hardcoded in `call.js` (Line 21) to help traverse NATs/Firewalls.
+    *   `stun.l.google.com:19302`
+*   **Media Constraints**: 720p video ideal, audio enabled (Line 160).
+
+This creates a full mesh P2P setup where the server only sees tiny JSON text packets (signaling), while the heavy video traffic goes directly from user to user.

@@ -1201,7 +1201,7 @@
                     <div class="ig-profile-stats desktop-only">
                         <div class="ig-profile-stat">
                             <span class="ig-stat-count">{{ tweets|length }}</span>
-                            <span class="ig-stat-label">posts</span>
+                            <span class="ig-stat-label">scribes</span>
                         </div>
                         <div class="ig-profile-stat" onclick="openFollowersModal()">
                             <span class="ig-stat-count" id="followersCount">{{ profile_user.follower_count }}</span>
@@ -1233,7 +1233,7 @@
         <div class="ig-profile-stats-mobile mobile-only">
             <div class="ig-profile-stat">
                 <span class="ig-stat-count">{{ tweets|length }}</span>
-                <span class="ig-stat-label">posts</span>
+                <span class="ig-stat-label">scribes</span>
             </div>
             <div class="ig-profile-stat" onclick="openFollowersModal()">
                 <span class="ig-stat-count" id="followersCountMobile">{{ profile_user.follower_count }}</span>
@@ -1282,11 +1282,11 @@
         <div class="ig-profile-tabs">
             <button class="ig-profile-tab active" data-tab="posts">
                 <i data-lucide="grid-3x3"></i>
-                <span class="tab-text">Posts</span>
+                <span class="tab-text">Scribes</span>
             </button>
             <button class="ig-profile-tab" data-tab="reels">
                 <i data-lucide="play-square"></i>
-                <span class="tab-text">Reels</span>
+                <span class="tab-text">Omzo</span>
             </button>
             {% if is_own_profile %}
             <button class="ig-profile-tab" data-tab="saved">
@@ -1334,7 +1334,7 @@
                 <div class="ig-no-posts-icon">
                     <i data-lucide="camera-off"></i>
                 </div>
-                <h3>No Posts Yet</h3>
+                <h3>No Scribes Yet</h3>
                 {% endif %}
             </div>
             {% endif %}
@@ -1362,11 +1362,11 @@
                 <div class="ig-no-posts-icon">
                     <i data-lucide="video-off"></i>
                 </div>
-                <h3>No Reels Yet</h3>
+                <h3>No Omzos Yet</h3>
                 {% if is_own_profile %}
                 <p>Record and share short videos.</p>
                 <button class="ig-auth-btn" onclick="document.getElementById('globalReelInput').click()"
-                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Create Reel</button>
+                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Create Omzo</button>
                 {% endif %}
             </div>
             {% endif %}

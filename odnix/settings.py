@@ -17,6 +17,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 SITE_DOMAIN = 'http://127.0.0.1:8000'
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

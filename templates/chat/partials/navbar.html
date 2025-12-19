@@ -896,7 +896,7 @@
                 <i data-lucide="compass"
                     class="ig-nav-icon {% if request.resolver_match.url_name == 'discover_groups' %}active{% endif %}"></i>
             </a>
-            <a href="{% url 'reels' %}" title="Reels">
+            <a href="{% url 'reels' %}" title="Omzo">
                 <i data-lucide="play-square"
                     class="ig-nav-icon {% if request.resolver_match.url_name == 'reels' %}active{% endif %}"></i>
             </a>
@@ -935,7 +935,7 @@
         <i data-lucide="compass"></i>
     </a>
     <a href="{% url 'reels' %}"
-        class="ig-bottom-nav-item {% if request.resolver_match.url_name == 'reels' %}active{% endif %}" title="Reels">
+        class="ig-bottom-nav-item {% if request.resolver_match.url_name == 'reels' %}active{% endif %}" title="Omzo">
         <i data-lucide="play-square"></i>
     </a>
     <button class="ig-bottom-nav-item" onclick="navCreatePost()" title="Create">
@@ -1646,7 +1646,7 @@
                 return;
             }
 
-            const caption = prompt("Write a caption for your reel:");
+            const caption = prompt("Write a caption for your omzo:");
             if (caption === null) return;
 
             const formData = new FormData();
@@ -1654,7 +1654,7 @@
             formData.append('caption', caption);
 
             // Notify user
-            alert("Uploading Reel... this may take a moment.");
+            alert("Uploading Omzo... this may take a moment.");
 
             fetch('/chat/api/reels/upload/', {
                 method: 'POST',
@@ -1686,7 +1686,7 @@
         } else {
             window.location.href = '{% url "discover_groups" %}';
         }
-    }
+
     }
 </script>
 
@@ -1710,12 +1710,12 @@
             <button onclick="triggerGlobalPostCreate()"
                 style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
                 <i data-lucide="image" style="width: 20px; height: 20px;"></i>
-                <span style="font-weight: 500; font-size: 15px;">Post</span>
+                <span style="font-weight: 500; font-size: 15px;">Scribe</span>
             </button>
             <button onclick="triggerGlobalReelCreate()"
                 style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
                 <i data-lucide="play-square" style="width: 20px; height: 20px;"></i>
-                <span style="font-weight: 500; font-size: 15px;">Reel</span>
+                <span style="font-weight: 500; font-size: 15px;">Omzo</span>
             </button>
         </div>
     </div>
