@@ -1,7 +1,7 @@
 {% extends 'chat/base.html' %}
 {% load static %}
 
-{% block title %}Omzo - Odnix{% endblock %}
+{% block title %}Reels - Odnix{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -69,7 +69,7 @@
         z-index: 15;
     }
 
-    .reel-video:paused~.reel-play-overlay {
+    .reel-video:paused ~ .reel-play-overlay {
         display: flex;
     }
 
@@ -95,13 +95,12 @@
 
     .reel-actions {
         position: absolute;
-        right: 12px;
-        bottom: 100px;
+        right: 16px;
+        bottom: 120px;
         display: flex;
         flex-direction: column;
         gap: 20px;
         z-index: 20;
-        align-items: center;
     }
 
     .action-btn {
@@ -112,26 +111,56 @@
         background: none;
         border: none;
         cursor: pointer;
-        font-size: 12px;
-        font-weight: 600;
-        text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-        padding: 0;
-        position: relative;
+        font-size: 13px;
+        font-weight: 500;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        padding: 8px;
+        border-radius: 50%;
+        transition: background 0.2s, transform 0.2s;
+        min-width: 56px;
+        min-height: 56px;
+    }
+
+    .action-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
     }
 
     .action-btn i,
     .action-btn svg {
-        width: 28px;
-        height: 28px;
+        width: 28px !important;
+        height: 28px !important;
         margin-bottom: 4px;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
-        transition: transform 0.15s;
-        stroke-width: 2.5;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+        transition: transform 0.2s;
+    }
+
+    .action-btn:active {
+        transform: scale(0.9);
     }
 
     .action-btn:active i,
     .action-btn:active svg {
-        transform: scale(0.85);
+        transform: scale(0.9);
+    }
+
+    /* Desktop improvements for action buttons */
+    @media (min-width: 768px) {
+        .action-btn {
+            min-width: 64px;
+            min-height: 64px;
+            padding: 12px;
+        }
+
+        .action-btn i,
+        .action-btn svg {
+            width: 32px !important;
+            height: 32px !important;
+        }
+
+        .reel-actions {
+            right: 20px;
+            gap: 16px;
+        }
     }
 
     .reel-user {
@@ -197,297 +226,396 @@
         color: #ff3040;
     }
 
-    /* Bottom-sheet Comments UI */
-    .rc-overlay {
+    /* ===== Custom Toast Notifications for Reels ===== */
+    .reel-toast-container {
         position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        z-index: 10020;
-        backdrop-filter: blur(2px);
-    }
-
-    .rc-overlay.show {
-        display: block;
-    }
-
-    .rc-sheet {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        max-width: 450px;
-        margin: 0 auto;
-        border-top-left-radius: 12px;
-        border-top-right-radius: 12px;
-        background: #000;
-        color: #fff;
-        box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.5);
-        border-top: 0.5px solid rgba(255, 255, 255, 0.1);
-        overflow: hidden;
-        max-height: 70vh;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .rc-sheet-panel {
-        transform: translateY(100%);
-        transition: transform .3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .rc-overlay.show .rc-sheet-panel {
-        transform: translateY(0);
-    }
-
-    .rc-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 8px 16px 4px;
-        border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        flex-shrink: 0;
-    }
-
-    .rc-header .title {
-        font-weight: 600;
-        font-size: 16px;
-        flex: 1;
-        text-align: center;
-    }
-
-    .rc-header::before {
-        content: '';
-        position: absolute;
-        top: 8px;
+        top: 80px;
         left: 50%;
         transform: translateX(-50%);
-        width: 36px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-    }
-
-    .rc-close-btn {
-        position: absolute;
-        right: 12px;
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.7);
-        cursor: pointer;
-        padding: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .rc-list {
-        flex: 1;
-        overflow-y: auto;
-        overflow-x: hidden;
-        padding: 16px;
+        z-index: 10000;
         display: flex;
         flex-direction: column;
-        gap: 16px;
-        -webkit-overflow-scrolling: touch;
+        gap: 10px;
+        pointer-events: none;
     }
 
-    /* Themed dark scrollbar - Instagram style */
-    .rc-list::-webkit-scrollbar {
-        width: 4px;
-    }
-
-    .rc-list::-webkit-scrollbar-track {
-        background: transparent;
-    }
-
-    .rc-list::-webkit-scrollbar-thumb {
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 2px;
-    }
-
-    .rc-list::-webkit-scrollbar-thumb:hover {
-        background: rgba(255, 255, 255, 0.5);
-    }
-
-    .rc-list {
-        scrollbar-width: thin;
-        scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
-    }
-
-    .rc-comment-item {
-        display: flex;
-        gap: 12px;
-        align-items: flex-start;
-    }
-
-    .rc-comment-avatar {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        overflow: hidden;
-        background: #1a1a1a;
-        flex-shrink: 0;
+    .reel-toast {
+        background: rgba(30, 30, 30, 0.95);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        color: white;
+        padding: 14px 20px;
+        border-radius: 12px;
         display: flex;
         align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        font-size: 12px;
+        gap: 12px;
+        min-width: 280px;
+        max-width: 400px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        animation: toastSlideIn 0.3s ease-out;
+        pointer-events: auto;
+        border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .rc-comment-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
+    .reel-toast.success { border-left: 4px solid #4ade80; }
+    .reel-toast.error { border-left: 4px solid #f87171; }
+    .reel-toast.info { border-left: 4px solid #60a5fa; }
+    .reel-toast.uploading { border-left: 4px solid #fbbf24; }
+
+    .reel-toast-icon {
+        width: 24px;
+        height: 24px;
+        flex-shrink: 0;
     }
 
-    .rc-comment-body {
+    .reel-toast.success .reel-toast-icon { color: #4ade80; }
+    .reel-toast.error .reel-toast-icon { color: #f87171; }
+    .reel-toast.info .reel-toast-icon { color: #60a5fa; }
+    .reel-toast.uploading .reel-toast-icon { color: #fbbf24; }
+
+    .reel-toast-content {
         flex: 1;
-        min-width: 0;
     }
 
-    .rc-comment-username {
+    .reel-toast-title {
         font-weight: 600;
-        font-size: 13px;
+        font-size: 14px;
         margin-bottom: 2px;
     }
 
-    .rc-comment-text {
+    .reel-toast-message {
         font-size: 13px;
-        line-height: 18px;
         opacity: 0.9;
-        word-wrap: break-word;
+        line-height: 1.4;
     }
 
-    .rc-input-row {
+    .reel-toast-progress {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+
+    .reel-toast-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #fbbf24, #f59e0b);
+        border-radius: 2px;
+        animation: progressPulse 1.5s ease-in-out infinite;
+        width: 30%;
+    }
+
+    @keyframes toastSlideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes toastSlideOut {
+        from { transform: translateY(0); opacity: 1; }
+        to { transform: translateY(-20px); opacity: 0; }
+    }
+
+    @keyframes progressPulse {
+        0%, 100% { width: 30%; margin-left: 0; }
+        50% { width: 60%; margin-left: 20%; }
+    }
+
+    /* ===== Comments Modal ===== */
+    .reel-comments-modal {
+        display: none;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 2000;
+        align-items: flex-end;
+        justify-content: center;
+    }
+
+    .reel-comments-modal.show {
+        display: flex;
+    }
+
+    .reel-comments-container {
+        background: #1e1e1e;
+        width: 100%;
+        max-width: 450px;
+        max-height: 70vh;
+        border-radius: 20px 20px 0 0;
+        display: flex;
+        flex-direction: column;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .reel-comments-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 8px 16px;
-        padding-bottom: max(8px, env(safe-area-inset-bottom));
-        border-top: 0.5px solid rgba(255, 255, 255, 0.1);
-        position: relative;
-        background: #000;
-        flex-shrink: 0;
+        justify-content: space-between;
     }
 
-    .rc-input-avatar {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        overflow: hidden;
-        background: #1a1a1a;
-        flex-shrink: 0;
+    .reel-comments-header h3 {
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
     }
 
-    .rc-input-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .rc-input {
-        flex: 1;
-        background: transparent;
-        color: #fff;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 20px;
-        padding: 9px 36px 9px 12px;
-        outline: none;
-        font-size: 14px;
-    }
-
-    .rc-input::placeholder {
-        color: rgba(255, 255, 255, 0.5);
-    }
-
-    .rc-emoji-btn {
-        position: absolute;
-        right: 70px;
-        width: 28px;
-        height: 28px;
-        background: transparent;
+    .reel-comments-close {
+        background: none;
         border: none;
-        color: rgba(255, 255, 255, 0.6);
+        color: white;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        padding: 0;
     }
 
-    .rc-send {
-        background: transparent;
-        color: #0095f6;
-        border: none;
-        padding: 0;
-        cursor: pointer;
+    .reel-comments-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .reel-comments-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        min-height: 200px;
+    }
+
+    .reel-comment-item {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .reel-comment-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+    }
+
+    .reel-comment-content {
+        flex: 1;
+    }
+
+    .reel-comment-username {
+        color: white;
         font-weight: 600;
         font-size: 14px;
+        margin-bottom: 2px;
     }
 
-    .rc-send:disabled {
-        opacity: 0.3;
+    .reel-comment-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 14px;
+        line-height: 1.4;
     }
 
-    .rc-emoji-picker {
-        position: absolute;
-        right: 12px;
-        bottom: 64px;
-        width: 320px;
+    .reel-comment-time {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    .reel-comments-empty {
+        text-align: center;
+        padding: 40px 20px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .reel-comments-empty i,
+    .reel-comments-empty svg {
+        width: 48px;
+        height: 48px;
+        opacity: 0.5;
+        margin-bottom: 12px;
+    }
+
+    .reel-comments-input-container {
+        padding: 12px 16px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: #262626;
+    }
+
+    .reel-comments-input {
+        flex: 1;
+        background: #3a3a3a;
+        border: none;
+        border-radius: 20px;
+        padding: 10px 16px;
+        color: white;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .reel-comments-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .reel-comments-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 10px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .reel-comments-submit:hover {
+        opacity: 0.9;
+    }
+
+    .reel-comments-submit:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* ===== Caption Input Modal ===== */
+    .caption-modal {
         display: none;
-        z-index: 10030;
-        background: #111;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 3000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .caption-modal.show {
+        display: flex;
+    }
+
+    .caption-modal-content {
+        background: #1e1e1e;
+        border-radius: 16px;
+        width: 100%;
+        max-width: 400px;
+        overflow: hidden;
+        animation: modalZoomIn 0.2s ease-out;
+    }
+
+    @keyframes modalZoomIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .caption-modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .caption-modal-header h3 {
+        color: white;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .caption-modal-close {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        padding: 8px;
+        opacity: 0.7;
+    }
+
+    .caption-modal-close:hover {
+        opacity: 1;
+    }
+
+    .caption-modal-body {
+        padding: 20px;
+    }
+
+    .caption-preview {
+        margin-bottom: 16px;
+        position: relative;
         border-radius: 12px;
         overflow: hidden;
+        background: #000;
     }
 
-    .rc-emoji-picker.show {
-        display: block;
+    .caption-preview video {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
     }
 
-    /* Mobile adjustments for IG-like feel */
-    @media (max-width: 768px) {
-        .reel-actions {
-            right: 10px;
-            bottom: 80px;
-            gap: 18px;
-        }
+    .caption-input {
+        width: 100%;
+        background: #3a3a3a;
+        border: none;
+        border-radius: 12px;
+        padding: 14px 16px;
+        color: white;
+        font-size: 14px;
+        resize: none;
+        min-height: 80px;
+        outline: none;
+        font-family: inherit;
+    }
 
-        .action-btn i,
-        .action-btn svg {
-            width: 26px;
-            height: 26px;
-        }
+    .caption-input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
 
-        .action-btn span {
-            font-size: 11px;
-            font-weight: 700;
-        }
+    .caption-modal-actions {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        gap: 12px;
+    }
 
-        .mute-btn {
-            display: none !important;
-        }
+    .caption-modal-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
 
-        .rc-sheet {
-            max-width: 100%;
-            max-height: 80vh;
-            border-radius: 12px 12px 0 0;
-        }
+    .caption-modal-btn.cancel {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        color: white;
+    }
 
-        .rc-list {
-            padding: 12px 16px;
-        }
+    .caption-modal-btn.submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+    }
 
-        .reels-container {
-            height: 100dvh;
-        }
-
-        .reel-overlay {
-            padding-bottom: 90px;
-        }
+    .caption-modal-btn:hover {
+        opacity: 0.9;
     }
 </style>
 {% endblock %}
@@ -499,31 +627,26 @@
     <div class="reels-container" id="reelsContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}"
-                onclick="togglePlay(this)"></video>
-            <div class="reel-play-overlay"
-                onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
+            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
+            <div class="reel-play-overlay" onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
                 <i data-lucide="play-circle" style="width: 80px; height: 80px; color: white; opacity: 0.8;"></i>
             </div>
 
             <div class="reel-actions">
-                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false">
-                    <i data-lucide="volume-2"></i>
+                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="true" title="Toggle sound">
+                    <i data-lucide="volume-x"></i>
                 </button>
-                <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)">
+                <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)" title="Like">
                     <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
                     <span class="like-count">{{ reel.likes }}</span>
                 </button>
-                <button class="action-btn" onclick="openReelComments({{ reel.id }}, this)">
+                <button class="action-btn" onclick="openReelComments({{ reel.id }})" title="Comments">
                     <i data-lucide="message-circle"></i>
-                    <span class="comment-count">{{ reel.comments_count }}</span>
+                    <span class="comment-count" data-reel-id="{{ reel.id }}">{{ reel.comments_count }}</span>
                 </button>
-                <button class="action-btn" onclick="shareReel('{{ reel.url }}')">
+                <button class="action-btn" onclick="shareReel('{{ reel.url }}')" title="Share">
                     <i data-lucide="share-2"></i>
                     <span>Share</span>
-                </button>
-                <button class="action-btn" onclick="openReelOptions({{ reel.id }})">
-                    <i data-lucide="more-horizontal"></i>
                 </button>
             </div>
 
@@ -552,12 +675,12 @@
         <div class="reel-item" style="background: #000; color: white;">
             <div style="text-align: center; padding: 20px;">
                 <i data-lucide="film" style="width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px;"></i>
-                <h3>No Omzos yet</h3>
+                <h3>No Reels yet</h3>
                 <p style="opacity: 0.7; margin-top: 10px;">Be the first to create one!</p>
                 <button onclick="document.getElementById('uploadReelInput').click()" style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px;
                 border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
-                    Omzo</button>
-                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Omzos should be 2
+                    Reel</button>
+                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Reels should be 2
                     mins max</p>
             </div>
         </div>
@@ -577,7 +700,7 @@
             <p id="errorModalText" style="color: #bbb; font-size: 14px; margin-bottom: 20px; line-height: 1.5;"></p>
             <p
                 style="color: #ff4444; font-size: 12px; margin-bottom: 20px; font-weight: 500; background: rgba(255, 68, 68, 0.05); padding: 8px; border-radius: 6px;">
-                Note: Upload omzos only of 2 mins
+                Note: Upload reels only of 2 mins
             </p>
             <button onclick="closeErrorModal()"
                 style="background: white; color: black; border: none; padding: 10px 24px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%;">Got
@@ -590,167 +713,359 @@
     <!-- Upload FAB removed as per requirement -->
     <input type="file" id="uploadReelInput" accept="video/*" style="display: none;" onchange="handleReelUpload(this)">
 
-    <!-- Options Modal -->
-    <div id="reelOptionsModal" class="rc-overlay" style="z-index: 10040;">
-        <div class="rc-sheet rc-sheet-panel">
-            <div class="rc-list" style="padding: 0;">
-                <button onclick="openReelReport()"
-                    style="width: 100%; padding: 16px; background: none; border: none; border-bottom: 1px solid rgba(255,255,255,0.1); color: #ff4444; font-weight: 700; cursor: pointer; text-align: left;">
-                    Report
+    <!-- Toast Container -->
+    <div class="reel-toast-container" id="reelToastContainer"></div>
+
+    <!-- Comments Modal -->
+    <div class="reel-comments-modal" id="reelCommentsModal" onclick="closeReelComments(event)">
+        <div class="reel-comments-container" onclick="event.stopPropagation()">
+            <div class="reel-comments-header">
+                <h3>Comments</h3>
+                <button class="reel-comments-close" onclick="closeReelComments()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                 </button>
-                <button onclick="closeReelOptions()"
-                    style="width: 100%; padding: 16px; background: none; border: none; color: white; cursor: pointer;">
-                    Cancel
-                </button>
+            </div>
+            <div class="reel-comments-list" id="reelCommentsList">
+                <!-- Comments will be loaded here -->
+            </div>
+            <div class="reel-comments-input-container">
+                <input type="text" class="reel-comments-input" id="reelCommentInput" placeholder="Add a comment..." onkeydown="if(event.key === 'Enter') submitReelComment()">
+                <button class="reel-comments-submit" onclick="submitReelComment()">Post</button>
             </div>
         </div>
     </div>
 
-    <!-- Report Modal -->
-    <div id="reelReportModal" class="rc-overlay" style="z-index: 10050;">
-        <div class="rc-sheet rc-sheet-panel" style="max-height: 80vh; display: flex; flex-direction: column;">
-            <div class="rc-header"
-                style="justify-content: center; position: relative; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <span style="font-weight: 700; font-size: 16px;">Report</span>
-                <button onclick="closeReelReport()"
-                    style="position: absolute; right: 10px; background: none; border: none; color: white; cursor: pointer;">
-                    <i data-lucide="x"></i>
+    <!-- Caption Modal -->
+    <div class="caption-modal" id="captionModal">
+        <div class="caption-modal-content">
+            <div class="caption-modal-header">
+                <h3>New Reel</h3>
+                <button class="caption-modal-close" onclick="closeCaptionModal()">
+                    <i data-lucide="x" style="width: 20px; height: 20px;"></i>
                 </button>
             </div>
-            <div style="padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                <h4 style="margin: 0 0 8px 0;">Why are you reporting this post?</h4>
-                <p style="margin: 0; color: #888; font-size: 14px;">Your report is anonymous, except if you're reporting
-                    an intellectual property infringement.</p>
+            <div class="caption-modal-body">
+                <div class="caption-preview">
+                    <video id="captionPreviewVideo" muted loop></video>
+                </div>
+                <textarea class="caption-input" id="captionInput" placeholder="Write a caption for your reel..." maxlength="500"></textarea>
             </div>
-            <div class="rc-list" style="flex: 1; overflow-y: auto;">
-                <button class="report-reason-btn" onclick="submitReelReport('copyright')"
-                    style="color: #ff4444; font-weight: 600;">Copyright</button>
-                <button class="report-reason-btn" onclick="submitReelReport('spam')">It's spam</button>
-                <button class="report-reason-btn" onclick="submitReelReport('inappropriate')">Nudity or sexual
-                    activity</button>
-                <button class="report-reason-btn" onclick="submitReelReport('hate_speech')">Hate speech or
-                    symbols</button>
-                <button class="report-reason-btn" onclick="submitReelReport('violence')">Violence or dangerous
-                    organizations</button>
-                <button class="report-reason-btn" onclick="submitReelReport('harassment')">Bullying or
-                    harassment</button>
-                <button class="report-reason-btn" onclick="submitReelReport('false_info')">False information</button>
-                <button class="report-reason-btn" onclick="submitReelReport('other')">I just don't like it</button>
+            <div class="caption-modal-actions">
+                <button class="caption-modal-btn cancel" onclick="closeCaptionModal()">Cancel</button>
+                <button class="caption-modal-btn submit" onclick="submitReel()">Share Reel</button>
             </div>
         </div>
     </div>
-
-    <style>
-        .report-reason-btn {
-            width: 100%;
-            padding: 16px;
-            background: none;
-            border: none;
-            color: white;
-            text-align: left;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .report-reason-btn:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .report-reason-btn::after {
-            content: '›';
-            font-size: 24px;
-            color: #666;
-            margin-left: 8px;
-        }
-
-        .report-reason-btn:active {
-            background: rgba(255, 255, 255, 0.1);
-        }
-    </style>
 </div>
 
 <script>
-    // Global mute state - default is unmuted (sound on)
-    let globalMuted = false;
-    let currentReelIdForOptions = null;
+    // Global state - videos start muted by default due to browser autoplay policy
+    let globalMuted = true;
+    let currentReelId = null;
+    let pendingReelFile = null;
 
-    function openReelOptions(reelId) {
-        currentReelIdForOptions = reelId;
-        const modal = document.getElementById('reelOptionsModal');
-        modal.classList.add('show');
-        // Close on background click
-        modal.onclick = (e) => {
-            if (e.target === modal) closeReelOptions();
+    // ===== Toast Notifications =====
+    function showReelToast(title, message, type = 'info', persistent = false) {
+        const container = document.getElementById('reelToastContainer');
+        const toastId = 'toast-' + Date.now();
+        
+        const iconMap = {
+            'success': 'check-circle',
+            'error': 'alert-circle',
+            'info': 'info',
+            'uploading': 'upload'
         };
+        
+        const toast = document.createElement('div');
+        toast.className = `reel-toast ${type}`;
+        toast.id = toastId;
+        toast.innerHTML = `
+            <i data-lucide="${iconMap[type] || 'info'}" class="reel-toast-icon"></i>
+            <div class="reel-toast-content">
+                <div class="reel-toast-title">${title}</div>
+                <div class="reel-toast-message">${message}</div>
+                ${type === 'uploading' ? '<div class="reel-toast-progress"><div class="reel-toast-progress-bar"></div></div>' : ''}
+            </div>
+        `;
+        
+        container.appendChild(toast);
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        if (!persistent) {
+            setTimeout(() => {
+                removeToast(toastId);
+            }, 4000);
+        }
+        
+        return toastId;
     }
 
-    function closeReelOptions() {
-        document.getElementById('reelOptionsModal').classList.remove('show');
+    function removeToast(toastId) {
+        const toast = document.getElementById(toastId);
+        if (toast) {
+            toast.style.animation = 'toastSlideOut 0.3s ease-out forwards';
+            setTimeout(() => toast.remove(), 300);
+        }
     }
 
-    function openReelReport() {
-        closeReelOptions();
-        const modal = document.getElementById('reelReportModal');
+    // ===== Reel Upload Handling =====
+    function handleReelUpload(input) {
+        if (!input.files || !input.files[0]) return;
+        
+        const file = input.files[0];
+        
+        // Validate file size (100MB max)
+        if (file.size > 100 * 1024 * 1024) {
+            showReelToast('File Too Large', 'Please upload a video under 100MB.', 'error');
+            input.value = '';
+            return;
+        }
+        
+        // Validate video duration
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = function() {
+            URL.revokeObjectURL(video.src);
+            
+            if (video.duration > 120) {
+                showReelToast('Video Too Long', 'Reels must be 2 minutes or less.', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // Store the file and show caption modal
+            pendingReelFile = file;
+            openCaptionModal(file);
+        };
+        
+        video.src = URL.createObjectURL(file);
+    }
+
+    function openCaptionModal(file) {
+        const modal = document.getElementById('captionModal');
+        const preview = document.getElementById('captionPreviewVideo');
+        const captionInput = document.getElementById('captionInput');
+        
+        // Set preview
+        preview.src = URL.createObjectURL(file);
+        preview.play();
+        
+        // Clear previous caption
+        captionInput.value = '';
+        
+        // Show modal
         modal.classList.add('show');
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Focus on caption input
+        setTimeout(() => captionInput.focus(), 100);
     }
 
-    function closeReelReport() {
-        document.getElementById('reelReportModal').classList.remove('show');
+    function closeCaptionModal() {
+        const modal = document.getElementById('captionModal');
+        const preview = document.getElementById('captionPreviewVideo');
+        
+        modal.classList.remove('show');
+        preview.pause();
+        preview.src = '';
+        pendingReelFile = null;
+        
+        // Reset file input
+        document.getElementById('uploadReelInput').value = '';
     }
 
-    function submitReelReport(reason) {
-        if (!currentReelIdForOptions) return;
-
-        fetch('/chat/api/reels/report/', {
+    function submitReel() {
+        if (!pendingReelFile) return;
+        
+        const caption = document.getElementById('captionInput').value.trim();
+        
+        // Close caption modal
+        closeCaptionModal();
+        
+        // Show uploading toast
+        const toastId = showReelToast('Uploading Reel', 'Please wait while your reel is being processed...', 'uploading', true);
+        
+        const formData = new FormData();
+        formData.append('video', pendingReelFile);
+        formData.append('caption', caption);
+        
+        fetch('/chat/api/reels/upload/', {
             method: 'POST',
-            body: JSON.stringify({
-                reel_id: currentReelIdForOptions,
-                reason: reason
-            }),
+            body: formData,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            removeToast(toastId);
+            
+            if (data.success) {
+                showReelToast('Reel Posted!', 'Your reel has been shared successfully.', 'success');
+                
+                // Reload after a short delay to show the success message
+                setTimeout(() => {
+                    if (window.location.pathname.includes('/reels')) {
+                        location.reload();
+                    } else {
+                        window.location.href = '{% url "reels" %}';
+                    }
+                }, 1500);
+            } else {
+                showReelToast('Upload Failed', data.error || 'Something went wrong. Please try again.', 'error');
+            }
+        })
+        .catch(err => {
+            removeToast(toastId);
+            console.error(err);
+            showReelToast('Upload Failed', 'Network error. Please check your connection.', 'error');
+        });
+    }
+
+    // ===== Comments Functionality =====
+    function openReelComments(reelId) {
+        currentReelId = reelId;
+        const modal = document.getElementById('reelCommentsModal');
+        const list = document.getElementById('reelCommentsList');
+        
+        // Show modal
+        modal.classList.add('show');
+        
+        // Show loading state
+        list.innerHTML = '<div class="reel-comments-empty"><div style="color: rgba(255,255,255,0.6);">Loading comments...</div></div>';
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+        
+        // Fetch comments
+        fetch(`/chat/api/reels/${reelId}/comments/`, {
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.comments) {
+                renderComments(data.comments);
+            } else {
+                list.innerHTML = `
+                    <div class="reel-comments-empty">
+                        <i data-lucide="message-circle"></i>
+                        <p>No comments yet</p>
+                        <p style="font-size: 13px; opacity: 0.7;">Be the first to comment!</p>
+                    </div>
+                `;
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            list.innerHTML = `
+                <div class="reel-comments-empty">
+                    <i data-lucide="message-circle"></i>
+                    <p>No comments yet</p>
+                    <p style="font-size: 13px; opacity: 0.7;">Be the first to comment!</p>
+                </div>
+            `;
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+    }
+
+    function renderComments(comments) {
+        const list = document.getElementById('reelCommentsList');
+        
+        if (!comments || comments.length === 0) {
+            list.innerHTML = `
+                <div class="reel-comments-empty">
+                    <i data-lucide="message-circle"></i>
+                    <p>No comments yet</p>
+                    <p style="font-size: 13px; opacity: 0.7;">Be the first to comment!</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = comments.map(c => `
+            <div class="reel-comment-item">
+                <img src="${c.user_avatar || 'https://ui-avatars.com/api/?name=' + c.username}" class="reel-comment-avatar">
+                <div class="reel-comment-content">
+                    <div class="reel-comment-username">${c.username}</div>
+                    <div class="reel-comment-text">${c.text}</div>
+                    <div class="reel-comment-time">${c.time_ago || ''}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function closeReelComments(event) {
+        if (event && event.target !== event.currentTarget) return;
+        const modal = document.getElementById('reelCommentsModal');
+        modal.classList.remove('show');
+        currentReelId = null;
+        document.getElementById('reelCommentInput').value = '';
+    }
+
+    function submitReelComment() {
+        if (!currentReelId) return;
+        
+        const input = document.getElementById('reelCommentInput');
+        const text = input.value.trim();
+        
+        if (!text) return;
+        
+        // Disable submit button
+        const submitBtn = document.querySelector('.reel-comments-submit');
+        submitBtn.disabled = true;
+        
+        fetch('/chat/api/reels/comment/', {
+            method: 'POST',
+            body: JSON.stringify({ reel_id: currentReelId, text: text }),
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
             }
         })
-            .then(r => r.json())
-            .then(data => {
-                closeReelReport();
-                if (data.success) {
-                    // Show simple toast or alert
-                    const toast = document.createElement('div');
-                    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#333;color:white;padding:12px 24px;border-radius:24px;z-index:10060;box-shadow:0 4px 12px rgba(0,0,0,0.5);display:flex;align-items:center;gap:8px;';
-                    toast.innerHTML = '<i data-lucide="check-circle" style="color:#10b981;width:20px;"></i> <span>Report submitted</span>';
-                    document.body.appendChild(toast);
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                    setTimeout(() => toast.remove(), 3000);
-                } else {
-                    alert(data.error || 'Failed to report');
+        .then(r => r.json())
+        .then(data => {
+            submitBtn.disabled = false;
+            
+            if (data.success) {
+                input.value = '';
+                
+                // Update comment count on the reel
+                const countEl = document.querySelector(`.comment-count[data-reel-id="${currentReelId}"]`);
+                if (countEl && data.comments_count !== undefined) {
+                    countEl.textContent = data.comments_count;
                 }
-            })
-            .catch(err => {
-                console.error(err);
-                alert('An error occurred');
-            });
+                
+                // Refresh comments
+                openReelComments(currentReelId);
+                
+                showReelToast('Comment Posted', 'Your comment has been added.', 'success');
+            } else {
+                showReelToast('Error', data.error || 'Failed to post comment.', 'error');
+            }
+        })
+        .catch(err => {
+            submitBtn.disabled = false;
+            console.error(err);
+            showReelToast('Error', 'Failed to post comment. Please try again.', 'error');
+        });
     }
 
-    function escapeHTML(str) {
-        return str.replace(/[&<>'"]/g, tag => ({
-            '&': '&amp;',
-            '<': '&lt;',
-            '>': '&gt;',
-            "'": '&#39;',
-            '"': '&quot;'
-        }[tag]));
-    }
-
+    // ===== Mute/Sound Controls =====
     function toggleGlobalMute(btn) {
         globalMuted = !globalMuted;
-        const icon = btn.querySelector('i');
-
+        const icon = btn.querySelector('i') || btn.querySelector('svg');
+        
         // Update all videos
         document.querySelectorAll('.reel-video').forEach(video => {
             video.muted = globalMuted;
@@ -769,12 +1084,12 @@
         event.stopPropagation();
         const reel = btn.closest('.reel-item');
         const video = reel.querySelector('video');
-        const icon = btn.querySelector('i');
-
+        const icon = btn.querySelector('i') || btn.querySelector('svg');
+        
         // Toggle mute state for this specific reel
         video.muted = !video.muted;
         btn.setAttribute('data-muted', video.muted);
-
+        
         // Update icon
         if (icon) {
             icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
@@ -794,20 +1109,67 @@
         video.muted = globalMuted;
     }
 
-    // Auto play on scroll logic
+    // ===== Like Functionality =====
+    function toggleReelLike(reelId, btn) {
+        fetch('/chat/api/reels/like/', {
+            method: 'POST',
+            body: JSON.stringify({ reel_id: reelId }),
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const icon = btn.querySelector('svg') || btn.querySelector('i');
+                const count = btn.querySelector('.like-count');
+
+                if (data.is_liked) {
+                    icon.style.fill = '#ff3040';
+                    icon.style.color = '#ff3040';
+                    icon.classList.add('liked-heart');
+                } else {
+                    icon.style.fill = 'none';
+                    icon.style.color = 'white';
+                    icon.classList.remove('liked-heart');
+                }
+                count.textContent = data.likes_count;
+            }
+        });
+    }
+
+    // ===== Share Functionality =====
+    function shareReel(url) {
+        const fullUrl = window.location.origin + url;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Check out this reel on Odnix',
+                url: fullUrl
+            }).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(fullUrl).then(() => {
+                showReelToast('Link Copied', 'Reel link copied to clipboard!', 'success');
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                showReelToast('Error', 'Failed to copy link.', 'error');
+            });
+        }
+    }
+
+    // ===== Auto-play on scroll =====
     document.addEventListener('DOMContentLoaded', () => {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
 
-        // Helper to safely play video
         function safePlay(video) {
             if (video.paused) {
                 video.muted = true;
                 const playPromise = video.play();
                 if (playPromise !== undefined) {
                     playPromise.then(() => {
-                        // Unmute after successful play if not globally muted
                         setTimeout(() => {
                             if (!globalMuted) {
                                 video.muted = false;
@@ -843,50 +1205,25 @@
         reelItems.forEach(item => {
             const video = item.querySelector('video');
             const overlay = item.querySelector('.reel-play-overlay');
-            const reelId = item.dataset.id;
-            let viewTracked = false;
-
-            // Hide overlay when video plays
+            
             video.addEventListener('play', () => {
                 if (overlay) overlay.style.display = 'none';
-
-                // Track view only once per reel
-                if (!viewTracked && reelId) {
-                    viewTracked = true;
-                    fetch('/chat/api/reels/track-view/', {
-                        method: 'POST',
-                        body: JSON.stringify({ reel_id: reelId }),
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        }
-                    })
-                        .then(r => r.json())
-                        .then(data => {
-                            if (data.status === 'success') {
-                                console.log('View tracked for reel ' + reelId + '. Total views:', data.views);
-                            }
-                        })
-                        .catch(err => console.error('Error tracking view:', err));
-                }
             });
-
-            // Show overlay when video pauses
+            
             video.addEventListener('pause', () => {
                 if (overlay && video.currentTime > 0 && !video.ended) {
                     overlay.style.display = 'flex';
                 }
             });
-
+            
             observer.observe(item);
         });
-
-        // Auto-play the first reel immediately on page load
+        
+        // Auto-play first reel
         const firstReel = document.querySelector('.reel-item');
         if (firstReel) {
             const firstVideo = firstReel.querySelector('video');
             if (firstVideo) {
-                // Play immediately if loaded, or when it loads
                 if (firstVideo.readyState >= 2) {
                     safePlay(firstVideo);
                 } else {
@@ -896,273 +1233,9 @@
         }
     });
 
-    function toggleReelLike(reelId, btn) {
-        fetch('/chat/api/reels/like/', {
-            method: 'POST',
-            body: JSON.stringify({ reel_id: reelId }),
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            }
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    // Lucide replaces <i> with <svg>, so we must look for the SVG or fallback
-                    const icon = btn.querySelector('svg') || btn.querySelector('i');
-                    const count = btn.querySelector('.like-count');
-
-                    if (data.is_liked) {
-                        icon.style.fill = '#ff3040';
-                        icon.style.color = '#ff3040';
-                        icon.classList.add('liked-heart');
-                    } else {
-                        icon.style.fill = 'none';
-                        icon.style.color = 'white';
-                        icon.classList.remove('liked-heart');
-                    }
-                    count.textContent = data.likes_count;
-                }
-            });
-    }
-
-    function shareReel(url) {
-        const fullUrl = window.location.origin + url;
-
-        // Prefer modern share API if available (Mobile)
-        if (navigator.share) {
-            navigator.share({
-                title: 'Check out this omzo on Odnix',
-                url: fullUrl
-            }).catch(console.error);
-        } else {
-            // Desktop fallback
-            navigator.clipboard.writeText(fullUrl).then(() => {
-                // Show a nice toast or reuse error modal for success info?
-                // For now, simpler alert is standard, but let's make it look like a confirmation
-                const originalText = document.activeElement.innerText;
-                alert('Link copied to clipboard!');
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert('Failed to copy link.');
-            });
-        }
-    }
-
-    // =============================
-    // Reel Comments (Fetch & Post)
-    // =============================
-    function openReelComments(reelId, iconEl) {
-        // Build bottom-sheet lazily
-        let overlay = document.getElementById('rcOverlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.id = 'rcOverlay';
-            overlay.className = 'rc-overlay';
-            const currentUserAvatar = '{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}{% endif %}';
-            overlay.innerHTML = `
-                <div class="rc-sheet rc-sheet-panel">
-                    <div class="rc-header">
-                        <span class="title">Comments</span>
-                        <button class="rc-close-btn" id="rcClose" aria-label="Close">
-                            <i data-lucide="x"></i>
-                        </button>
-                    </div>
-                    <div id="rcList" class="rc-list"></div>
-                    <div class="rc-input-row">
-                        <div class="rc-input-avatar">
-                            <img src="${currentUserAvatar}" alt="You">
-                        </div>
-                        <input id="rcInput" class="rc-input" type="text" placeholder="Add a comment..." maxlength="500">
-                        <button class="rc-emoji-btn" id="rcEmojiBtn" aria-label="Emoji">
-                            <i data-lucide="smile"></i>
-                        </button>
-                        <button id="rcSend" class="rc-send" disabled>Post</button>
-                        <emoji-picker id="rcEmojiPicker" class="rc-emoji-picker"></emoji-picker>
-                    </div>
-                </div>`;
-            document.body.appendChild(overlay);
-            // Close on button or background click
-            overlay.querySelector('#rcClose').onclick = () => closeRcOverlay();
-            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeRcOverlay(); });
-        }
-        overlay.classList.add('show');
-        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-        const rcList = overlay.querySelector('#rcList');
-        rcList.innerHTML = '<div style="opacity:.7;text-align:center;padding:20px;">Loading...</div>';
-        fetch(`/chat/api/reels/${reelId}/comments/?limit=30`, {
-            headers: {
-                'X-CSRFToken': '{{ csrf_token }}',
-                'Accept': 'application/json'
-            },
-            credentials: 'same-origin'
-        })
-            .then(async r => {
-                let data = null; try { data = await r.json(); } catch (e) { }
-                if (!r.ok || !data) throw new Error('Failed to load comments');
-                return data;
-            })
-            .then(data => {
-                rcList.innerHTML = '';
-                if (data.success && data.comments && data.comments.length) {
-                    data.comments.forEach(c => {
-                        const row = document.createElement('div');
-                        row.className = 'rc-comment-item';
-                        const avatar = document.createElement('div');
-                        avatar.className = 'rc-comment-avatar';
-                        if (c.user.avatar) {
-                            avatar.innerHTML = `<img src="${c.user.avatar}" alt="${c.user.username}">`;
-                        } else {
-                            const initials = (c.user.full_name || c.user.username || '?').split(' ').map(s => s[0] || '').join('').substring(0, 2).toUpperCase();
-                            avatar.textContent = initials || '?';
-                        }
-                        const body = document.createElement('div');
-                        body.className = 'rc-comment-body';
-                        const username = document.createElement('div');
-                        username.className = 'rc-comment-username';
-                        username.textContent = c.user.username || c.user.full_name;
-                        const text = document.createElement('div');
-                        text.className = 'rc-comment-text';
-                        text.textContent = c.content;
-                        body.appendChild(username);
-                        body.appendChild(text);
-                        row.appendChild(avatar);
-                        row.appendChild(body);
-                        rcList.appendChild(row);
-                    });
-                } else {
-                    // Render an identifiable empty-state so we can remove it later
-                    rcList.innerHTML = '';
-                    const empty = document.createElement('div');
-                    empty.className = 'rc-empty';
-                    empty.style.cssText = 'opacity:.7;text-align:center;padding:40px 20px;';
-                    empty.textContent = 'No comments yet. Be the first to comment!';
-                    rcList.appendChild(empty);
-                }
-            }).catch(() => rcList.innerHTML = '<div style="opacity:.7;color:#ef4444;text-align:center;padding:20px;">Failed to load comments</div>');
-
-        const sendBtn = overlay.querySelector('#rcSend');
-        const input = overlay.querySelector('#rcInput');
-        const emojiBtn = overlay.querySelector('#rcEmojiBtn');
-        const emojiPicker = overlay.querySelector('#rcEmojiPicker');
-        
-        // Enable/disable send button based on input
-        input.oninput = () => {
-            sendBtn.disabled = !input.value.trim();
-        };
-        
-        emojiBtn.onclick = () => {
-            emojiPicker.classList.toggle('show');
-        };
-        // Send on Enter key
-        input.onkeydown = (e) => {
-            if (e.isComposing) return; // ignore IME composition
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                if (!sendBtn.disabled) {
-                    sendBtn.click();
-                }
-            }
-        };
-        // When user picks an emoji, append to input
-        if (!emojiPicker.__wired) {
-            emojiPicker.addEventListener('emoji-click', (event) => {
-                const unicode = event?.detail?.unicode || '';
-                input.value += unicode;
-                input.focus();
-            });
-            emojiPicker.__wired = true;
-        }
-
-        sendBtn.onclick = () => {
-            const content = input.value.trim();
-            if (!content) return;
-            sendBtn.disabled = true;
-            fetch('/chat/api/reels/comment/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Accept': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({ reel_id: reelId, content })
-            })
-                .then(async r => {
-                    let data = null; try { data = await r.json(); } catch (e) { }
-                    return { ok: r.ok, data };
-                })
-                .then(({ ok, data }) => {
-                    sendBtn.disabled = false;
-                    if (ok && data && data.success) {
-                        input.value = '';
-                        sendBtn.disabled = true; // Re-disable until user types again
-                        emojiPicker.classList.remove('show');
-                        // prepend new comment
-                        const existingEmpty = rcList.querySelector('.rc-empty');
-                        if (existingEmpty) existingEmpty.remove();
-                        const c = data.comment;
-                        const row = document.createElement('div');
-                        row.className = 'rc-comment-item';
-                        const avatar = document.createElement('div');
-                        avatar.className = 'rc-comment-avatar';
-                        if (c.user.avatar) {
-                            avatar.innerHTML = `<img src="${c.user.avatar}" alt="${c.user.username}">`;
-                        } else {
-                            const initials = (c.user.full_name || c.user.username || '?').split(' ').map(s => s[0] || '').join('').substring(0, 2).toUpperCase();
-                            avatar.textContent = initials || '?';
-                        }
-                        const body = document.createElement('div');
-                        body.className = 'rc-comment-body';
-                        const username = document.createElement('div');
-                        username.className = 'rc-comment-username';
-                        username.textContent = c.user.username || c.user.full_name;
-                        const text = document.createElement('div');
-                        text.className = 'rc-comment-text';
-                        text.textContent = c.content;
-                        body.appendChild(username);
-                        body.appendChild(text);
-                        row.appendChild(avatar);
-                        row.appendChild(body);
-                        rcList.prepend(row);
-                        // update count on original button
-                        const btn = (iconEl && iconEl.closest) ? iconEl.closest('.action-btn') : null;
-                        const countEl = btn ? btn.querySelector('.comment-count') : null;
-                        if (countEl) { countEl.textContent = data.comments_count; }
-                    } else {
-                        // Show a subtle inline error without a popup
-                        const err = (data && data.error) ? data.error : 'Failed to add comment';
-                        const msg = document.createElement('div');
-                        msg.style.cssText = 'color:#ef4444; opacity:.9; padding:6px 0;text-align:center;';
-                        msg.textContent = err;
-                        rcList.prepend(msg);
-                        setTimeout(() => msg.remove(), 2500);
-                    }
-                })
-                .catch(() => {
-                    sendBtn.disabled = false;
-                    const msg = document.createElement('div');
-                    msg.style.cssText = 'color:#ef4444; opacity:.9; padding:6px 0;text-align:center;';
-                    msg.textContent = 'Network error';
-                    rcList.prepend(msg);
-                    setTimeout(() => msg.remove(), 2500);
-                });
-        };
-    }
-
-    function closeRcOverlay() {
-        const overlay = document.getElementById('rcOverlay');
-        if (!overlay) return;
-        // Remove show class; CSS controls visibility and animation
-        overlay.classList.remove('show');
-    }
-
-    function escapeHTML(str) {
-        const div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+    // ===== Error Modal (legacy, keeping for compatibility) =====
+    function closeErrorModal() {
+        document.getElementById('errorModal').style.display = 'none';
     }
 </script>
-<!-- Emoji picker web component -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
 {% endblock %}

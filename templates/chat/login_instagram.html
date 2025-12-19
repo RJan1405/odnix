@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Odnix</title>
+    <!-- Clear any saved theme for logged-out users - show default theme -->
+    <script>
+        (function() {
+            // Clear localStorage theme when on login page (user logged out)
+            localStorage.removeItem('odnix-theme');
+            // Ensure no theme classes are applied
+            document.documentElement.className = '';
+        })();
+    </script>
     <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}">
     <style>
         /* Instagram-style Auth Page */

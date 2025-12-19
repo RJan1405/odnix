@@ -48,7 +48,9 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 50%;
-
+  --radius-avatar: 22%;  /* Rounded square for avatars/profile pics */
+  --radius-story: 22%;   /* Rounded square for story rings */
+  
   /* Shadows - Instagram uses very subtle shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -71,6 +73,10 @@
   --odnix-gradient: var(--brand-gradient);
 }
 
+/* ============================================
+   CUSTOM THEME SYSTEM - 28 Modern Themes
+   ============================================ */
+
 /* Dark Mode Overrides */
 body.theme-dark,
 html.theme-dark body,
@@ -88,15 +94,700 @@ html.theme-dark body,
   --ig-glow: rgba(102, 126, 234, 0.3);
   --ig-icon-color: #ffffff;
   --ig-icon-hover: #a0a0b8;
+  --color-primary: #667eea;
+  --color-secondary: #764ba2;
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-/* Ensure dark theme applies to html for early loading */
-html.theme-dark {
-  background: #0f0f1a;
+/* === MODERN DARK THEMES === */
+
+/* Midnight - Deep blue night theme */
+body.theme-midnight,
+html.theme-midnight body,
+.theme-midnight {
+  --ig-bg: #0d1421;
+  --ig-surface: #141d2e;
+  --ig-surface-hover: #1c2940;
+  --ig-border: #243147;
+  --ig-border-light: #1c2940;
+  --ig-text-primary: #e4e8ef;
+  --ig-text-secondary: #8b9bb4;
+  --ig-text-link: #60a5fa;
+  --ig-input-bg: #1c2940;
+  --ig-surface-light: #1c2940;
+  --ig-glow: rgba(96, 165, 250, 0.2);
+  --ig-icon-color: #e4e8ef;
+  --ig-icon-hover: #8b9bb4;
+  --color-primary: #3b82f6;
+  --color-secondary: #6366f1;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
+html.theme-midnight { background: #0d1421; }
+
+/* AMOLED Black - Pure black for OLED displays */
+body.theme-amoled,
+html.theme-amoled body,
+.theme-amoled {
+  --ig-bg: #000000;
+  --ig-surface: #0a0a0a;
+  --ig-surface-hover: #141414;
+  --ig-border: #1f1f1f;
+  --ig-border-light: #141414;
+  --ig-text-primary: #ffffff;
+  --ig-text-secondary: #888888;
+  --ig-text-link: #667eea;
+  --ig-input-bg: #141414;
+  --ig-surface-light: #0a0a0a;
+  --ig-glow: rgba(102, 126, 234, 0.25);
+  --ig-icon-color: #ffffff;
+  --ig-icon-hover: #888888;
+  --color-primary: #667eea;
+  --color-secondary: #764ba2;
+  --shadow-sm: 0 1px 2px rgba(102, 126, 234, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+html.theme-amoled { background: #000000; }
+
+/* Dracula - Popular dark theme */
+body.theme-dracula,
+html.theme-dracula body,
+.theme-dracula {
+  --ig-bg: #282a36;
+  --ig-surface: #343746;
+  --ig-surface-hover: #3e4254;
+  --ig-border: #44475a;
+  --ig-border-light: #3e4254;
+  --ig-text-primary: #f8f8f2;
+  --ig-text-secondary: #6272a4;
+  --ig-text-link: #bd93f9;
+  --ig-input-bg: #3e4254;
+  --ig-surface-light: #343746;
+  --ig-glow: rgba(189, 147, 249, 0.2);
+  --ig-icon-color: #f8f8f2;
+  --ig-icon-hover: #bd93f9;
+  --color-primary: #bd93f9;
+  --color-secondary: #ff79c6;
+  --brand-gradient: linear-gradient(135deg, #bd93f9 0%, #ff79c6 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-dracula { background: #282a36; }
+
+/* Nord - Arctic-inspired color palette */
+body.theme-nord,
+html.theme-nord body,
+.theme-nord {
+  --ig-bg: #2e3440;
+  --ig-surface: #3b4252;
+  --ig-surface-hover: #434c5e;
+  --ig-border: #4c566a;
+  --ig-border-light: #434c5e;
+  --ig-text-primary: #eceff4;
+  --ig-text-secondary: #d8dee9;
+  --ig-text-link: #88c0d0;
+  --ig-input-bg: #434c5e;
+  --ig-surface-light: #3b4252;
+  --ig-glow: rgba(136, 192, 208, 0.2);
+  --ig-icon-color: #eceff4;
+  --ig-icon-hover: #88c0d0;
+  --color-primary: #5e81ac;
+  --color-secondary: #81a1c1;
+  --brand-gradient: linear-gradient(135deg, #5e81ac 0%, #88c0d0 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-nord { background: #2e3440; }
+
+/* Tokyo Night - Japanese city lights */
+body.theme-tokyo_night,
+html.theme-tokyo_night body,
+.theme-tokyo_night {
+  --ig-bg: #1a1b26;
+  --ig-surface: #24283b;
+  --ig-surface-hover: #2f3349;
+  --ig-border: #3b4261;
+  --ig-border-light: #2f3349;
+  --ig-text-primary: #c0caf5;
+  --ig-text-secondary: #565f89;
+  --ig-text-link: #7aa2f7;
+  --ig-input-bg: #2f3349;
+  --ig-surface-light: #24283b;
+  --ig-glow: rgba(122, 162, 247, 0.2);
+  --ig-icon-color: #c0caf5;
+  --ig-icon-hover: #7aa2f7;
+  --color-primary: #7aa2f7;
+  --color-secondary: #bb9af7;
+  --brand-gradient: linear-gradient(135deg, #7aa2f7 0%, #bb9af7 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+html.theme-tokyo_night { background: #1a1b26; }
+
+/* Synthwave - 80s retro neon */
+body.theme-synthwave,
+html.theme-synthwave body,
+.theme-synthwave {
+  --ig-bg: #1a1025;
+  --ig-surface: #241734;
+  --ig-surface-hover: #2d1f40;
+  --ig-border: #3d2a52;
+  --ig-border-light: #2d1f40;
+  --ig-text-primary: #f5e6ff;
+  --ig-text-secondary: #9d7ab8;
+  --ig-text-link: #ff7edb;
+  --ig-input-bg: #2d1f40;
+  --ig-surface-light: #241734;
+  --ig-glow: rgba(255, 126, 219, 0.25);
+  --ig-icon-color: #f5e6ff;
+  --ig-icon-hover: #ff7edb;
+  --color-primary: #ff7edb;
+  --color-secondary: #36f9f6;
+  --brand-gradient: linear-gradient(135deg, #ff7edb 0%, #36f9f6 100%);
+  --shadow-sm: 0 1px 2px rgba(255, 126, 219, 0.1);
+  --shadow-md: 0 4px 12px rgba(255, 126, 219, 0.15);
+  --shadow-lg: 0 8px 24px rgba(255, 126, 219, 0.2);
+}
+html.theme-synthwave { background: #1a1025; }
+
+/* Cyberpunk - Futuristic neon yellow */
+body.theme-cyberpunk,
+html.theme-cyberpunk body,
+.theme-cyberpunk {
+  --ig-bg: #0d0d0d;
+  --ig-surface: #1a1a1a;
+  --ig-surface-hover: #252525;
+  --ig-border: #333333;
+  --ig-border-light: #252525;
+  --ig-text-primary: #fcee09;
+  --ig-text-secondary: #aaa900;
+  --ig-text-link: #00f0ff;
+  --ig-input-bg: #252525;
+  --ig-surface-light: #1a1a1a;
+  --ig-glow: rgba(252, 238, 9, 0.2);
+  --ig-icon-color: #fcee09;
+  --ig-icon-hover: #00f0ff;
+  --color-primary: #fcee09;
+  --color-secondary: #00f0ff;
+  --brand-gradient: linear-gradient(135deg, #fcee09 0%, #00f0ff 100%);
+  --shadow-sm: 0 1px 2px rgba(252, 238, 9, 0.1);
+  --shadow-md: 0 4px 12px rgba(252, 238, 9, 0.15);
+  --shadow-lg: 0 8px 24px rgba(252, 238, 9, 0.2);
+}
+html.theme-cyberpunk { background: #0d0d0d; }
+
+/* === NATURE THEMES === */
+
+/* Forest - Deep green nature */
+body.theme-forest,
+html.theme-forest body,
+.theme-forest {
+  --ig-bg: #0f1912;
+  --ig-surface: #162118;
+  --ig-surface-hover: #1d2a1f;
+  --ig-border: #2a3b2c;
+  --ig-border-light: #1d2a1f;
+  --ig-text-primary: #e8f0ea;
+  --ig-text-secondary: #8fa894;
+  --ig-text-link: #4ade80;
+  --ig-input-bg: #1d2a1f;
+  --ig-surface-light: #162118;
+  --ig-glow: rgba(74, 222, 128, 0.2);
+  --ig-icon-color: #e8f0ea;
+  --ig-icon-hover: #4ade80;
+  --color-primary: #22c55e;
+  --color-secondary: #16a34a;
+  --brand-gradient: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-forest { background: #0f1912; }
+
+/* Ocean - Deep sea blue */
+body.theme-ocean,
+html.theme-ocean body,
+.theme-ocean {
+  --ig-bg: #0c1929;
+  --ig-surface: #122236;
+  --ig-surface-hover: #183047;
+  --ig-border: #214060;
+  --ig-border-light: #183047;
+  --ig-text-primary: #e0f2fe;
+  --ig-text-secondary: #7dd3fc;
+  --ig-text-link: #38bdf8;
+  --ig-input-bg: #183047;
+  --ig-surface-light: #122236;
+  --ig-glow: rgba(56, 189, 248, 0.2);
+  --ig-icon-color: #e0f2fe;
+  --ig-icon-hover: #38bdf8;
+  --color-primary: #0ea5e9;
+  --color-secondary: #0284c7;
+  --brand-gradient: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-ocean { background: #0c1929; }
+
+/* Sunset - Warm orange/red */
+body.theme-sunset,
+html.theme-sunset body,
+.theme-sunset {
+  --ig-bg: #1a0f0a;
+  --ig-surface: #251710;
+  --ig-surface-hover: #321e15;
+  --ig-border: #46291c;
+  --ig-border-light: #321e15;
+  --ig-text-primary: #fef3e8;
+  --ig-text-secondary: #d4a574;
+  --ig-text-link: #fb923c;
+  --ig-input-bg: #321e15;
+  --ig-surface-light: #251710;
+  --ig-glow: rgba(251, 146, 60, 0.2);
+  --ig-icon-color: #fef3e8;
+  --ig-icon-hover: #fb923c;
+  --color-primary: #f97316;
+  --color-secondary: #ea580c;
+  --brand-gradient: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-sunset { background: #1a0f0a; }
+
+/* Aurora - Northern lights */
+body.theme-aurora,
+html.theme-aurora body,
+.theme-aurora {
+  --ig-bg: #0a0f14;
+  --ig-surface: #111821;
+  --ig-surface-hover: #18212c;
+  --ig-border: #1f2937;
+  --ig-border-light: #18212c;
+  --ig-text-primary: #e0f4f1;
+  --ig-text-secondary: #6ee7b7;
+  --ig-text-link: #34d399;
+  --ig-input-bg: #18212c;
+  --ig-surface-light: #111821;
+  --ig-glow: rgba(52, 211, 153, 0.2);
+  --ig-icon-color: #e0f4f1;
+  --ig-icon-hover: #34d399;
+  --color-primary: #10b981;
+  --color-secondary: #06b6d4;
+  --brand-gradient: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #8b5cf6 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(52, 211, 153, 0.1);
+  --shadow-lg: 0 8px 24px rgba(52, 211, 153, 0.15);
+}
+html.theme-aurora { background: #0a0f14; }
+
+/* Desert - Warm sand tones */
+body.theme-desert,
+html.theme-desert body,
+.theme-desert {
+  --ig-bg: #1c1714;
+  --ig-surface: #262019;
+  --ig-surface-hover: #30281f;
+  --ig-border: #3d342a;
+  --ig-border-light: #30281f;
+  --ig-text-primary: #f5f0e8;
+  --ig-text-secondary: #c4b49a;
+  --ig-text-link: #d4a574;
+  --ig-input-bg: #30281f;
+  --ig-surface-light: #262019;
+  --ig-glow: rgba(212, 165, 116, 0.2);
+  --ig-icon-color: #f5f0e8;
+  --ig-icon-hover: #d4a574;
+  --color-primary: #d97706;
+  --color-secondary: #b45309;
+  --brand-gradient: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-desert { background: #1c1714; }
+
+/* === SOFT/PASTEL THEMES === */
+
+/* Lavender - Soft purple */
+body.theme-lavender,
+html.theme-lavender body,
+.theme-lavender {
+  --ig-bg: #f5f3ff;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #ede9fe;
+  --ig-border: #ddd6fe;
+  --ig-border-light: #e9e4fc;
+  --ig-text-primary: #3c3660;
+  --ig-text-secondary: #6b5b95;
+  --ig-text-link: #7c3aed;
+  --ig-input-bg: #faf5ff;
+  --ig-surface-light: #f5f3ff;
+  --ig-glow: rgba(124, 58, 237, 0.15);
+  --ig-icon-color: #3c3660;
+  --ig-icon-hover: #7c3aed;
+  --color-primary: #8b5cf6;
+  --color-secondary: #a78bfa;
+  --brand-gradient: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+  --shadow-sm: 0 1px 2px rgba(139, 92, 246, 0.1);
+  --shadow-md: 0 4px 12px rgba(139, 92, 246, 0.1);
+  --shadow-lg: 0 8px 24px rgba(139, 92, 246, 0.15);
+}
+html.theme-lavender { background: #f5f3ff; }
+
+/* Rose - Soft pink */
+body.theme-rose,
+html.theme-rose body,
+.theme-rose {
+  --ig-bg: #fff1f2;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #ffe4e6;
+  --ig-border: #fecdd3;
+  --ig-border-light: #fed7d7;
+  --ig-text-primary: #4a3233;
+  --ig-text-secondary: #9f5660;
+  --ig-text-link: #e11d48;
+  --ig-input-bg: #fff5f6;
+  --ig-surface-light: #fff1f2;
+  --ig-glow: rgba(225, 29, 72, 0.12);
+  --ig-icon-color: #4a3233;
+  --ig-icon-hover: #e11d48;
+  --color-primary: #f43f5e;
+  --color-secondary: #fb7185;
+  --brand-gradient: linear-gradient(135deg, #f43f5e 0%, #fb7185 100%);
+  --shadow-sm: 0 1px 2px rgba(244, 63, 94, 0.1);
+  --shadow-md: 0 4px 12px rgba(244, 63, 94, 0.1);
+  --shadow-lg: 0 8px 24px rgba(244, 63, 94, 0.15);
+}
+html.theme-rose { background: #fff1f2; }
+
+/* Mint - Fresh green */
+body.theme-mint,
+html.theme-mint body,
+.theme-mint {
+  --ig-bg: #f0fdf4;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #dcfce7;
+  --ig-border: #bbf7d0;
+  --ig-border-light: #d1fae5;
+  --ig-text-primary: #14532d;
+  --ig-text-secondary: #166534;
+  --ig-text-link: #16a34a;
+  --ig-input-bg: #f5fff7;
+  --ig-surface-light: #f0fdf4;
+  --ig-glow: rgba(22, 163, 74, 0.12);
+  --ig-icon-color: #14532d;
+  --ig-icon-hover: #16a34a;
+  --color-primary: #22c55e;
+  --color-secondary: #4ade80;
+  --brand-gradient: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+  --shadow-sm: 0 1px 2px rgba(34, 197, 94, 0.1);
+  --shadow-md: 0 4px 12px rgba(34, 197, 94, 0.1);
+  --shadow-lg: 0 8px 24px rgba(34, 197, 94, 0.15);
+}
+html.theme-mint { background: #f0fdf4; }
+
+/* Peach - Warm soft orange */
+body.theme-peach,
+html.theme-peach body,
+.theme-peach {
+  --ig-bg: #fff7ed;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #ffedd5;
+  --ig-border: #fed7aa;
+  --ig-border-light: #fde5c8;
+  --ig-text-primary: #431407;
+  --ig-text-secondary: #9a3412;
+  --ig-text-link: #ea580c;
+  --ig-input-bg: #fffaf5;
+  --ig-surface-light: #fff7ed;
+  --ig-glow: rgba(234, 88, 12, 0.12);
+  --ig-icon-color: #431407;
+  --ig-icon-hover: #ea580c;
+  --color-primary: #f97316;
+  --color-secondary: #fb923c;
+  --brand-gradient: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+  --shadow-sm: 0 1px 2px rgba(249, 115, 22, 0.1);
+  --shadow-md: 0 4px 12px rgba(249, 115, 22, 0.1);
+  --shadow-lg: 0 8px 24px rgba(249, 115, 22, 0.15);
+}
+html.theme-peach { background: #fff7ed; }
+
+/* Sky - Light blue */
+body.theme-sky,
+html.theme-sky body,
+.theme-sky {
+  --ig-bg: #f0f9ff;
+  --ig-surface: #ffffff;
+  --ig-surface-hover: #e0f2fe;
+  --ig-border: #bae6fd;
+  --ig-border-light: #cceeff;
+  --ig-text-primary: #0c4a6e;
+  --ig-text-secondary: #0369a1;
+  --ig-text-link: #0284c7;
+  --ig-input-bg: #f5fcff;
+  --ig-surface-light: #f0f9ff;
+  --ig-glow: rgba(2, 132, 199, 0.12);
+  --ig-icon-color: #0c4a6e;
+  --ig-icon-hover: #0284c7;
+  --color-primary: #0ea5e9;
+  --color-secondary: #38bdf8;
+  --brand-gradient: linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%);
+  --shadow-sm: 0 1px 2px rgba(14, 165, 233, 0.1);
+  --shadow-md: 0 4px 12px rgba(14, 165, 233, 0.1);
+  --shadow-lg: 0 8px 24px rgba(14, 165, 233, 0.15);
+}
+html.theme-sky { background: #f0f9ff; }
+
+/* === PROFESSIONAL THEMES === */
+
+/* Charcoal - Deep gray professional */
+body.theme-charcoal,
+html.theme-charcoal body,
+.theme-charcoal {
+  --ig-bg: #18181b;
+  --ig-surface: #27272a;
+  --ig-surface-hover: #3f3f46;
+  --ig-border: #3f3f46;
+  --ig-border-light: #3f3f46;
+  --ig-text-primary: #fafafa;
+  --ig-text-secondary: #a1a1aa;
+  --ig-text-link: #667eea;
+  --ig-input-bg: #3f3f46;
+  --ig-surface-light: #27272a;
+  --ig-glow: rgba(102, 126, 234, 0.2);
+  --ig-icon-color: #fafafa;
+  --ig-icon-hover: #667eea;
+  --color-primary: #667eea;
+  --color-secondary: #764ba2;
+  --brand-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-charcoal { background: #18181b; }
+
+/* Slate - Blue-gray professional */
+body.theme-slate,
+html.theme-slate body,
+.theme-slate {
+  --ig-bg: #0f172a;
+  --ig-surface: #1e293b;
+  --ig-surface-hover: #334155;
+  --ig-border: #334155;
+  --ig-border-light: #475569;
+  --ig-text-primary: #f8fafc;
+  --ig-text-secondary: #94a3b8;
+  --ig-text-link: #60a5fa;
+  --ig-input-bg: #334155;
+  --ig-surface-light: #1e293b;
+  --ig-glow: rgba(96, 165, 250, 0.2);
+  --ig-icon-color: #f8fafc;
+  --ig-icon-hover: #60a5fa;
+  --color-primary: #3b82f6;
+  --color-secondary: #60a5fa;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-slate { background: #0f172a; }
+
+/* Graphite - Dark neutral */
+body.theme-graphite,
+html.theme-graphite body,
+.theme-graphite {
+  --ig-bg: #1c1c1e;
+  --ig-surface: #2c2c2e;
+  --ig-surface-hover: #3a3a3c;
+  --ig-border: #48484a;
+  --ig-border-light: #3a3a3c;
+  --ig-text-primary: #f5f5f7;
+  --ig-text-secondary: #8e8e93;
+  --ig-text-link: #0a84ff;
+  --ig-input-bg: #3a3a3c;
+  --ig-surface-light: #2c2c2e;
+  --ig-glow: rgba(10, 132, 255, 0.2);
+  --ig-icon-color: #f5f5f7;
+  --ig-icon-hover: #0a84ff;
+  --color-primary: #0a84ff;
+  --color-secondary: #5e5ce6;
+  --brand-gradient: linear-gradient(135deg, #0a84ff 0%, #5e5ce6 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-graphite { background: #1c1c1e; }
+
+/* Mocha - Coffee brown */
+body.theme-mocha,
+html.theme-mocha body,
+.theme-mocha {
+  --ig-bg: #1e1e2e;
+  --ig-surface: #302d41;
+  --ig-surface-hover: #3e3d52;
+  --ig-border: #45475a;
+  --ig-border-light: #3e3d52;
+  --ig-text-primary: #cdd6f4;
+  --ig-text-secondary: #a6adc8;
+  --ig-text-link: #f5c2e7;
+  --ig-input-bg: #3e3d52;
+  --ig-surface-light: #302d41;
+  --ig-glow: rgba(245, 194, 231, 0.15);
+  --ig-icon-color: #cdd6f4;
+  --ig-icon-hover: #f5c2e7;
+  --color-primary: #cba6f7;
+  --color-secondary: #f5c2e7;
+  --brand-gradient: linear-gradient(135deg, #cba6f7 0%, #f5c2e7 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+html.theme-mocha { background: #1e1e2e; }
+
+/* === VIBRANT THEMES === */
+
+/* Neon - Bright neon accents */
+body.theme-neon,
+html.theme-neon body,
+.theme-neon {
+  --ig-bg: #0a0a0f;
+  --ig-surface: #12121a;
+  --ig-surface-hover: #1a1a24;
+  --ig-border: #2a2a3a;
+  --ig-border-light: #1a1a24;
+  --ig-text-primary: #ffffff;
+  --ig-text-secondary: #9090a0;
+  --ig-text-link: #00ff88;
+  --ig-input-bg: #1a1a24;
+  --ig-surface-light: #12121a;
+  --ig-glow: rgba(0, 255, 136, 0.25);
+  --ig-icon-color: #ffffff;
+  --ig-icon-hover: #00ff88;
+  --color-primary: #00ff88;
+  --color-secondary: #00ccff;
+  --brand-gradient: linear-gradient(135deg, #00ff88 0%, #00ccff 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 255, 136, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 255, 136, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 255, 136, 0.2);
+}
+html.theme-neon { background: #0a0a0f; }
+
+/* Coral - Warm coral pink */
+body.theme-coral,
+html.theme-coral body,
+.theme-coral {
+  --ig-bg: #1a1215;
+  --ig-surface: #251a1e;
+  --ig-surface-hover: #302227;
+  --ig-border: #402d33;
+  --ig-border-light: #302227;
+  --ig-text-primary: #fff0f3;
+  --ig-text-secondary: #c9a0a8;
+  --ig-text-link: #ff6b8a;
+  --ig-input-bg: #302227;
+  --ig-surface-light: #251a1e;
+  --ig-glow: rgba(255, 107, 138, 0.2);
+  --ig-icon-color: #fff0f3;
+  --ig-icon-hover: #ff6b8a;
+  --color-primary: #ff6b8a;
+  --color-secondary: #ff8fab;
+  --brand-gradient: linear-gradient(135deg, #ff6b8a 0%, #ff8fab 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(255, 107, 138, 0.15);
+  --shadow-lg: 0 8px 24px rgba(255, 107, 138, 0.2);
+}
+html.theme-coral { background: #1a1215; }
+
+/* Emerald - Rich green */
+body.theme-emerald,
+html.theme-emerald body,
+.theme-emerald {
+  --ig-bg: #0a1a14;
+  --ig-surface: #10251c;
+  --ig-surface-hover: #163024;
+  --ig-border: #1f4030;
+  --ig-border-light: #163024;
+  --ig-text-primary: #e8fff2;
+  --ig-text-secondary: #6ee7a8;
+  --ig-text-link: #10b981;
+  --ig-input-bg: #163024;
+  --ig-surface-light: #10251c;
+  --ig-glow: rgba(16, 185, 129, 0.2);
+  --ig-icon-color: #e8fff2;
+  --ig-icon-hover: #10b981;
+  --color-primary: #10b981;
+  --color-secondary: #34d399;
+  --brand-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(16, 185, 129, 0.15);
+  --shadow-lg: 0 8px 24px rgba(16, 185, 129, 0.2);
+}
+html.theme-emerald { background: #0a1a14; }
+
+/* Sapphire - Deep blue */
+body.theme-sapphire,
+html.theme-sapphire body,
+.theme-sapphire {
+  --ig-bg: #0a1020;
+  --ig-surface: #101830;
+  --ig-surface-hover: #162040;
+  --ig-border: #1e2850;
+  --ig-border-light: #162040;
+  --ig-text-primary: #e8f0ff;
+  --ig-text-secondary: #8090c0;
+  --ig-text-link: #3b82f6;
+  --ig-input-bg: #162040;
+  --ig-surface-light: #101830;
+  --ig-glow: rgba(59, 130, 246, 0.2);
+  --ig-icon-color: #e8f0ff;
+  --ig-icon-hover: #3b82f6;
+  --color-primary: #3b82f6;
+  --color-secondary: #60a5fa;
+  --brand-gradient: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(59, 130, 246, 0.15);
+  --shadow-lg: 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+html.theme-sapphire { background: #0a1020; }
+
+/* Amber - Warm gold */
+body.theme-amber,
+html.theme-amber body,
+.theme-amber {
+  --ig-bg: #1a1408;
+  --ig-surface: #251c0c;
+  --ig-surface-hover: #302412;
+  --ig-border: #453518;
+  --ig-border-light: #302412;
+  --ig-text-primary: #fffbf0;
+  --ig-text-secondary: #c9a860;
+  --ig-text-link: #f59e0b;
+  --ig-input-bg: #302412;
+  --ig-surface-light: #251c0c;
+  --ig-glow: rgba(245, 158, 11, 0.2);
+  --ig-icon-color: #fffbf0;
+  --ig-icon-hover: #f59e0b;
+  --color-primary: #f59e0b;
+  --color-secondary: #fbbf24;
+  --brand-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(245, 158, 11, 0.15);
+  --shadow-lg: 0 8px 24px rgba(245, 158, 11, 0.2);
+}
+html.theme-amber { background: #1a1408; }
+
+/* Ensure dark theme applies to html for early loading */
+html.theme-dark { background: #0f0f1a; }
 
 /* ===== BASE RESET ===== */
 * {
@@ -287,7 +978,7 @@ a:hover {
 .ig-nav-avatar-sm {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
@@ -384,7 +1075,7 @@ a:hover {
 .ig-bottom-nav-item .ig-nav-avatar-sm {
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   border: 1px solid transparent;
 }
@@ -431,7 +1122,7 @@ a:hover {
 .ig-nav-avatar-sm {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   border: 1px solid var(--ig-border);
 }
@@ -439,7 +1130,7 @@ a:hover {
 .ig-nav-avatar-placeholder {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -549,14 +1240,14 @@ a:hover {
 .ig-chat-avatar {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
 .ig-chat-avatar-placeholder {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -569,7 +1260,7 @@ a:hover {
 .ig-chat-avatar-group {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -632,7 +1323,7 @@ a:hover {
 .ig-activity-avatar {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
@@ -706,7 +1397,7 @@ a:hover {
 .ig-search-avatar {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
@@ -843,7 +1534,7 @@ a:hover {
 .ig-story-ring {
   width: 66px;
   height: 66px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-story);
   padding: 3px;
   background: var(--story-gradient);
   display: flex;
@@ -891,7 +1582,7 @@ a:hover {
 .ig-story-avatar {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   background: var(--ig-surface);
   border: 3px solid var(--ig-surface);
@@ -900,7 +1591,7 @@ a:hover {
 .ig-story-avatar-placeholder {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -946,14 +1637,14 @@ a:hover {
 .ig-post-avatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
 .ig-post-avatar-placeholder {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -1175,14 +1866,14 @@ a:hover {
 .ig-sidebar-avatar {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
 .ig-sidebar-avatar-placeholder {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -1256,14 +1947,14 @@ a:hover {
 .ig-suggestion-avatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
 .ig-suggestion-avatar-placeholder {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -1358,14 +2049,14 @@ a:hover {
 .ig-profile-avatar {
   width: 150px;
   height: 150px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
 .ig-profile-avatar-placeholder {
   width: 150px;
   height: 150px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   display: flex;
   align-items: center;
@@ -1523,7 +2214,7 @@ a:hover {
 .ig-profile-avatar-ring {
   padding: 3px;
   background: var(--story-gradient);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-story);
   cursor: pointer;
 }
 
@@ -1873,7 +2564,7 @@ a:hover {
 .ig-direct-item-avatar {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -1938,7 +2629,7 @@ a:hover {
 .ig-chat-avatar {
   width: 24px;
   height: 24px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
@@ -2002,7 +2693,7 @@ a:hover {
 .ig-message-avatar {
   width: 24px;
   height: 24px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -2436,7 +3127,7 @@ body.story-viewer-open {
 .ig-story-user-avatar {
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   border: 2px solid white;
 }
@@ -2927,7 +3618,7 @@ body.story-viewer-open {
 .ig-profile-avatar-ring {
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-story);
   padding: 4px;
   background: var(--story-gradient);
   cursor: pointer;
@@ -2944,7 +3635,7 @@ body.story-viewer-open {
 .ig-profile-avatar {
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   border: 3px solid var(--ig-surface);
 }
@@ -2952,7 +3643,7 @@ body.story-viewer-open {
 .ig-profile-avatar-placeholder {
   width: 100%;
   height: 100%;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   background: var(--brand-gradient);
   color: white;
   display: flex;
@@ -3491,7 +4182,7 @@ body.story-viewer-open {
 .ig-detail-avatar {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   border: 2px solid transparent;
   background: linear-gradient(var(--ig-surface), var(--ig-surface)) padding-box,
@@ -3568,7 +4259,7 @@ body.story-viewer-open {
 .ig-detail-caption-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -3609,7 +4300,7 @@ body.story-viewer-open {
 .ig-detail-comment-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -3976,6 +4667,16 @@ body.story-viewer-open {
   color: var(--ig-error);
 }
 
+.ig-settings-value {
+  font-size: 13px;
+  color: var(--ig-text-secondary);
+  margin-left: auto;
+  padding: 4px 10px;
+  background: var(--ig-surface-hover);
+  border-radius: 12px;
+  font-weight: 500;
+}
+
 .ig-toggle {
   width: 44px;
   height: 24px;
@@ -4169,7 +4870,7 @@ body.story-viewer-open {
 .ig-direct-item-avatar {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -4265,7 +4966,7 @@ body.story-viewer-open {
 .ig-chat-avatar {
   width: 44px;
   height: 44px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
 }
 
@@ -4390,7 +5091,7 @@ body.story-viewer-open {
 .ig-chat-welcome-avatar {
   width: 96px;
   height: 96px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   margin-bottom: var(--spacing-lg);
 }
@@ -4455,7 +5156,7 @@ body.story-viewer-open {
 .ig-message-avatar {
   width: 24px;
   height: 24px;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-avatar);
   object-fit: cover;
   flex-shrink: 0;
 }

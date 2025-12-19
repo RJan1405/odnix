@@ -36,7 +36,7 @@
             </a>
             <a href="{% url 'reels' %}" class="nav-item-compact">
                 <i data-lucide="play-square" class="nav-icon"></i>
-                <span class="nav-text">Omzo</span>
+                <span class="nav-text">Reels</span>
             </a>
             <a href="{% url 'profile' %}" class="nav-item-compact">
                 <i data-lucide="user" class="nav-icon"></i>
@@ -174,7 +174,7 @@
                 <div class="nav-icon-wrapper">
                     <i data-lucide="play-square" class="nav-icon"></i>
                 </div>
-                <span class="bottom-nav-label">Omzo</span>
+                <span class="bottom-nav-label">Reels</span>
             </a>
 
             <!-- Search Tab -->
@@ -433,7 +433,7 @@
                 </a>
                 <a href="{% url 'reels' %}" class="mobile-nav-item">
                     <i data-lucide="play-square" class="nav-icon"></i>
-                    <span class="nav-text">Omzo</span>
+                    <span class="nav-text">Reels</span>
                 </a>
                 <button onclick="closeMobileModal(); openCreateGroupModal();" class="mobile-nav-item">
                     <i data-lucide="users" class="nav-icon"></i>
@@ -575,7 +575,7 @@
                     <div class="compose-submit">
                         <span id="charCount" class="char-count">280</span>
                         <button type="button" id="tweetBtn" class="btn btn--primary" onclick="postTweetFixed()"
-                            disabled>Scribe</button>
+                            disabled>Tweet</button>
                     </div>
                 </div>
             </form>
@@ -639,7 +639,7 @@
                     <p>{{ tweet.content|linkify_hashtags_mentions }}</p>
                     {% if tweet.image_url %}
                     <div class="tweet-image">
-                        <img src="{{ tweet.image_url }}" alt="Scribe image"
+                        <img src="{{ tweet.image_url }}" alt="Tweet image"
                             onclick="openImageModal('{{ tweet.image_url }}')">
                     </div>
                     {% endif %}
@@ -695,8 +695,8 @@
             {% empty %}
             <div class="empty-feed">
                 <h3>Welcome to Odnix! 👋</h3>
-                <p>Start following people to see their scribes in your feed.</p>
-                <p>Or create your first scribe above! ✍️</p>
+                <p>Start following people to see their tweets in your feed.</p>
+                <p>Or create your first tweet above! 🐦</p>
             </div>
             {% endfor %}
         </div>

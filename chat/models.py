@@ -16,16 +16,45 @@ import os
 class CustomUser(AbstractUser):
     """Custom user model with additional fields"""
     THEME_CHOICES = [
+        # Classic Themes
         ('light', 'Light'),
         ('dark', 'Dark'),
-        ('midnight', 'Midnight Blue'),
-        ('forest', 'Forest Green'),
-        ('sunset', 'Sunset Orange'),
-        ('ocean', 'Ocean Teal'),
-        ('lavender', 'Lavender Purple'),
-        ('rose', 'Rose Pink'),
-        ('charcoal', 'Charcoal'),
+        
+        # Modern Dark Themes
+        ('midnight', 'Midnight'),
+        ('amoled', 'AMOLED Black'),
+        ('dracula', 'Dracula'),
         ('nord', 'Nord'),
+        ('tokyo_night', 'Tokyo Night'),
+        ('synthwave', 'Synthwave'),
+        ('cyberpunk', 'Cyberpunk'),
+        
+        # Nature Themes
+        ('forest', 'Forest'),
+        ('ocean', 'Ocean'),
+        ('sunset', 'Sunset'),
+        ('aurora', 'Aurora'),
+        ('desert', 'Desert'),
+        
+        # Soft/Pastel Themes
+        ('lavender', 'Lavender'),
+        ('rose', 'Rose'),
+        ('mint', 'Mint'),
+        ('peach', 'Peach'),
+        ('sky', 'Sky'),
+        
+        # Professional Themes
+        ('charcoal', 'Charcoal'),
+        ('slate', 'Slate'),
+        ('graphite', 'Graphite'),
+        ('mocha', 'Mocha'),
+        
+        # Vibrant Themes
+        ('neon', 'Neon'),
+        ('coral', 'Coral'),
+        ('emerald', 'Emerald'),
+        ('sapphire', 'Sapphire'),
+        ('amber', 'Amber'),
     ]
     
     name = models.CharField(max_length=50)
@@ -440,7 +469,6 @@ class SavedPost(models.Model):
 class PostReport(models.Model):
     """Model for reported posts"""
     REPORT_REASONS = [
-        ('copyright', 'Copyright Infringement'),
         ('spam', 'Spam'),
         ('inappropriate', 'Inappropriate Content'),
         ('harassment', 'Harassment or Bullying'),
@@ -752,31 +780,3 @@ class ReelComment(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reel_comments')
     content = models.TextField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
-
-class ReelReport(models.Model):
-    """Model for reported reels"""
-    REPORT_REASONS = [
-        ('spam', 'Spam'),
-        ('inappropriate', 'Inappropriate Content'),
-        ('harassment', 'Harassment or Bullying'),
-        ('violence', 'Violence or Threats'),
-        ('hate_speech', 'Hate Speech'),
-        ('false_info', 'False Information'),
-        ('copyright', 'Copyright Infringement'),
-        ('other', 'Other'),
-    ]
-    
-    reporter = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='reel_reports_made')
-    reel = models.ForeignKey(Reel, on_delete=models.CASCADE, related_name='reports')
-    reason = models.CharField(max_length=20, choices=REPORT_REASONS)
-    description = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    reviewed = models.BooleanField(default=False)
-    reviewed_at = models.DateTimeField(null=True, blank=True)
-    
-    class Meta:
-        unique_together = ('reporter', 'reel')
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"{self.reporter.username} reported reel {self.reel.id} for {self.reason}"

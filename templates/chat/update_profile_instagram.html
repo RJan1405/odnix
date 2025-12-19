@@ -272,6 +272,489 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* ===== THEME PICKER STYLES ===== */
+.theme-section {
+    background: var(--ig-surface);
+}
+
+.theme-section-desc {
+    font-size: 14px;
+    color: var(--ig-text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+/* Theme Category Tabs */
+.theme-category-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.theme-category-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.theme-category-tabs::-webkit-scrollbar-track {
+    background: var(--ig-bg);
+    border-radius: 2px;
+}
+
+.theme-category-tabs::-webkit-scrollbar-thumb {
+    background: var(--ig-border);
+    border-radius: 2px;
+}
+
+.theme-tab {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--ig-bg);
+    border: 1px solid var(--ig-border);
+    color: var(--ig-text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.theme-tab:hover {
+    background: var(--ig-surface-hover);
+    color: var(--ig-text-primary);
+}
+
+.theme-tab.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+}
+
+/* Theme Grid */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 16px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 4px;
+    margin: 0 -4px;
+}
+
+.theme-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.theme-grid::-webkit-scrollbar-track {
+    background: var(--ig-bg);
+    border-radius: 3px;
+}
+
+.theme-grid::-webkit-scrollbar-thumb {
+    background: var(--ig-border);
+    border-radius: 3px;
+}
+
+.theme-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--ig-text-secondary);
+}
+
+/* Theme Card */
+.theme-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid var(--ig-border);
+    background: var(--ig-surface);
+}
+
+.theme-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-primary);
+}
+
+.theme-card.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.theme-card.active::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 22px;
+    height: 22px;
+    background: var(--color-primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+.theme-card.active::before {
+    content: '✓';
+    position: absolute;
+    top: 10px;
+    right: 13px;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 11;
+}
+
+/* Theme Preview */
+.theme-preview {
+    height: 80px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.preview-header {
+    height: 12px;
+    border-radius: 6px;
+    opacity: 0.9;
+}
+
+.preview-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.preview-line {
+    height: 6px;
+    border-radius: 3px;
+    opacity: 0.6;
+}
+
+.preview-line.short {
+    width: 60%;
+}
+
+/* Theme Preview Colors - Classic */
+.light-preview {
+    background: #fafafa;
+}
+.light-preview .preview-header { background: linear-gradient(135deg, #667eea, #764ba2); }
+.light-preview .preview-content { background: #ffffff; }
+.light-preview .preview-line { background: #e0e0e0; }
+
+.dark-preview {
+    background: #0f0f1a;
+}
+.dark-preview .preview-header { background: linear-gradient(135deg, #667eea, #764ba2); }
+.dark-preview .preview-content { background: #1a1a2e; }
+.dark-preview .preview-line { background: #2d2d4a; }
+
+/* Modern Dark Themes */
+.midnight-preview {
+    background: #0d1421;
+}
+.midnight-preview .preview-header { background: linear-gradient(135deg, #3b82f6, #6366f1); }
+.midnight-preview .preview-content { background: #141d2e; }
+.midnight-preview .preview-line { background: #243147; }
+
+.amoled-preview {
+    background: #000000;
+}
+.amoled-preview .preview-header { background: linear-gradient(135deg, #667eea, #764ba2); }
+.amoled-preview .preview-content { background: #0a0a0a; }
+.amoled-preview .preview-line { background: #1f1f1f; }
+
+.dracula-preview {
+    background: #282a36;
+}
+.dracula-preview .preview-header { background: linear-gradient(135deg, #bd93f9, #ff79c6); }
+.dracula-preview .preview-content { background: #343746; }
+.dracula-preview .preview-line { background: #44475a; }
+
+.nord-preview {
+    background: #2e3440;
+}
+.nord-preview .preview-header { background: linear-gradient(135deg, #5e81ac, #88c0d0); }
+.nord-preview .preview-content { background: #3b4252; }
+.nord-preview .preview-line { background: #4c566a; }
+
+.tokyo-night-preview {
+    background: #1a1b26;
+}
+.tokyo-night-preview .preview-header { background: linear-gradient(135deg, #7aa2f7, #bb9af7); }
+.tokyo-night-preview .preview-content { background: #24283b; }
+.tokyo-night-preview .preview-line { background: #3b4261; }
+
+.synthwave-preview {
+    background: #1a1025;
+}
+.synthwave-preview .preview-header { background: linear-gradient(135deg, #ff7edb, #36f9f6); }
+.synthwave-preview .preview-content { background: #241734; }
+.synthwave-preview .preview-line { background: #3d2a52; }
+
+.cyberpunk-preview {
+    background: #0d0d0d;
+}
+.cyberpunk-preview .preview-header { background: linear-gradient(135deg, #fcee09, #00f0ff); }
+.cyberpunk-preview .preview-content { background: #1a1a1a; }
+.cyberpunk-preview .preview-line { background: #333333; }
+
+/* Nature Themes */
+.forest-preview {
+    background: #0f1912;
+}
+.forest-preview .preview-header { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.forest-preview .preview-content { background: #162118; }
+.forest-preview .preview-line { background: #2a3b2c; }
+
+.ocean-preview {
+    background: #0c1929;
+}
+.ocean-preview .preview-header { background: linear-gradient(135deg, #0ea5e9, #0284c7); }
+.ocean-preview .preview-content { background: #122236; }
+.ocean-preview .preview-line { background: #214060; }
+
+.sunset-preview {
+    background: #1a0f0a;
+}
+.sunset-preview .preview-header { background: linear-gradient(135deg, #f97316, #dc2626); }
+.sunset-preview .preview-content { background: #251710; }
+.sunset-preview .preview-line { background: #46291c; }
+
+.aurora-preview {
+    background: #0a0f14;
+}
+.aurora-preview .preview-header { background: linear-gradient(135deg, #10b981, #06b6d4, #8b5cf6); }
+.aurora-preview .preview-content { background: #111821; }
+.aurora-preview .preview-line { background: #1f2937; }
+
+.desert-preview {
+    background: #1c1714;
+}
+.desert-preview .preview-header { background: linear-gradient(135deg, #d97706, #b45309); }
+.desert-preview .preview-content { background: #262019; }
+.desert-preview .preview-line { background: #3d342a; }
+
+/* Pastel/Light Themes */
+.lavender-preview {
+    background: #f5f3ff;
+}
+.lavender-preview .preview-header { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+.lavender-preview .preview-content { background: #ffffff; }
+.lavender-preview .preview-line { background: #ddd6fe; }
+
+.rose-preview {
+    background: #fff1f2;
+}
+.rose-preview .preview-header { background: linear-gradient(135deg, #f43f5e, #fb7185); }
+.rose-preview .preview-content { background: #ffffff; }
+.rose-preview .preview-line { background: #fecdd3; }
+
+.mint-preview {
+    background: #f0fdf4;
+}
+.mint-preview .preview-header { background: linear-gradient(135deg, #22c55e, #4ade80); }
+.mint-preview .preview-content { background: #ffffff; }
+.mint-preview .preview-line { background: #bbf7d0; }
+
+.peach-preview {
+    background: #fff7ed;
+}
+.peach-preview .preview-header { background: linear-gradient(135deg, #f97316, #fb923c); }
+.peach-preview .preview-content { background: #ffffff; }
+.peach-preview .preview-line { background: #fed7aa; }
+
+.sky-preview {
+    background: #f0f9ff;
+}
+.sky-preview .preview-header { background: linear-gradient(135deg, #0ea5e9, #38bdf8); }
+.sky-preview .preview-content { background: #ffffff; }
+.sky-preview .preview-line { background: #bae6fd; }
+
+/* Professional Themes */
+.charcoal-preview {
+    background: #18181b;
+}
+.charcoal-preview .preview-header { background: linear-gradient(135deg, #667eea, #764ba2); }
+.charcoal-preview .preview-content { background: #27272a; }
+.charcoal-preview .preview-line { background: #3f3f46; }
+
+.slate-preview {
+    background: #0f172a;
+}
+.slate-preview .preview-header { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.slate-preview .preview-content { background: #1e293b; }
+.slate-preview .preview-line { background: #334155; }
+
+.graphite-preview {
+    background: #1c1c1e;
+}
+.graphite-preview .preview-header { background: linear-gradient(135deg, #0a84ff, #5e5ce6); }
+.graphite-preview .preview-content { background: #2c2c2e; }
+.graphite-preview .preview-line { background: #48484a; }
+
+.mocha-preview {
+    background: #1e1e2e;
+}
+.mocha-preview .preview-header { background: linear-gradient(135deg, #cba6f7, #f5c2e7); }
+.mocha-preview .preview-content { background: #302d41; }
+.mocha-preview .preview-line { background: #45475a; }
+
+/* Vibrant Themes */
+.neon-preview {
+    background: #0a0a0f;
+}
+.neon-preview .preview-header { background: linear-gradient(135deg, #00ff88, #00ccff); }
+.neon-preview .preview-content { background: #12121a; }
+.neon-preview .preview-line { background: #2a2a3a; }
+
+.coral-preview {
+    background: #1a1215;
+}
+.coral-preview .preview-header { background: linear-gradient(135deg, #ff6b8a, #ff8fab); }
+.coral-preview .preview-content { background: #251a1e; }
+.coral-preview .preview-line { background: #402d33; }
+
+.emerald-preview {
+    background: #0a1a14;
+}
+.emerald-preview .preview-header { background: linear-gradient(135deg, #10b981, #34d399); }
+.emerald-preview .preview-content { background: #10251c; }
+.emerald-preview .preview-line { background: #1f4030; }
+
+.sapphire-preview {
+    background: #0a1020;
+}
+.sapphire-preview .preview-header { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.sapphire-preview .preview-content { background: #101830; }
+.sapphire-preview .preview-line { background: #1e2850; }
+
+.amber-preview {
+    background: #1a1408;
+}
+.amber-preview .preview-header { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+.amber-preview .preview-content { background: #251c0c; }
+.amber-preview .preview-line { background: #453518; }
+
+/* Theme Info */
+.theme-info {
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--ig-surface);
+    border-top: 1px solid var(--ig-border-light);
+}
+
+.theme-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ig-text-primary);
+}
+
+.theme-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.theme-badge.classic {
+    background: rgba(102, 126, 234, 0.15);
+    color: #667eea;
+}
+
+.theme-badge.dark {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+}
+
+.theme-badge.light {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+}
+
+.theme-badge.nature {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.theme-badge.vibrant {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.theme-badge.popular {
+    background: rgba(244, 63, 94, 0.15);
+    color: #f43f5e;
+}
+
+.theme-badge.pro {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+}
+
+/* Current Theme Indicator */
+.current-theme-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+}
+
+.current-theme-indicator svg {
+    width: 18px;
+    height: 18px;
+    color: var(--color-primary);
+}
+
+.current-theme-indicator span {
+    font-size: 14px;
+    color: var(--ig-text-secondary);
+}
+
+.current-theme-indicator strong {
+    color: var(--ig-text-primary);
+}
+
+/* Hidden class for filtering */
+.theme-card.hidden {
+    display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .theme-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    
+    .theme-category-tabs {
+        justify-content: flex-start;
+    }
+    
+    .theme-tab {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}
+
 /* Form Actions */
 .ig-form-actions {
     display: flex;
@@ -681,6 +1164,432 @@
                 </div>
             </div>
             
+            <!-- Theme Settings Section -->
+            <div id="theme-section" class="ig-form-section theme-section">
+                <div class="ig-form-section-title">
+                    <i data-lucide="palette"></i>
+                    Appearance
+                </div>
+                
+                <p class="theme-section-desc">Choose a theme that matches your style. Changes are applied instantly.</p>
+                
+                <!-- Theme Category Tabs -->
+                <div class="theme-category-tabs">
+                    <button type="button" class="theme-tab active" data-category="all">All</button>
+                    <button type="button" class="theme-tab" data-category="dark">Dark</button>
+                    <button type="button" class="theme-tab" data-category="light">Light</button>
+                    <button type="button" class="theme-tab" data-category="nature">Nature</button>
+                    <button type="button" class="theme-tab" data-category="vibrant">Vibrant</button>
+                </div>
+                
+                <!-- Theme Grid -->
+                <div class="theme-grid" id="themeGrid">
+                    <!-- Classic Themes -->
+                    <div class="theme-card {% if request.user.theme == 'light' %}active{% endif %}" data-theme="light" data-category="light">
+                        <div class="theme-preview light-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Light</span>
+                            <span class="theme-badge classic">Classic</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'dark' %}active{% endif %}" data-theme="dark" data-category="dark">
+                        <div class="theme-preview dark-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Dark</span>
+                            <span class="theme-badge classic">Classic</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Modern Dark Themes -->
+                    <div class="theme-card {% if request.user.theme == 'midnight' %}active{% endif %}" data-theme="midnight" data-category="dark">
+                        <div class="theme-preview midnight-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Midnight</span>
+                            <span class="theme-badge dark">Dark</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'amoled' %}active{% endif %}" data-theme="amoled" data-category="dark">
+                        <div class="theme-preview amoled-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">AMOLED</span>
+                            <span class="theme-badge dark">Dark</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'dracula' %}active{% endif %}" data-theme="dracula" data-category="dark">
+                        <div class="theme-preview dracula-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Dracula</span>
+                            <span class="theme-badge popular">Popular</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'nord' %}active{% endif %}" data-theme="nord" data-category="dark">
+                        <div class="theme-preview nord-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Nord</span>
+                            <span class="theme-badge popular">Popular</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'tokyo_night' %}active{% endif %}" data-theme="tokyo_night" data-category="dark">
+                        <div class="theme-preview tokyo-night-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Tokyo Night</span>
+                            <span class="theme-badge dark">Dark</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'synthwave' %}active{% endif %}" data-theme="synthwave" data-category="vibrant">
+                        <div class="theme-preview synthwave-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Synthwave</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'cyberpunk' %}active{% endif %}" data-theme="cyberpunk" data-category="vibrant">
+                        <div class="theme-preview cyberpunk-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Cyberpunk</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Nature Themes -->
+                    <div class="theme-card {% if request.user.theme == 'forest' %}active{% endif %}" data-theme="forest" data-category="nature">
+                        <div class="theme-preview forest-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Forest</span>
+                            <span class="theme-badge nature">Nature</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'ocean' %}active{% endif %}" data-theme="ocean" data-category="nature">
+                        <div class="theme-preview ocean-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Ocean</span>
+                            <span class="theme-badge nature">Nature</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'sunset' %}active{% endif %}" data-theme="sunset" data-category="nature">
+                        <div class="theme-preview sunset-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Sunset</span>
+                            <span class="theme-badge nature">Nature</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'aurora' %}active{% endif %}" data-theme="aurora" data-category="nature">
+                        <div class="theme-preview aurora-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Aurora</span>
+                            <span class="theme-badge nature">Nature</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'desert' %}active{% endif %}" data-theme="desert" data-category="nature">
+                        <div class="theme-preview desert-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Desert</span>
+                            <span class="theme-badge nature">Nature</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Pastel/Light Themes -->
+                    <div class="theme-card {% if request.user.theme == 'lavender' %}active{% endif %}" data-theme="lavender" data-category="light">
+                        <div class="theme-preview lavender-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Lavender</span>
+                            <span class="theme-badge light">Light</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'rose' %}active{% endif %}" data-theme="rose" data-category="light">
+                        <div class="theme-preview rose-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Rose</span>
+                            <span class="theme-badge light">Light</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'mint' %}active{% endif %}" data-theme="mint" data-category="light">
+                        <div class="theme-preview mint-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Mint</span>
+                            <span class="theme-badge light">Light</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'peach' %}active{% endif %}" data-theme="peach" data-category="light">
+                        <div class="theme-preview peach-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Peach</span>
+                            <span class="theme-badge light">Light</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'sky' %}active{% endif %}" data-theme="sky" data-category="light">
+                        <div class="theme-preview sky-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Sky</span>
+                            <span class="theme-badge light">Light</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Professional Themes -->
+                    <div class="theme-card {% if request.user.theme == 'charcoal' %}active{% endif %}" data-theme="charcoal" data-category="dark">
+                        <div class="theme-preview charcoal-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Charcoal</span>
+                            <span class="theme-badge pro">Pro</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'slate' %}active{% endif %}" data-theme="slate" data-category="dark">
+                        <div class="theme-preview slate-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Slate</span>
+                            <span class="theme-badge pro">Pro</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'graphite' %}active{% endif %}" data-theme="graphite" data-category="dark">
+                        <div class="theme-preview graphite-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Graphite</span>
+                            <span class="theme-badge pro">Pro</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'mocha' %}active{% endif %}" data-theme="mocha" data-category="dark">
+                        <div class="theme-preview mocha-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Mocha</span>
+                            <span class="theme-badge popular">Popular</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Vibrant Themes -->
+                    <div class="theme-card {% if request.user.theme == 'neon' %}active{% endif %}" data-theme="neon" data-category="vibrant">
+                        <div class="theme-preview neon-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Neon</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'coral' %}active{% endif %}" data-theme="coral" data-category="vibrant">
+                        <div class="theme-preview coral-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Coral</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'emerald' %}active{% endif %}" data-theme="emerald" data-category="vibrant">
+                        <div class="theme-preview emerald-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Emerald</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'sapphire' %}active{% endif %}" data-theme="sapphire" data-category="vibrant">
+                        <div class="theme-preview sapphire-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Sapphire</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                    
+                    <div class="theme-card {% if request.user.theme == 'amber' %}active{% endif %}" data-theme="amber" data-category="vibrant">
+                        <div class="theme-preview amber-preview">
+                            <div class="preview-header"></div>
+                            <div class="preview-content">
+                                <div class="preview-line"></div>
+                                <div class="preview-line short"></div>
+                            </div>
+                        </div>
+                        <div class="theme-info">
+                            <span class="theme-name">Amber</span>
+                            <span class="theme-badge vibrant">Vibrant</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Current Theme Indicator -->
+                <div class="current-theme-indicator">
+                    <i data-lucide="check-circle"></i>
+                    <span>Current: <strong id="currentThemeName">{{ request.user.theme|default:"light"|title }}</strong></span>
+                </div>
+            </div>
+            
             <!-- Form Actions -->
             <div class="ig-form-actions">
                 <a href="{% url 'profile' %}" class="ig-btn ig-btn-cancel">
@@ -876,10 +1785,228 @@ function showToast(message, type) {
     }
 }
 
-// Initialize icons
+// ===== THEME SWITCHING SYSTEM =====
+const themeNames = {
+    'light': 'Light',
+    'dark': 'Dark',
+    'midnight': 'Midnight',
+    'amoled': 'AMOLED',
+    'dracula': 'Dracula',
+    'nord': 'Nord',
+    'tokyo_night': 'Tokyo Night',
+    'synthwave': 'Synthwave',
+    'cyberpunk': 'Cyberpunk',
+    'forest': 'Forest',
+    'ocean': 'Ocean',
+    'sunset': 'Sunset',
+    'aurora': 'Aurora',
+    'desert': 'Desert',
+    'lavender': 'Lavender',
+    'rose': 'Rose',
+    'mint': 'Mint',
+    'peach': 'Peach',
+    'sky': 'Sky',
+    'charcoal': 'Charcoal',
+    'slate': 'Slate',
+    'graphite': 'Graphite',
+    'mocha': 'Mocha',
+    'neon': 'Neon',
+    'coral': 'Coral',
+    'emerald': 'Emerald',
+    'sapphire': 'Sapphire',
+    'amber': 'Amber'
+};
+
+// Get server-saved theme - this is the source of truth
+const serverTheme = '{{ request.user.theme|default:"light" }}';
+let currentTheme = serverTheme;
+
+function initializeThemePicker() {
+    const themeCards = document.querySelectorAll('.theme-card');
+    const themeTabs = document.querySelectorAll('.theme-tab');
+    
+    // IMPORTANT: Sync localStorage with server theme (server is source of truth)
+    localStorage.setItem('odnix-theme', serverTheme);
+    
+    // Apply the correct theme from server
+    applyThemeVisuals(serverTheme);
+    
+    // Mark the correct theme card as active
+    themeCards.forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.theme === serverTheme) {
+            card.classList.add('active');
+        }
+    });
+    
+    // Update the current theme indicator text
+    const themeNameEl = document.getElementById('currentThemeName');
+    if (themeNameEl) {
+        themeNameEl.textContent = themeNames[serverTheme] || serverTheme;
+    }
+    
+    // Theme card click handlers
+    themeCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const theme = this.dataset.theme;
+            applyTheme(theme);
+        });
+    });
+    
+    // Category tab click handlers
+    themeTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const category = this.dataset.category;
+            filterThemes(category);
+            
+            // Update active tab
+            themeTabs.forEach(t => t.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+}
+
+// Apply theme visuals without saving (used for initialization)
+function applyThemeVisuals(theme) {
+    const allThemes = Object.keys(themeNames);
+    const html = document.documentElement;
+    const body = document.body;
+    
+    // Remove all theme classes
+    allThemes.forEach(t => {
+        html.classList.remove(`theme-${t}`);
+        body.classList.remove(`theme-${t}`);
+    });
+    
+    // Apply new theme
+    if (theme && theme !== 'light') {
+        html.classList.add(`theme-${theme}`);
+        body.classList.add(`theme-${theme}`);
+    }
+}
+
+function filterThemes(category) {
+    const themeCards = document.querySelectorAll('.theme-card');
+    
+    themeCards.forEach(card => {
+        if (category === 'all') {
+            card.classList.remove('hidden');
+        } else {
+            const cardCategory = card.dataset.category;
+            if (cardCategory === category) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        }
+    });
+}
+
+function applyTheme(theme) {
+    // Remove all theme classes from html and body
+    const allThemes = Object.keys(themeNames);
+    const html = document.documentElement;
+    const body = document.body;
+    
+    allThemes.forEach(t => {
+        html.classList.remove(`theme-${t}`);
+        body.classList.remove(`theme-${t}`);
+    });
+    
+    // Apply new theme
+    if (theme !== 'light') {
+        html.classList.add(`theme-${theme}`);
+        body.classList.add(`theme-${theme}`);
+    }
+    
+    // Update active card
+    document.querySelectorAll('.theme-card').forEach(card => {
+        card.classList.remove('active');
+        if (card.dataset.theme === theme) {
+            card.classList.add('active');
+        }
+    });
+    
+    // Update current theme indicator
+    const themeNameEl = document.getElementById('currentThemeName');
+    if (themeNameEl) {
+        themeNameEl.textContent = themeNames[theme] || theme;
+    }
+    
+    // Save to localStorage for instant loading
+    localStorage.setItem('odnix-theme', theme);
+    
+    // Save to server
+    saveThemeToServer(theme);
+    
+    currentTheme = theme;
+}
+
+async function saveThemeToServer(theme) {
+    try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || 
+                          getCookie('csrftoken');
+        
+        const response = await fetch('/api/user/update-theme/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ theme: theme })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast(`Theme changed to ${themeNames[theme]}`, 'success');
+        } else {
+            showToast('Failed to save theme preference', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving theme:', error);
+        // Theme still applied locally even if server save fails
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Initialize icons and theme picker
 document.addEventListener('DOMContentLoaded', function() {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+    
+    // Initialize theme picker - this handles all theme syncing
+    initializeThemePicker();
+    
+    // Scroll to theme section if anchor is present
+    if (window.location.hash === '#theme-section') {
+        setTimeout(() => {
+            const themeSection = document.getElementById('theme-section');
+            if (themeSection) {
+                themeSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                // Add highlight animation
+                themeSection.style.transition = 'box-shadow 0.3s ease';
+                themeSection.style.boxShadow = '0 0 0 3px var(--color-primary)';
+                setTimeout(() => {
+                    themeSection.style.boxShadow = 'none';
+                }, 2000);
+            }
+        }, 300);
     }
 });
 </script>

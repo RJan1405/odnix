@@ -187,12 +187,6 @@
                         <a href="{% url 'user_profile' participant.username %}" class="btn btn--secondary btn--small desktop-only">
                             <i data-lucide="user"></i> Profile
                         </a>
-                        <button class="btn btn--secondary btn--small" onclick="window.OdnixCall && window.OdnixCall.startAudioCall()" title="Start audio call">
-                            <i data-lucide="phone"></i>
-                        </button>
-                        <button class="btn btn--secondary btn--small" onclick="window.OdnixCall && window.OdnixCall.startVideoCall()" title="Start video call">
-                            <i data-lucide="video"></i>
-                        </button>
                     {% endfor %}
                 {% endif %}
 
@@ -8629,16 +8623,4 @@ function cancelP2PReceive() {
     showToast('File receive cancelled', 'info');
 }
 </script>
-{% endblock %}
-
-{% block extra_js %}
-    <script>
-        window.OdnixCallConfig = {
-            chatId: {{ chat.id }},
-            userId: {{ user.id }},
-            wsScheme: (window.location.protocol === 'https:') ? 'wss' : 'ws',
-            host: window.location.host
-        };
-    </script>
-    <script src="{% static 'js/call.js' %}?v=20251219"></script>
 {% endblock %}

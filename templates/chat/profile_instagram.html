@@ -287,7 +287,7 @@
     .ig-highlight-add {
         width: 77px;
         height: 77px;
-        border-radius: 50%;
+        border-radius: 22%;
         border: 2px dashed var(--ig-border);
         display: flex;
         align-items: center;
@@ -316,7 +316,7 @@
     .ig-highlight-preview {
         width: 77px;
         height: 77px;
-        border-radius: 50%;
+        border-radius: 22%;
         border: 3px solid transparent;
         background: linear-gradient(var(--ig-surface), var(--ig-surface)) padding-box,
             linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888) border-box;
@@ -809,7 +809,7 @@
     .ig-story-avatar {
         width: 32px;
         height: 32px;
-        border-radius: 50%;
+        border-radius: 22%;
         object-fit: cover;
         border: 2px solid white;
     }
@@ -1201,7 +1201,7 @@
                     <div class="ig-profile-stats desktop-only">
                         <div class="ig-profile-stat">
                             <span class="ig-stat-count">{{ tweets|length }}</span>
-                            <span class="ig-stat-label">scribes</span>
+                            <span class="ig-stat-label">posts</span>
                         </div>
                         <div class="ig-profile-stat" onclick="openFollowersModal()">
                             <span class="ig-stat-count" id="followersCount">{{ profile_user.follower_count }}</span>
@@ -1233,7 +1233,7 @@
         <div class="ig-profile-stats-mobile mobile-only">
             <div class="ig-profile-stat">
                 <span class="ig-stat-count">{{ tweets|length }}</span>
-                <span class="ig-stat-label">scribes</span>
+                <span class="ig-stat-label">posts</span>
             </div>
             <div class="ig-profile-stat" onclick="openFollowersModal()">
                 <span class="ig-stat-count" id="followersCountMobile">{{ profile_user.follower_count }}</span>
@@ -1282,11 +1282,11 @@
         <div class="ig-profile-tabs">
             <button class="ig-profile-tab active" data-tab="posts">
                 <i data-lucide="grid-3x3"></i>
-                <span class="tab-text">Scribes</span>
+                <span class="tab-text">Posts</span>
             </button>
             <button class="ig-profile-tab" data-tab="reels">
                 <i data-lucide="play-square"></i>
-                <span class="tab-text">Omzo</span>
+                <span class="tab-text">Reels</span>
             </button>
             {% if is_own_profile %}
             <button class="ig-profile-tab" data-tab="saved">
@@ -1334,7 +1334,7 @@
                 <div class="ig-no-posts-icon">
                     <i data-lucide="camera-off"></i>
                 </div>
-                <h3>No Scribes Yet</h3>
+                <h3>No Posts Yet</h3>
                 {% endif %}
             </div>
             {% endif %}
@@ -1362,11 +1362,11 @@
                 <div class="ig-no-posts-icon">
                     <i data-lucide="video-off"></i>
                 </div>
-                <h3>No Omzos Yet</h3>
+                <h3>No Reels Yet</h3>
                 {% if is_own_profile %}
                 <p>Record and share short videos.</p>
                 <button class="ig-auth-btn" onclick="document.getElementById('globalReelInput').click()"
-                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Create Omzo</button>
+                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Create Reel</button>
                 {% endif %}
             </div>
             {% endif %}
@@ -2367,15 +2367,16 @@
                 <i data-lucide="user"></i>
                 <span>Edit Profile</span>
             </a>
-
-            <!-- Theme Toggle Section -->
+            
+            <!-- Theme Section -->
             <div class="ig-settings-section">
                 <h3 class="ig-settings-section-title">Appearance</h3>
-                <button class="ig-settings-item" onclick="toggleTheme()">
-                    <i data-lucide="{% if user.theme == 'dark' %}sun{% else %}moon{% endif %}" id="themeIcon"></i>
-                    <span id="themeLabel">{% if user.theme == 'dark' %}Light Mode{% else %}Dark Mode{% endif %}</span>
-                    <div class="ig-toggle {% if user.theme == 'dark' %}active{% endif %}" id="themeToggle"></div>
-                </button>
+                <a href="{% url 'update_profile' %}#theme-section" class="ig-settings-item">
+                    <i data-lucide="palette"></i>
+                    <span>Customize Theme</span>
+                    <span class="ig-settings-value">{{ user.theme|default:"light"|title }}</span>
+                    <i data-lucide="chevron-right" style="width: 16px; height: 16px; opacity: 0.5;"></i>
+                </a>
             </div>
 
             <!-- Privacy Section -->
@@ -2582,7 +2583,7 @@
                     if (data.users && data.users.length > 0) {
                         container.innerHTML = data.users.map(u => `
                     <a href="/chat/profile/${u.username}/" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;">
-                        <img src="${u.avatar || u.profile_picture_url || ''}" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;">
+                        <img src="${u.avatar || u.profile_picture_url || ''}" alt="" style="width: 44px; height: 44px; border-radius: 22%; object-fit: cover;">
                         <div>
                             <div style="font-weight: 600; font-size: 14px;">${u.username}</div>
                             <div style="font-size: 13px; color: var(--color-text-secondary);">${u.full_name || u.name || ''}</div>
@@ -3523,7 +3524,7 @@
                 if (data.followers && data.followers.length > 0) {
                     list.innerHTML = data.followers.map(f => `
                 <a href="/profile/${f.username}/" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;">
-                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;">
                     <div style="flex: 1;">
                         <div style="font-weight: 600;">${f.username}</div>
                         <div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div>
@@ -3555,7 +3556,7 @@
                 if (data.following && data.following.length > 0) {
                     list.innerHTML = data.following.map(f => `
                 <a href="/profile/${f.username}/" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;">
-                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;">
                     <div style="flex: 1;">
                         <div style="font-weight: 600;">${f.username}</div>
                         <div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div>

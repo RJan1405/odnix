@@ -1385,14 +1385,12 @@
             {% endif %}
             
             <div class="ig-chat-actions">
-                {% if calls_enabled and chat.chat_type == 'private' %}
                 <button class="ig-chat-action" onclick="startVideoCall()" title="Video Call">
                     <i data-lucide="video"></i>
                 </button>
                 <button class="ig-chat-action" onclick="startVoiceCall()" title="Voice Call">
                     <i data-lucide="phone"></i>
                 </button>
-                {% endif %}
                 <button class="ig-chat-action" onclick="openP2PModal()" title="Share File (P2P)">
                     <i data-lucide="share-2"></i>
                 </button>
@@ -1639,7 +1637,7 @@
             {% if chat.chat_type == 'private' %}
                 {% for participant in other_participants %}
                 <div style="text-align: center; padding: 24px 0;">
-                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 96px; height: 96px; border-radius: 50%; margin-bottom: 12px;">
+                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 96px; height: 96px; border-radius: 22%; margin-bottom: 12px;">
                     <h3 style="font-size: 20px; margin-bottom: 4px;">{{ participant.full_name }}</h3>
                     <p style="color: var(--ig-text-secondary);">@{{ participant.username }}</p>
                     <a href="{% url 'user_profile' participant.username %}" class="ig-auth-btn" style="margin-top: 16px; width: auto; display: inline-block; padding: 8px 24px;">View Profile</a>
@@ -1678,7 +1676,7 @@
             <div class="ig-members-list">
                 {% for participant in chat.participants.all %}
                 <div class="ig-member-item">
-                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 44px; height: 44px; border-radius: 50%;">
+                    <img src="{{ participant.profile_picture_url }}" alt="" style="width: 44px; height: 44px; border-radius: 22%;">
                     <div style="flex: 1;">
                         <a href="{% url 'user_profile' participant.username %}" style="font-weight: 600; font-size: 14px;">{{ participant.full_name }}</a>
                         {% if participant == chat.admin %}
@@ -3284,7 +3282,7 @@ function loadP2PParticipants() {
                 html += onlineUsers.map(p => `
                     <div class="ig-member-item" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: var(--ig-surface); border-radius: 12px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='var(--ig-hover)'" onmouseout="this.style.background='var(--ig-surface)'">
                         <div style="position: relative;">
-                            <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:50%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
+                            <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 22%; object-fit: cover;" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:22%;background:var(--color-primary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
                             <div style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; background: #22c55e; border-radius: 50%; border: 2px solid var(--ig-surface);"></div>
                         </div>
                         <div style="flex: 1; margin-left: 12px;">
@@ -3305,7 +3303,7 @@ function loadP2PParticipants() {
                 }
                 html += offlineUsers.map(p => `
                     <div class="ig-member-item" style="display: flex; align-items: center; padding: 12px; margin-bottom: 8px; background: var(--ig-surface); border-radius: 12px; opacity: 0.6;">
-                        <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; filter: grayscale(50%);" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:50%;background:var(--ig-text-secondary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
+                        <img src="${p.profile_picture || ''}" alt="" style="width: 44px; height: 44px; border-radius: 22%; object-fit: cover; filter: grayscale(50%);" onerror="this.outerHTML='<div style=\\'width:44px;height:44px;border-radius:22%;background:var(--ig-text-secondary);display:flex;align-items:center;justify-content:center;color:white;font-weight:600;\\'>${p.full_name.charAt(0)}</div>'">
                         <div style="flex: 1; margin-left: 12px;">
                             <div style="font-weight: 600; color: var(--ig-text-primary);">${escapeHtml(p.full_name)}</div>
                             <div style="font-size: 12px; color: var(--ig-text-secondary);">Offline - Not available</div>
@@ -3769,8 +3767,8 @@ function showP2PIncomingModal(senderName, senderAvatar, fileName, fileSize) {
                 <div style="padding: 24px; text-align: center;">
                     <div style="margin-bottom: 16px;">
                         ${senderAvatar 
-                            ? `<img src="${senderAvatar}" alt="" style="width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-primary);">`
-                            : `<div style="width: 64px; height: 64px; border-radius: 50%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; margin: 0 auto;">${senderName.charAt(0).toUpperCase()}</div>`
+                            ? `<img src="${senderAvatar}" alt="" style="width: 64px; height: 64px; border-radius: 22%; object-fit: cover; border: 3px solid var(--color-primary);">`
+                            : `<div style="width: 64px; height: 64px; border-radius: 22%; background: var(--color-primary); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; margin: 0 auto;">${senderName.charAt(0).toUpperCase()}</div>`
                         }
                     </div>
                     <h3 style="margin: 0 0 8px; font-size: 18px; color: var(--ig-text-primary);">${escapeHtml(senderName)}</h3>
@@ -4016,28 +4014,16 @@ function openInviteLink() {
 
 // Video Call Function
 function startVideoCall() {
-    if (!window.OdnixCallConfig || !{{ calls_enabled|yesno:'true,false' }}) {
-        showIGToast('Calling is disabled', 'info');
-        return;
-    }
-    if (window.OdnixCall && typeof window.OdnixCall.startVideoCall === 'function') {
-        window.OdnixCall.startVideoCall();
-    } else {
-        showIGToast('Video call client not loaded', 'error');
-    }
+    showIGToast('Video calling is not available yet', 'info');
+    // Future implementation: WebRTC video call
+    console.log('Video call initiated for chat:', chatId);
 }
 
 // Voice Call Function
 function startVoiceCall() {
-    if (!window.OdnixCallConfig || !{{ calls_enabled|yesno:'true,false' }}) {
-        showIGToast('Calling is disabled', 'info');
-        return;
-    }
-    if (window.OdnixCall && typeof window.OdnixCall.startAudioCall === 'function') {
-        window.OdnixCall.startAudioCall();
-    } else {
-        showIGToast('Voice call client not loaded', 'error');
-    }
+    showIGToast('Voice calling is not available yet', 'info');
+    // Future implementation: WebRTC voice call
+    console.log('Voice call initiated for chat:', chatId);
 }
 
 // Delete Chat Function
@@ -4240,24 +4226,5 @@ document.addEventListener('click', function requestNotificationPermission() {
     }
     document.removeEventListener('click', requestNotificationPermission);
 }, { once: true });
-
-// Inject call runtime config and client
-try {
-    window.OdnixCallConfig = {
-        chatId: {{ chat.id }},
-        userId: {{ request.user.id }},
-        wsScheme: (window.location.protocol === 'https:') ? 'wss' : 'ws',
-        host: window.location.host,
-        iceServers: {{ ice_servers_json|safe }}
-    };
-} catch (e) { /* noop */ }
-
-// Load call client (uses OdnixCallConfig). Using absolute path to avoid static tag load constraints.
-(function loadCallJs(){
-    var s = document.createElement('script');
-    s.src = '/static/js/call.js?v=20251219';
-    s.defer = true;
-    document.body.appendChild(s);
-})();
 </script>
 {% endblock %}

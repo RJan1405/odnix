@@ -18,7 +18,7 @@ from django.db import models as db_models
 from chat.models import (
     CustomUser, Chat, Tweet, Comment, Like, Follow, Block, FollowRequest,
     Hashtag, TweetHashtag, Mention, StoryReply, StoryLike, Story,
-    SavedPost, PostReport, Reel, ReelLike, ReelComment, ReelReport
+    SavedPost, PostReport, Reel, ReelLike
 )
 from chat.forms import TweetForm, ProfileUpdateForm
 
@@ -347,25 +347,26 @@ def update_profile(request):
 
                         img = Image.open(ContentFile(image_data))
 
-                        # Resize if > 900px (Aggressive optimization)
-                        if img.width > 900:
+                        # Resize if > 1080px
+                        if img.width > 1080:
                             img.thumbnail(
-                                (900, 900), Image.Resampling.LANCZOS)
+                                (1080, 1080), Image.Resampling.LANCZOS)
 
-                        # Re-compress as WebP
+                        # Re-compress
                         out_io = BytesIO()
-                        
-                        if img.mode != 'RGB':
-                            img = img.convert('RGB')
-                        
-                        # Save as WebP with 70% quality
-                        # This typically yields files < 100KB
-                        img.save(out_io, format='WEBP',
-                                 quality=70, optimize=True)
+                        # Profile pics usually JPEG/WebP
+                        save_format = 'JPEG' if ext in [
+                            'jpg', 'jpeg'] else ext.upper()
+                        if save_format == 'JPG':
+                            save_format = 'JPEG'
 
-                        # Change filename extension to .webp
-                        filename_base = filename.rsplit('.', 1)[0]
-                        filename = f"{filename_base}.webp"
+                        if save_format == 'JPEG':
+                            if img.mode != 'RGB':
+                                img = img.convert('RGB')
+                            img.save(out_io, format='JPEG',
+                                     quality=80, optimize=True)
+                        else:
+                            img.save(out_io, format=save_format)
 
                         user.profile_picture.save(
                             filename, ContentFile(out_io.getvalue()), save=False)
@@ -471,27 +472,32 @@ def post_tweet(request):
                     img = Image.open(image_file)
                     img = ImageOps.exif_transpose(img)
 
-                    # Resize if > 900px (Aggressive optimization for 100KB target)
-                    if img.width > 900 or img.height > 900:
-                        img.thumbnail((900, 900), Image.Resampling.LANCZOS)
+                   # Resize if > 1080px (Feed standard)
+                    if img.width > 1080 or img.height > 1080:
+                        img.thumbnail((1080, 1080), Image.Resampling.LANCZOS)
 
-                    # Compress - Force WebP for maximum storage efficiency
+                    # Compress
                     output_io = BytesIO()
-                    
-                    if img.mode != 'RGB':
-                        img = img.convert('RGB')
-                        
-                    # Save as WebP with 70% quality
-                    img.save(output_io, format='WEBP',
-                             quality=70, optimize=True)
+                    file_ext = os.path.splitext(image_file.name)[1].lower()
 
-                    # Update the file in the model instance with .webp extension
-                    original_name = os.path.splitext(image_file.name)[0]
-                    new_filename = f"{original_name}_opt.webp"
-                    
+                    if file_ext in ['.jpg', '.jpeg']:
+                        if img.mode != 'RGB':
+                            img = img.convert('RGB')
+                        img.save(output_io, format='JPEG',
+                                 quality=80, optimize=True)
+                    elif file_ext == '.png':
+                        img.save(output_io, format='PNG', optimize=True)
+                    elif file_ext == '.webp':
+                        img.save(output_io, format='WEBP',
+                                 quality=80, optimize=True)
+                    else:
+                        # Fallback for others
+                        img.save(output_io, format=img.format)
+
+                    # Update the file in the model instance
                     if output_io.tell() > 0:
-                        tweet.image = ContentFile(
-                            output_io.getvalue(), name=new_filename)
+                        tweet.image.save(image_file.name, ContentFile(
+                            output_io.getvalue()), save=False)
                 except Exception as e:
                     logger.error(f"Tweet image compression failed: {e}")
                     # If compression fails, it will just use the original file from form.save logic (managed by Django)
@@ -673,7 +679,7 @@ def report_post(request):
             return JsonResponse({'success': False, 'error': 'Tweet ID and reason are required'})
 
         valid_reasons = ['spam', 'inappropriate', 'harassment',
-                         'violence', 'hate_speech', 'false_info', 'copyright', 'other']
+                         'violence', 'hate_speech', 'false_info', 'other']
         if reason not in valid_reasons:
             return JsonResponse({'success': False, 'error': 'Invalid report reason'})
 
@@ -1637,50 +1643,6 @@ def get_all_activity(request):
                 'content': reply.content[:80] + '...' if len(reply.content) > 80 else reply.content,
             })
 
-        # 6. Post Reports - Notify the user that they have been reported
-        post_reports = PostReport.objects.filter(
-            tweet__user=request.user
-        ).select_related('reporter', 'tweet').order_by('-created_at')[:20]
-
-        for report in post_reports:
-            activity_items.append({
-                'type': 'post_report',
-                'timestamp': report.created_at,
-                'user': {
-                    'id': report.reporter.id,
-                    'username': report.reporter.username,
-                    'full_name': report.reporter.full_name,
-                    'profile_picture_url': report.reporter.profile_picture_url,
-                },
-                'tweet': {
-                    'id': report.tweet.id,
-                    'content': report.tweet.content[:50] + '...' if len(report.tweet.content) > 50 else report.tweet.content,
-                },
-                'reason': report.get_reason_display(),
-            })
-
-        # 7. Reel Reports - Notify the user that they have been reported
-        reel_reports = ReelReport.objects.filter(
-            reel__user=request.user
-        ).select_related('reporter', 'reel').order_by('-created_at')[:20]
-
-        for report in reel_reports:
-            activity_items.append({
-                'type': 'reel_report',
-                'timestamp': report.created_at,
-                'user': {
-                    'id': report.reporter.id,
-                    'username': report.reporter.username,
-                    'full_name': report.reporter.full_name,
-                    'profile_picture_url': report.reporter.profile_picture_url,
-                },
-                'reel': {
-                    'id': report.reel.id,
-                    'caption': report.reel.caption[:50] + '...' if len(report.reel.caption) > 50 else report.reel.caption,
-                },
-                'reason': report.get_reason_display(),
-            })
-
         # Sort all activity by timestamp (newest first)
         activity_items.sort(key=lambda x: x['timestamp'], reverse=True)
 
@@ -1802,38 +1764,13 @@ def reels_view(request):
 
 @login_required
 @require_POST
-def track_reel_view(request):
-    """API endpoint to track when a user watches a specific reel"""
-    try:
-        data = json.loads(request.body)
-        reel_id = data.get('reel_id')
-
-        if not reel_id:
-            return JsonResponse({'error': 'reel_id required'}, status=400)
-
-        reel = get_object_or_404(Reel, id=reel_id)
-
-        # Increment view count only for this reel
-        reel.views_count += 1
-        reel.save(update_fields=['views_count'])
-
-        return JsonResponse({
-            'status': 'success',
-            'views': reel.views_count
-        })
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    except Exception as e:
-        logger.error(f"Error tracking reel view: {str(e)}")
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-@login_required
-@require_POST
 def upload_reel(request):
     """API to upload a new reel with compression"""
     import os
     import tempfile
+    from django.core.files import File
+    from datetime import datetime, timedelta
+
     # CHECK DAILY LIMIT (5 reels per day)
     today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
     today_count = Reel.objects.filter(
@@ -2076,34 +2013,28 @@ def toggle_reel_like(request):
 
 @login_required
 def get_reel_comments(request, reel_id):
-    """Return comments for a reel (latest first)."""
+    """API to get comments for a reel"""
     try:
+        from django.utils.timesince import timesince
+        from chat.models import ReelComment
+        
         reel = get_object_or_404(Reel, id=reel_id)
-        limit = int(request.GET.get('limit', 20))
-        offset = int(request.GET.get('offset', 0))
-
-        qs = ReelComment.objects.filter(reel=reel).select_related(
-            'user').order_by('-created_at')
-        total = qs.count()
-        comments = []
-        for rc in qs[offset:offset+limit]:
-            comments.append({
-                'id': rc.id,
-                'content': rc.content,
-                'created_at': rc.created_at.isoformat(),
-                'user': {
-                    'id': rc.user.id,
-                    'username': rc.user.username,
-                    'full_name': rc.user.full_name,
-                    'avatar': rc.user.profile_picture_url,
-                    'initials': rc.user.initials,
-                }
+        comments = ReelComment.objects.filter(reel=reel).select_related('user').order_by('-created_at')[:50]
+        
+        comments_data = []
+        for comment in comments:
+            comments_data.append({
+                'id': comment.id,
+                'username': comment.user.username,
+                'user_avatar': comment.user.profile_picture.url if comment.user.profile_picture else None,
+                'text': comment.content,
+                'time_ago': timesince(comment.created_at) + ' ago'
             })
-
+        
         return JsonResponse({
             'success': True,
-            'total': total,
-            'comments': comments,
+            'comments': comments_data,
+            'count': len(comments_data)
         })
     except Exception as e:
         logger.error(f"Error getting reel comments: {str(e)}")
@@ -2113,89 +2044,33 @@ def get_reel_comments(request, reel_id):
 @login_required
 @require_POST
 def add_reel_comment(request):
-    """Add a comment to a reel."""
+    """API to add a comment to a reel"""
     try:
+        from chat.models import ReelComment
+        
         data = json.loads(request.body)
         reel_id = data.get('reel_id')
-        content = (data.get('content') or '').strip()
-
-        if not reel_id:
-            return JsonResponse({'success': False, 'error': 'reel_id required'}, status=400)
-        if not content:
-            return JsonResponse({'success': False, 'error': 'Comment cannot be empty'}, status=400)
-        if len(content) > 500:
-            return JsonResponse({'success': False, 'error': 'Comment too long (max 500)'}, status=400)
-
+        text = data.get('text', '').strip()
+        
+        if not text:
+            return JsonResponse({'success': False, 'error': 'Comment text is required'})
+        
+        if len(text) > 500:
+            return JsonResponse({'success': False, 'error': 'Comment is too long (max 500 characters)'})
+        
         reel = get_object_or_404(Reel, id=reel_id)
-        rc = ReelComment.objects.create(
-            reel=reel, user=request.user, content=content)
-
+        
+        comment = ReelComment.objects.create(
+            reel=reel,
+            user=request.user,
+            content=text
+        )
+        
         return JsonResponse({
             'success': True,
-            'comment': {
-                'id': rc.id,
-                'content': rc.content,
-                'created_at': rc.created_at.isoformat(),
-                'user': {
-                    'id': request.user.id,
-                    'username': request.user.username,
-                    'full_name': request.user.full_name,
-                    'avatar': request.user.profile_picture_url,
-                    'initials': request.user.initials,
-                }
-            },
-            'comments_count': reel.comment_count,
+            'comment_id': comment.id,
+            'comments_count': reel.comment_count
         })
-    except json.JSONDecodeError:
-        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
     except Exception as e:
         logger.error(f"Error adding reel comment: {str(e)}")
-        return JsonResponse({'success': False, 'error': 'Failed to add comment'})
-@login_required
-@require_POST
-def report_reel(request):
-    """Report a reel for inappropriate content"""
-    try:
-        data = json.loads(request.body)
-        reel_id = data.get('reel_id')
-        reason = data.get('reason')
-        description = data.get('description', '').strip()
-
-        if not reel_id or not reason:
-            return JsonResponse({'success': False, 'error': 'Reel ID and reason are required'})
-
-        valid_reasons = ['spam', 'inappropriate', 'harassment',
-                         'violence', 'hate_speech', 'false_info', 'copyright', 'other']
-        if reason not in valid_reasons:
-            return JsonResponse({'success': False, 'error': 'Invalid report reason'})
-
-        try:
-            reel = Reel.objects.get(id=reel_id)
-        except Reel.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Reel not found'})
-
-        # Can't report your own reels
-        if reel.user == request.user:
-            return JsonResponse({'success': False, 'error': 'You cannot report your own reel'})
-
-        # Check if already reported by this user
-        existing_report = ReelReport.objects.filter(
-            reporter=request.user, reel=reel).first()
-        if existing_report:
-            return JsonResponse({'success': False, 'error': 'You have already reported this reel'})
-
-        ReelReport.objects.create(
-            reporter=request.user,
-            reel=reel,
-            reason=reason,
-            description=description
-        )
-
-        return JsonResponse({
-            'success': True,
-            'message': 'Thank you for your report. We will review it shortly.'
-        })
-
-    except Exception as e:
-        logger.error(f"Error in report_reel: {str(e)}")
-        return JsonResponse({'success': False, 'error': 'Failed to report reel'})
+        return JsonResponse({'success': False, 'error': 'Failed to post comment'})
