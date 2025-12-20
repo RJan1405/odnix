@@ -1,19 +1,19 @@
 {% extends 'chat/base.html' %}
 {% load static %}
 
-{% block title %}Reels - Odnix{% endblock %}
+{% block title %}Omzo - Odnix{% endblock %}
 
 {% block extra_head %}
 <style>
-    /* Reels specific styles */
-    .reels-wrapper {
+    /* Omzo specific styles */
+    .omzo-wrapper {
         background: #000;
         min-height: 100vh;
         display: flex;
         justify-content: center;
     }
 
-    .reels-container {
+    .omzo-container {
         height: 100vh;
         /* Fallback */
         height: 100dvh;
@@ -32,7 +32,7 @@
         /* IE and Edge */
     }
 
-    .reels-container::-webkit-scrollbar {
+    .omzo-container::-webkit-scrollbar {
         display: none;
     }
 
@@ -226,7 +226,7 @@
         color: #ff3040;
     }
 
-    /* ===== Custom Toast Notifications for Reels ===== */
+    /* ===== Custom Toast Notifications for Omzo ===== */
     .reel-toast-container {
         position: fixed;
         top: 80px;
@@ -617,14 +617,123 @@
     .caption-modal-btn:hover {
         opacity: 0.9;
     }
+
+    /* ===== Report Modal & Options ===== */
+    .report-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 3500;
+        align-items: flex-end; /* show as bottom sheet */
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .report-modal.show { display: flex; }
+
+    .report-modal-content {
+        background: #1e1e1e;
+        border-radius: 16px 16px 0 0;
+        width: 100%;
+        max-width: 450px; /* match omzo container */
+        max-height: 50dvh; /* half of screen/omzo height */
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .report-modal-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .report-modal-header h3 {
+        color: #fff;
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .report-modal-body {
+        padding: 16px 20px;
+        color: #fff;
+        overflow-y: auto; /* scrollable content */
+        flex: 1;
+    }
+
+    .report-reasons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .report-reason-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #2a2a2a;
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+    }
+
+    .report-description {
+        width: 100%;
+        background: #2a2a2a;
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 10px;
+        padding: 10px 12px;
+        color: #fff;
+        min-height: 70px;
+        resize: vertical;
+        outline: none;
+    }
+
+    .report-modal-actions {
+        padding: 16px 20px;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        display: flex;
+        gap: 12px;
+    }
+
+    .report-btn {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .report-btn.cancel {
+        background: transparent;
+        border: 1px solid rgba(255,255,255,0.3);
+        color: #fff;
+    }
+
+    .report-btn.submit {
+        background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+        border: none;
+        color: #fff;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="reels-wrapper">
-    <!-- Navbar is included in base. For reels we might want a minimal transparent header or just use absolute positioning -->
+<div class="omzo-wrapper">
+    <!-- Navbar is included in base. For omzo we might want a minimal transparent header or just use absolute positioning -->
 
-    <div class="reels-container" id="reelsContainer">
+    <div class="omzo-container" id="omzoContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
             <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
@@ -633,8 +742,8 @@
             </div>
 
             <div class="reel-actions">
-                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="true" title="Toggle sound">
-                    <i data-lucide="volume-x"></i>
+                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false" title="Toggle sound">
+                    <i data-lucide="volume-2"></i>
                 </button>
                 <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)" title="Like">
                     <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
@@ -647,6 +756,10 @@
                 <button class="action-btn" onclick="shareReel('{{ reel.url }}')" title="Share">
                     <i data-lucide="share-2"></i>
                     <span>Share</span>
+                </button>
+                <button class="action-btn" onclick="openReportModal({{ reel.id }})" title="More">
+                    <i data-lucide="more-vertical"></i>
+                    <span>Report</span>
                 </button>
             </div>
 
@@ -675,12 +788,12 @@
         <div class="reel-item" style="background: #000; color: white;">
             <div style="text-align: center; padding: 20px;">
                 <i data-lucide="film" style="width: 64px; height: 64px; opacity: 0.5; margin-bottom: 20px;"></i>
-                <h3>No Reels yet</h3>
+                <h3>No Omzo yet</h3>
                 <p style="opacity: 0.7; margin-top: 10px;">Be the first to create one!</p>
                 <button onclick="document.getElementById('uploadReelInput').click()" style="margin-top: 20px; background: var(--odnix-gradient); border: none; padding: 10px 20px;
                 border-radius: 20px; color: white; font-weight: 600; cursor: pointer;">Create
                     Reel</button>
-                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Reels should be 2
+                <p style="color: #ff4444; font-size: 12px; margin-top: 10px; font-weight: 500;">Note: Omzo should be 2
                     mins max</p>
             </div>
         </div>
@@ -700,7 +813,7 @@
             <p id="errorModalText" style="color: #bbb; font-size: 14px; margin-bottom: 20px; line-height: 1.5;"></p>
             <p
                 style="color: #ff4444; font-size: 12px; margin-bottom: 20px; font-weight: 500; background: rgba(255, 68, 68, 0.05); padding: 8px; border-radius: 6px;">
-                Note: Upload reels only of 2 mins
+                Note: Upload omzo only of 2 mins
             </p>
             <button onclick="closeErrorModal()"
                 style="background: white; color: black; border: none; padding: 10px 24px; border-radius: 20px; font-weight: 600; cursor: pointer; width: 100%;">Got
@@ -756,11 +869,41 @@
             </div>
         </div>
     </div>
+
+    <!-- Report Modal -->
+    <div class="report-modal" id="reportModal" onclick="closeReportModal(event)">
+        <div class="report-modal-content" onclick="event.stopPropagation()">
+            <div class="report-modal-header">
+                <h3>Report Omzo</h3>
+                <button class="caption-modal-close" onclick="closeReportModal()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;">
+                    <i data-lucide="x" style="width:20px;height:20px;"></i>
+                </button>
+            </div>
+            <div class="report-modal-body">
+                <div style="font-size:13px;opacity:.8;margin-bottom:10px;">Select a reason:</div>
+                <div class="report-reasons">
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="spam"> <span>Spam</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="inappropriate"> <span>Inappropriate Content</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="harassment"> <span>Harassment or Bullying</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="violence"> <span>Violence or Threats</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="hate_speech"> <span>Hate Speech</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="false_info"> <span>False Information</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="copyright"> <span>Copyright Infringement</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="other"> <span>Other</span></label>
+                </div>
+                <textarea id="reportDescription" class="report-description" placeholder="Optional details (helps our review team)"></textarea>
+            </div>
+            <div class="report-modal-actions">
+                <button class="report-btn cancel" onclick="closeReportModal()">Cancel</button>
+                <button class="report-btn submit" onclick="submitReelReport()">Submit Report</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Global state - videos start muted by default due to browser autoplay policy
-    let globalMuted = true;
+    // Global state - initialize from user preference (localStorage)
+    let globalMuted = localStorage.getItem('omzoMuted') === 'true' ? true : false;
     let currentReelId = null;
     let pendingReelFile = null;
 
@@ -832,7 +975,7 @@
             URL.revokeObjectURL(video.src);
             
             if (video.duration > 120) {
-                showReelToast('Video Too Long', 'Reels must be 2 minutes or less.', 'error');
+                showReelToast('Video Too Long', 'Omzo must be 2 minutes or less.', 'error');
                 input.value = '';
                 return;
             }
@@ -995,10 +1138,10 @@
         
         list.innerHTML = comments.map(c => `
             <div class="reel-comment-item">
-                <img src="${c.user_avatar || 'https://ui-avatars.com/api/?name=' + c.username}" class="reel-comment-avatar">
+                <img src="${c.user.avatar || 'https://ui-avatars.com/api/?name=' + c.user.username}" class="reel-comment-avatar">
                 <div class="reel-comment-content">
-                    <div class="reel-comment-username">${c.username}</div>
-                    <div class="reel-comment-text">${c.text}</div>
+                    <div class="reel-comment-username">${c.user.username}</div>
+                    <div class="reel-comment-text">${c.content}</div>
                     <div class="reel-comment-time">${c.time_ago || ''}</div>
                 </div>
             </div>
@@ -1027,7 +1170,7 @@
         
         fetch('/chat/api/reels/comment/', {
             method: 'POST',
-            body: JSON.stringify({ reel_id: currentReelId, text: text }),
+            body: JSON.stringify({ reel_id: currentReelId, content: text }),
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': '{{ csrf_token }}'
@@ -1064,6 +1207,7 @@
     // ===== Mute/Sound Controls =====
     function toggleGlobalMute(btn) {
         globalMuted = !globalMuted;
+        localStorage.setItem('omzoMuted', globalMuted);
         const icon = btn.querySelector('i') || btn.querySelector('svg');
         
         // Update all videos
@@ -1165,25 +1309,25 @@
         }
 
         function safePlay(video) {
-            if (video.paused) {
-                video.muted = true;
-                const playPromise = video.play();
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        setTimeout(() => {
-                            if (!globalMuted) {
-                                video.muted = false;
-                            }
-                        }, 100);
-                    }).catch(err => {
-                        console.log("Autoplay failed:", err);
-                    });
-                }
+            if (!video) return;
+            
+            video.muted = true;
+            
+            const playPromise = video.play();
+            if (playPromise !== undefined) {
+                playPromise.then(() => {
+                    setTimeout(() => {
+                        if (!globalMuted) {
+                            video.muted = false;
+                        }
+                    }, 50);
+                }).catch(err => {
+                    console.log("Autoplay failed:", err);
+                });
             }
         }
 
         let observerOptions = {
-            root: document.querySelector('.reels-container'),
             threshold: 0.6
         };
 
@@ -1219,16 +1363,27 @@
             observer.observe(item);
         });
         
-        // Auto-play first reel
+        // Force auto-play first reel - try immediately and on loadedmetadata
         const firstReel = document.querySelector('.reel-item');
         if (firstReel) {
             const firstVideo = firstReel.querySelector('video');
             if (firstVideo) {
-                if (firstVideo.readyState >= 2) {
-                    safePlay(firstVideo);
-                } else {
-                    firstVideo.addEventListener('canplay', () => safePlay(firstVideo), { once: true });
-                }
+                // Try to play immediately
+                safePlay(firstVideo);
+                
+                // Also try when metadata loads
+                firstVideo.addEventListener('loadedmetadata', () => {
+                    if (firstVideo.paused) {
+                        safePlay(firstVideo);
+                    }
+                }, { once: true });
+                
+                // Fallback: try again after 500ms
+                setTimeout(() => {
+                    if (firstVideo.paused) {
+                        safePlay(firstVideo);
+                    }
+                }, 500);
             }
         }
     });
@@ -1237,5 +1392,84 @@
     function closeErrorModal() {
         document.getElementById('errorModal').style.display = 'none';
     }
+
+    // ===== Report Reel =====
+    function openReportModal(reelId) {
+        currentReelId = reelId;
+        const modal = document.getElementById('reportModal');
+        modal.classList.add('show');
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        // Clear previous selection
+        document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
+        document.getElementById('reportDescription').value = '';
+    }
+
+    function closeReportModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        const modal = document.getElementById('reportModal');
+        modal.classList.remove('show');
+    }
+
+    function submitReelReport() {
+        if (!currentReelId) return;
+        const reasonEl = document.querySelector('input[name="reportReason"]:checked');
+        const reason = reasonEl ? reasonEl.value : null;
+        const description = document.getElementById('reportDescription').value.trim();
+
+        if (!reason) {
+            showReelToast('Select a Reason', 'Please choose a report reason.', 'error');
+            return;
+        }
+
+        fetch('/chat/api/reels/report/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ reel_id: currentReelId, reason: reason, description: description })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
+                closeReportModal();
+            } else {
+                showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showReelToast('Error', 'Failed to submit report.', 'error');
+        });
+    }
+
+    // ===== Initialize Omzo =====
+    function initializeOmzo() {
+        // Update all videos and mute buttons to match global state
+        document.querySelectorAll('.reel-video').forEach(video => {
+            video.muted = globalMuted;
+        });
+        
+        document.querySelectorAll('.mute-btn').forEach(btn => {
+            btn.setAttribute('data-muted', globalMuted);
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
+                // Force icon update
+                icon.className = ''; // Reset classes
+                icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
+            }
+        });
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    // Initialize when page loads
+    document.addEventListener('DOMContentLoaded', initializeOmzo);
+    // Also run after a small delay to ensure Lucide is ready
+    setTimeout(initializeOmzo, 100);
 </script>
 {% endblock %}

@@ -1,6 +1,12 @@
 // Odnix P2P Audio/Video Calls via WebRTC + WebSocket signaling
 (function () {
-    if (!window.OdnixCallConfig) return;
+    console.log('[CallJS] Initializing...');
+    if (!window.OdnixCallConfig) {
+        console.error('[CallJS] Error: window.OdnixCallConfig is missing! Call functionality will not work.');
+        alert('Call system configuration missing. Please refresh.');
+        return;
+    }
+    console.log('[CallJS] Config found:', window.OdnixCallConfig);
     const { chatId, userId, wsScheme, host, iceServers } = window.OdnixCallConfig;
 
     let pc = null;
@@ -15,6 +21,20 @@
     let lastOfferFingerprint = null; // dedupe repeated offers
     let suppressOffersUntil = 0; // ms timestamp to ignore offers temporarily
     let remoteIceQueue = []; // Queue for early arrival ICE candidates
+
+    // Debug helper
+    function updateDebugStatus(status, color = '#666') {
+        let el = document.getElementById('callDebugStatus');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'callDebugStatus';
+            el.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#fff;padding:4px 8px;border:1px solid #ccc;font-size:10px;z-index:9999;opacity:0.7;pointer-events:none;';
+            document.body.appendChild(el);
+        }
+        el.textContent = 'WS: ' + status;
+        el.style.color = color;
+        console.log('[CallWS] ' + status);
+    }
 
     const rtcConfig = {
         iceServers: Array.isArray(iceServers) && iceServers.length
@@ -102,12 +122,20 @@
     function openWS() {
         if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return ws;
         const url = `${wsScheme}://${host}/ws/call/${chatId}/`;
+        updateDebugStatus('Connecting...', 'orange');
         ws = new WebSocket(url);
+
+        ws.onopen = () => {
+            updateDebugStatus('Connected', 'green');
+        };
+
         ws.onmessage = async (evt) => {
+            updateDebugStatus('Msg Received', 'blue');
             const msg = JSON.parse(evt.data);
             const type = msg.type;
             const payload = msg.payload || {};
             if (type === 'webrtc.offer') {
+                updateDebugStatus('Offer Received', 'purple');
                 await onOffer(payload);
             } else if (type === 'webrtc.answer') {
                 await onAnswer(payload);
@@ -118,17 +146,26 @@
                 teardown('Peer ended call');
             }
         };
-        ws.onclose = () => {
+        ws.onclose = (e) => {
+            const code = (e && typeof e.code !== 'undefined') ? e.code : 'unknown';
+            const reason = (e && e.reason) ? (': ' + e.reason) : '';
+            updateDebugStatus('Closed ' + code + reason, 'red');
+            console.error('[CallWS] Closed', code, reason);
             // try to reconnect after short delay
             setTimeout(() => {
-                try { openWS(); } catch (e) { }
+                try { openWS(); } catch (err) { console.error('[CallWS] Reconnect failed', err); }
             }, 2000);
+        };
+        ws.onerror = (e) => {
+            updateDebugStatus('Error', 'red');
+            console.error('WS Error:', e);
         };
         return ws;
     }
 
     function send(type, payload) {
         const sock = openWS();
+        updateDebugStatus('Sending ' + type, 'blue');
         if (sock.readyState === WebSocket.OPEN) {
             sock.send(JSON.stringify({ type, payload }));
         } else {
@@ -168,35 +205,41 @@
     }
 
     async function startCall({ audioOnly = false } = {}) {
-        audioOnlyMode = audioOnly;
-        ensureUI();
-        document.getElementById('callModeLabel').textContent = audioOnly ? '(Audio)' : '(Video)';
-        document.getElementById('callModal').style.display = 'flex';
-        isCaller = true;
-        callActive = true;
+        try {
+            audioOnlyMode = audioOnly;
+            ensureUI();
+            document.getElementById('callModeLabel').textContent = audioOnly ? '(Audio)' : '(Video)';
+            document.getElementById('callModal').style.display = 'flex';
+            isCaller = true;
+            callActive = true;
 
-        await getMedia({ audioOnly });
-        openWS();
-        await setupPeer();
+            await getMedia({ audioOnly });
+            openWS();
+            await setupPeer();
 
-        const offer = await pc.createOffer();
-        await pc.setLocalDescription(offer);
-        send('webrtc.offer', { sdp: offer.sdp, type: offer.type, audioOnly });
-        // ringback until answered/ended
-        startTone('ringback');
-        // Periodically re-send offer so late-joiners receive it
-        clearInterval(offerResendInterval);
-        let resendCount = 0;
-        offerResendInterval = setInterval(() => {
-            if (!pc || !pc.localDescription) return;
-            resendCount += 1;
-            if (resendCount > 8) { // ~16s at 2s interval
-                clearInterval(offerResendInterval);
-                offerResendInterval = null;
-                return;
-            }
-            send('webrtc.offer', { sdp: pc.localDescription.sdp, type: pc.localDescription.type, audioOnly });
-        }, 2000);
+            const offer = await pc.createOffer();
+            await pc.setLocalDescription(offer);
+            send('webrtc.offer', { sdp: offer.sdp, type: offer.type, audioOnly });
+            // ringback until answered/ended
+            startTone('ringback');
+            // Periodically re-send offer so late-joiners receive it
+            clearInterval(offerResendInterval);
+            let resendCount = 0;
+            offerResendInterval = setInterval(() => {
+                if (!pc || !pc.localDescription) return;
+                resendCount += 1;
+                if (resendCount > 8) { // ~16s at 2s interval
+                    clearInterval(offerResendInterval);
+                    offerResendInterval = null;
+                    return;
+                }
+                send('webrtc.offer', { sdp: pc.localDescription.sdp, type: pc.localDescription.type, audioOnly });
+            }, 2000);
+        } catch (e) {
+            console.error('Error starting call:', e);
+            alert('Could not start call. Please check your camera/microphone permissions.');
+            teardown('Setup failed');
+        }
     }
 
     let pendingOffer = null;

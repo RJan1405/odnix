@@ -2,19 +2,25 @@
 ASGI config for odnix project.
 """
 
-import os
-from django.core.asgi import get_asgi_application
-from channels.routing import ProtocolTypeRouter, URLRouter
+from chat import routing
 from channels.auth import AuthMiddlewareStack
-import chat.routing
+from channels.routing import ProtocolTypeRouter, URLRouter
+from django.core.asgi import get_asgi_application
+import os
+import django
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'odnix.settings')
+
+# Initialize Django BEFORE importing any app code
+django.setup()
+
+# Now safe to import Channels and routing
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            chat.routing.websocket_urlpatterns
+            routing.websocket_urlpatterns
         )
     ),
 })

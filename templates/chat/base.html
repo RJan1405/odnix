@@ -13,24 +13,25 @@
         (function () {
             // Get user's server-saved theme (source of truth for logged-in users)
             const userTheme = '{{ user.theme|default:"light" }}';
-            const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
-            
-            if (isAuthenticated) {
-                // For authenticated users: server theme is the source of truth
-                // Sync localStorage with server theme
-                localStorage.setItem('odnix-theme', userTheme);
-                
-                // Apply theme class to html element immediately
-                if (userTheme && userTheme !== 'light') {
-                    document.documentElement.classList.add('theme-' + userTheme);
-                }
-            } else {
-                // For non-authenticated users: clear localStorage and use default theme
-                localStorage.removeItem('odnix-theme');
-                // Ensure no theme classes (default light theme)
-                document.documentElement.className = '';
+            const isAuthenticated = {{ user.is_authenticated| yesno: "true,false"
+        }};
+
+        if (isAuthenticated) {
+            // For authenticated users: server theme is the source of truth
+            // Sync localStorage with server theme
+            localStorage.setItem('odnix-theme', userTheme);
+
+            // Apply theme class to html element immediately
+            if (userTheme && userTheme !== 'light') {
+                document.documentElement.classList.add('theme-' + userTheme);
             }
-        })();
+        } else {
+            // For non-authenticated users: clear localStorage and use default theme
+            localStorage.removeItem('odnix-theme');
+            // Ensure no theme classes (default light theme)
+            document.documentElement.className = '';
+        }
+        }) ();
     </script>
     <!-- Legacy styles for backwards compatibility -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251219">
@@ -38,6 +39,7 @@
     <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}?v=20251219">
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="{% if user.theme and user.theme != 'light' %}theme-{{ user.theme }}{% endif %}">
     <!-- Toast Notifications Container -->
     <div id="ig-toast-container"></div>
@@ -158,6 +160,99 @@
 
     {% block extra_js %}{% endblock %}
 
+    <!-- Global incoming call banner and WebSocket -->
+    <script>
+        (function () {
+            const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+            if (!isAuthenticated) return;
+        const wsScheme = (window.location.protocol === 'https:' ? 'wss' : 'ws');
+        const notifyUrl = `${wsScheme}://${window.location.host}/ws/notify/`;
+        let notifyWS = null;
+
+        function ensureGlobalBanner() {
+            let banner = document.getElementById('globalCallBanner');
+            if (banner) return banner;
+            banner = document.createElement('div');
+            banner.id = 'globalCallBanner';
+            banner.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:9999;background:#111;color:#fff;border-radius:12px;padding:12px 16px;display:none;box-shadow:0 10px 25px rgba(0,0,0,.35);';
+            banner.innerHTML = `
+                <div style="display:flex;align-items:center;gap:12px;">
+                    <div style="font-weight:600;">Incoming Call</div>
+                    <div id="globalCallMode" style="opacity:.8">Audio</div>
+                    <div style="display:flex;gap:8px;margin-left:auto;">
+                        <button id="globalAcceptCall" style="background:#10b981;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;">Accept</button>
+                        <button id="globalDeclineCall" style="background:#ef4444;color:#fff;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;">Decline</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(banner);
+            return banner;
+        }
+
+        function openNotify() {
+            console.log('DEBUG: openNotify called');
+            if (notifyWS && (notifyWS.readyState === WebSocket.OPEN || notifyWS.readyState === WebSocket.CONNECTING)) {
+                console.log('DEBUG: notifyWS already open or connecting');
+                return notifyWS;
+            }
+            console.log('DEBUG: Connecting to notifyUrl:', notifyUrl);
+            notifyWS = new WebSocket(notifyUrl);
+
+            notifyWS.onopen = function () {
+                console.log('DEBUG: notifyWS connected');
+            };
+
+            notifyWS.onerror = function (e) {
+                console.error('DEBUG: notifyWS error', e);
+            };
+
+            notifyWS.onmessage = function (evt) {
+                console.log('DEBUG: notifyWS received message', evt.data);
+                try {
+                    const msg = JSON.parse(evt.data);
+                    if (msg.type === 'call.notify') {
+                        console.log('DEBUG: call.notify payload', msg.payload);
+
+                        // Check if we are already handling this call locally (on chat page)
+                        const localIncoming = document.getElementById('incomingCallModal');
+                        const localCall = document.getElementById('callModal');
+                        if ((localIncoming && localIncoming.style.display !== 'none') ||
+                            (localCall && localCall.style.display !== 'none')) {
+                            console.log('DEBUG: Local call UI active, suppressing global banner');
+                            return;
+                        }
+
+                        const payload = msg.payload || {};
+                        const banner = ensureGlobalBanner();
+                        const modeEl = document.getElementById('globalCallMode');
+                        if (modeEl) modeEl.textContent = payload.audioOnly ? 'Audio Call' : 'Video Call';
+                        banner.style.display = 'block';
+                        const accept = document.getElementById('globalAcceptCall');
+                        const decline = document.getElementById('globalDeclineCall');
+                        const chatId = payload.chat_id;
+                        accept.onclick = function () {
+                            banner.style.display = 'none';
+                            // Navigate to chat detail; offer is re-sent periodically by caller
+                            window.location.href = `/chat/${chatId}/`;
+                        };
+                        decline.onclick = function () {
+                            banner.style.display = 'none';
+                        };
+                    }
+                } catch (e) {
+                    console.error('DEBUG: Error parsing notify message', e);
+                }
+            };
+            notifyWS.onclose = function (e) {
+                console.log('DEBUG: notifyWS closed', e.code, e.reason);
+                setTimeout(function () { openNotify(); }, 2000);
+            };
+            return notifyWS;
+        }
+
+        try { openNotify(); } catch (e) { console.error('DEBUG: openNotify failed', e); }
+    }) ();
+    </script>
+
     <!-- Create Selection Modal (Global) -->
     <div id="createSelectionModal" class="ig-modal-overlay"
         style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);"
@@ -178,12 +273,12 @@
                 <button onclick="triggerGlobalPostCreate()"
                     style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
                     <i data-lucide="image" style="width: 20px; height: 20px;"></i>
-                    <span style="font-weight: 500; font-size: 15px;">Post</span>
+                    <span style="font-weight: 500; font-size: 15px;">Scribe</span>
                 </button>
                 <button onclick="triggerGlobalReelCreate()"
                     style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--border-color, #dbdbdb); border-radius: 8px; background: transparent; cursor: pointer; text-align: left; transition: background 0.2s; color: var(--text-primary, #000);">
                     <i data-lucide="play-square" style="width: 20px; height: 20px;"></i>
-                    <span style="font-weight: 500; font-size: 15px;">Reel</span>
+                    <span style="font-weight: 500; font-size: 15px;">Omzo</span>
                 </button>
             </div>
         </div>
@@ -193,64 +288,83 @@
         onchange="handleGlobalReelUpload(this)">
 
     <!-- Global Reel Upload Modal -->
-    <div id="globalReelUploadModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: var(--ig-surface, #1e1e1e); border-radius: 16px; width: 100%; max-width: 420px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;" onclick="event.stopPropagation()">
+    <div id="globalReelUploadModal"
+        style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: var(--ig-surface, #1e1e1e); border-radius: 16px; width: 100%; max-width: 420px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;"
+            onclick="event.stopPropagation()">
             <!-- Header -->
-            <div style="padding: 16px 20px; border-bottom: 1px solid var(--ig-border, rgba(255,255,255,0.1)); display: flex; align-items: center; justify-content: space-between;">
-                <button onclick="closeGlobalReelModal()" style="background: none; border: none; color: var(--ig-text, white); cursor: pointer; padding: 4px;">
+            <div
+                style="padding: 16px 20px; border-bottom: 1px solid var(--ig-border, rgba(255,255,255,0.1)); display: flex; align-items: center; justify-content: space-between;">
+                <button onclick="closeGlobalReelModal()"
+                    style="background: none; border: none; color: var(--ig-text, white); cursor: pointer; padding: 4px;">
                     <i data-lucide="x" style="width: 24px; height: 24px;"></i>
                 </button>
-                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--ig-text, white);">New Reel</h3>
-                <button id="globalReelShareBtn" onclick="submitGlobalReel()" style="background: none; border: none; color: var(--color-primary, #667eea); font-weight: 600; font-size: 14px; cursor: pointer;">Share</button>
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--ig-text, white);">New Omzo</h3>
+                <button id="globalOmzoShareBtn" onclick="submitGlobalOmzo()"
+                    style="background: none; border: none; color: var(--color-primary, #667eea); font-weight: 600; font-size: 14px; cursor: pointer;">Share</button>
             </div>
-            
+
             <!-- Video Preview -->
             <div style="flex: 1; display: flex; flex-direction: column; overflow-y: auto;">
-                <div style="position: relative; background: #000; aspect-ratio: 9/16; max-height: 350px; overflow: hidden;">
-                    <video id="globalReelPreviewVideo" style="width: 100%; height: 100%; object-fit: contain;" loop muted playsinline></video>
-                    <div id="globalReelPreviewOverlay" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
+                <div
+                    style="position: relative; background: #000; aspect-ratio: 9/16; max-height: 350px; overflow: hidden;">
+                    <video id="globalReelPreviewVideo" style="width: 100%; height: 100%; object-fit: contain;" loop
+                        muted playsinline></video>
+                    <div id="globalReelPreviewOverlay"
+                        style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.5);">
                         <i data-lucide="play-circle" style="width: 48px; height: 48px; color: white; opacity: 0.8;"></i>
                         <p style="color: white; margin-top: 12px; font-size: 13px; opacity: 0.8;">Click to preview</p>
                     </div>
                 </div>
-                
+
                 <!-- Caption & Details -->
                 <div style="padding: 16px;">
                     <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=667eea&color=fff{% endif %}" 
-                             style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
+                        <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=667eea&color=fff{% endif %}"
+                            style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                         <div style="flex: 1;">
-                            <p style="margin: 0; font-weight: 600; font-size: 14px; color: var(--ig-text, white);">{{ user.username|default:'You' }}</p>
-                            <p style="margin: 2px 0 0; font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">Sharing a new reel</p>
+                            <p style="margin: 0; font-weight: 600; font-size: 14px; color: var(--ig-text, white);">{{
+                                user.username|default:'You' }}</p>
+                            <p style="margin: 2px 0 0; font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">
+                                Sharing a new reel</p>
                         </div>
                     </div>
-                    
-                    <textarea id="globalReelCaption" placeholder="Write a caption..." 
+
+                    <textarea id="globalReelCaption" placeholder="Write a caption..."
                         style="width: 100%; min-height: 80px; background: var(--ig-bg, #121212); border: 1px solid var(--ig-border, rgba(255,255,255,0.1)); border-radius: 12px; padding: 12px; color: var(--ig-text, white); font-size: 14px; resize: none; outline: none; font-family: inherit;"
                         maxlength="500"></textarea>
                     <div style="display: flex; justify-content: space-between; margin-top: 8px;">
                         <span style="font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">Max 2 minutes</span>
-                        <span id="globalReelCharCount" style="font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">0/500</span>
+                        <span id="globalReelCharCount"
+                            style="font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">0/500</span>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Upload Progress -->
-            <div id="globalReelProgress" style="display: none; padding: 16px; border-top: 1px solid var(--ig-border, rgba(255,255,255,0.1));">
+            <div id="globalReelProgress"
+                style="display: none; padding: 16px; border-top: 1px solid var(--ig-border, rgba(255,255,255,0.1));">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="width: 24px; height: 24px; border: 3px solid var(--color-primary, #667eea); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                    <div
+                        style="width: 24px; height: 24px; border: 3px solid var(--color-primary, #667eea); border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;">
+                    </div>
                     <span style="color: var(--ig-text, white); font-size: 14px;">Uploading your reel...</span>
                 </div>
-                <div style="margin-top: 12px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
-                    <div id="globalReelProgressBar" style="height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s;"></div>
+                <div
+                    style="margin-top: 12px; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden;">
+                    <div id="globalReelProgressBar"
+                        style="height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); width: 0%; transition: width 0.3s;">
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-    
+
     <style>
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 
@@ -259,7 +373,7 @@
         let globalPendingReelFile = null;
 
         // Define all global functions explicitly on window object
-        window.openCreateMenu = function() {
+        window.openCreateMenu = function () {
             const modal = document.getElementById('createSelectionModal');
             if (modal) {
                 modal.style.display = 'block';
@@ -269,7 +383,7 @@
             }
         };
 
-        window.closeCreateSelectionModal = function(e) {
+        window.closeCreateSelectionModal = function (e) {
             if (e && e.type === 'click' && e.target !== e.currentTarget) return;
             const modal = document.getElementById('createSelectionModal');
             if (modal) {
@@ -277,7 +391,7 @@
             }
         };
 
-        window.triggerGlobalPostCreate = function() {
+        window.triggerGlobalPostCreate = function () {
             closeCreateSelectionModal();
             if (typeof window.openCreatePostModal === 'function') {
                 window.openCreatePostModal();
@@ -286,16 +400,16 @@
             }
         };
 
-        window.triggerGlobalReelCreate = function() {
+        window.triggerGlobalReelCreate = function () {
             closeCreateSelectionModal();
             const input = document.getElementById('globalReelInput');
             if (input) input.click();
         };
 
-        window.handleGlobalReelUpload = function(input) {
+        window.handleGlobalReelUpload = function (input) {
             if (input.files && input.files[0]) {
                 const file = input.files[0];
-                
+
                 // Validate file size
                 if (file.size > 100 * 1024 * 1024) {
                     showGlobalToast("Video too large. Please upload under 100MB.", "error");
@@ -306,25 +420,25 @@
                 // Check video duration
                 const video = document.createElement('video');
                 video.preload = 'metadata';
-                
-                video.onloadedmetadata = function() {
+
+                video.onloadedmetadata = function () {
                     if (video.duration > 120) {
-                        showGlobalToast("Video too long. Reels must be 2 minutes or less.", "error");
+                        showGlobalToast("Video too long. Omzo must be 2 minutes or less.", "error");
                         input.value = '';
                         URL.revokeObjectURL(video.src);
                         return;
                     }
-                    
+
                     // Store file and open modal with preview
                     globalPendingReelFile = file;
                     openGlobalReelModal(file, video.src);
                 };
-                
-                video.onerror = function() {
+
+                video.onerror = function () {
                     showGlobalToast("Invalid video file. Please try another.", "error");
                     input.value = '';
                 };
-                
+
                 video.src = URL.createObjectURL(file);
             }
         };
@@ -335,21 +449,21 @@
             const overlay = document.getElementById('globalReelPreviewOverlay');
             const caption = document.getElementById('globalReelCaption');
             const progress = document.getElementById('globalReelProgress');
-            const shareBtn = document.getElementById('globalReelShareBtn');
-            
+            const shareBtn = document.getElementById('globalOmzoShareBtn');
+
             // Reset state
             caption.value = '';
             document.getElementById('globalReelCharCount').textContent = '0/500';
             progress.style.display = 'none';
             shareBtn.disabled = false;
             shareBtn.textContent = 'Share';
-            
+
             // Set preview
             preview.src = videoUrl;
             overlay.style.display = 'flex';
-            
+
             // Click to play preview
-            preview.parentElement.onclick = function() {
+            preview.parentElement.onclick = function () {
                 if (preview.paused) {
                     preview.play();
                     overlay.style.display = 'none';
@@ -358,43 +472,43 @@
                     overlay.style.display = 'flex';
                 }
             };
-            
+
             // Character counter
-            caption.oninput = function() {
+            caption.oninput = function () {
                 document.getElementById('globalReelCharCount').textContent = this.value.length + '/500';
             };
-            
+
             // Show modal
             modal.style.display = 'flex';
             if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
-        window.closeGlobalReelModal = function() {
+        window.closeGlobalReelModal = function () {
             const modal = document.getElementById('globalReelUploadModal');
             const preview = document.getElementById('globalReelPreviewVideo');
-            
+
             modal.style.display = 'none';
             preview.pause();
             preview.src = '';
             globalPendingReelFile = null;
-            
+
             // Reset file input
             document.getElementById('globalReelInput').value = '';
         };
 
-        window.submitGlobalReel = function() {
+        window.submitGlobalOmzo = function () {
             if (!globalPendingReelFile) return;
-            
+
             const caption = document.getElementById('globalReelCaption').value.trim();
             const progress = document.getElementById('globalReelProgress');
             const progressBar = document.getElementById('globalReelProgressBar');
-            const shareBtn = document.getElementById('globalReelShareBtn');
-            
+            const shareBtn = document.getElementById('globalOmzoShareBtn');
+
             // Show progress
             progress.style.display = 'block';
             shareBtn.disabled = true;
             shareBtn.textContent = 'Sharing...';
-            
+
             // Animate progress bar
             let progressValue = 0;
             const progressInterval = setInterval(() => {
@@ -402,7 +516,7 @@
                 if (progressValue > 90) progressValue = 90;
                 progressBar.style.width = progressValue + '%';
             }, 500);
-            
+
             const formData = new FormData();
             formData.append('video', globalPendingReelFile);
             formData.append('caption', caption);
@@ -412,42 +526,42 @@
                 body: formData,
                 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
             })
-            .then(r => r.json())
-            .then(data => {
-                clearInterval(progressInterval);
-                progressBar.style.width = '100%';
-                
-                if (data.success) {
-                    setTimeout(() => {
-                        closeGlobalReelModal();
-                        showGlobalToast("Reel posted successfully!", "success");
+                .then(r => r.json())
+                .then(data => {
+                    clearInterval(progressInterval);
+                    progressBar.style.width = '100%';
+
+                    if (data.success) {
                         setTimeout(() => {
-                            window.location.href = '{% url "reels" %}';
-                        }, 1000);
-                    }, 500);
-                } else {
+                            closeGlobalReelModal();
+                            showGlobalToast("Omzo posted successfully!", "success");
+                            setTimeout(() => {
+                                window.location.href = '{% url "reels" %}';
+                            }, 1000);
+                        }, 500);
+                    } else {
+                        progress.style.display = 'none';
+                        shareBtn.disabled = false;
+                        shareBtn.textContent = 'Share';
+                        showGlobalToast('Upload failed: ' + (data.error || 'Unknown error'), "error");
+                    }
+                })
+                .catch(err => {
+                    clearInterval(progressInterval);
                     progress.style.display = 'none';
                     shareBtn.disabled = false;
                     shareBtn.textContent = 'Share';
-                    showGlobalToast('Upload failed: ' + (data.error || 'Unknown error'), "error");
-                }
-            })
-            .catch(err => {
-                clearInterval(progressInterval);
-                progress.style.display = 'none';
-                shareBtn.disabled = false;
-                shareBtn.textContent = 'Share';
-                console.error(err);
-                showGlobalToast('Upload failed. Please try again.', "error");
-            });
+                    console.error(err);
+                    showGlobalToast('Upload failed. Please try again.', "error");
+                });
         };
 
         // Global toast system
         let globalToastEl = null;
-        
+
         function showGlobalToast(message, type = 'info', persistent = false) {
             hideGlobalToast();
-            
+
             globalToastEl = document.createElement('div');
             globalToastEl.id = 'globalToast';
             globalToastEl.style.cssText = `
@@ -466,14 +580,14 @@
                 animation: toastIn 0.3s ease-out;
             `;
             globalToastEl.textContent = message;
-            
+
             document.body.appendChild(globalToastEl);
-            
+
             if (!persistent) {
                 setTimeout(hideGlobalToast, 4000);
             }
         }
-        
+
         function hideGlobalToast() {
             if (globalToastEl) {
                 globalToastEl.remove();

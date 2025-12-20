@@ -8624,3 +8624,22 @@ function cancelP2PReceive() {
 }
 </script>
 {% endblock %}
+<!-- Odnix Call configuration + script (added to ensure signaling for non-Instagram template) -->
+<script>
+    try {
+        window.OdnixCallConfig = {
+            chatId: {{ chat.id }},
+            userId: {{ request.user.id }},
+            wsScheme: (window.location.protocol === 'https:' ? 'wss' : 'ws'),
+            host: window.location.host,
+            iceServers: []
+        };
+        console.log('[CallJS] Config set successfully (chat_detail):', window.OdnixCallConfig);
+    } catch (e) {
+        console.error('[CallJS] Error setting config (chat_detail):', e);
+        alert('Error configuring call system: ' + e.message);
+    }
+</script>
+<script src="{% static 'js/call.js' %}?v={% now 'U' %}"
+    onload="console.log('call.js loaded successfully on chat_detail'); if(!window.OdnixCall) console.error('ERROR: window.OdnixCall is undefined after script load. Check call.js for syntax errors.');"
+    onerror="console.error('Failed to load call.js on chat_detail'); alert('Error loading call functionality. Check console.');"></script>

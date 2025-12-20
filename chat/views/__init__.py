@@ -26,7 +26,8 @@ from .social import (
     search_users_for_mention, update_theme, get_all_activity,
     get_profile_followers, get_profile_following,
     toggle_save_post, delete_post, report_post, get_saved_posts, copy_post_link,
-    view_post, reels_view, upload_reel, toggle_reel_like, add_reel_comment, get_reel_comments
+    view_post, reels_view, upload_reel, toggle_reel_like, add_reel_comment, get_reel_comments,
+    track_reel_view, report_reel
 )
 from .stories import (
     create_story, view_story, get_user_stories, mark_story_viewed,

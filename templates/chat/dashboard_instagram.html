@@ -1685,7 +1685,7 @@
         color: var(--odnix-text-secondary);
     }
 
-    /* Saved Posts Modal */
+    /* Saved Scribes Modal */
     .ig-saved-modal {
         max-width: 500px;
     }
@@ -3023,7 +3023,7 @@
                 <i data-lucide="compass"
                     class="ig-nav-icon {% if request.resolver_match.url_name == 'discover_groups' %}active{% endif %}"></i>
             </a>
-            <a href="{% url 'reels' %}" title="Reels">
+            <a href="{% url 'reels' %}" title="Omzo">
                 <i data-lucide="play-square"
                     class="ig-nav-icon {% if request.resolver_match.url_name == 'reels' %}active{% endif %}"></i>
             </a>
@@ -3054,7 +3054,7 @@
         <i data-lucide="compass"></i>
     </a>
     <a href="{% url 'reels' %}"
-        class="ig-bottom-nav-item {% if request.resolver_match.url_name == 'reels' %}active{% endif %}" title="Reels">
+        class="ig-bottom-nav-item {% if request.resolver_match.url_name == 'reels' %}active{% endif %}" title="Omzo">
         <i data-lucide="film"></i>
     </a>
     <button class="ig-bottom-nav-item" onclick="openCreateMenu()" title="Create">
@@ -3124,7 +3124,7 @@
                 </div>
             </section>
 
-            <!-- Posts/Tweets Feed -->
+            <!-- Scribes/Tweets Feed -->
             <section class="ig-posts" id="postsFeed">
                 {% for tweet in tweets_data %}
                 <article class="ig-post" data-tweet-id="{{ tweet.id }}"
@@ -3220,7 +3220,7 @@
                 <div class="ig-empty">
                     <i data-lucide="camera"></i>
                     <h3>Welcome to Odnix!</h3>
-                    <p>Follow people to see their posts in your feed, or create your first post!</p>
+                    <p>Follow people to see their scribes in your feed, or create your first scribe!</p>
                     <button class="ig-auth-btn ig-mt-lg" onclick="openCreatePostModal()"
                         style="width: auto; padding: 12px 24px;">
                         Create Your First Post
@@ -4871,11 +4871,11 @@
     </div>
 </div>
 
-<!-- Saved Posts Modal -->
+<!-- Saved Scribes Modal -->
 <div id="savedPostsModal" class="ig-modal-overlay" style="display: none;" onclick="closeSavedPostsModal(event)">
     <div class="ig-modal ig-saved-modal" onclick="event.stopPropagation()">
         <header class="ig-modal-header">
-            <h2 class="ig-modal-title">Saved Posts</h2>
+            <h2 class="ig-modal-title">Saved Scribes</h2>
             <button class="ig-modal-close" onclick="closeSavedPostsModal()">
                 <i data-lucide="x"></i>
             </button>
@@ -6867,6 +6867,42 @@
                             activityText = `<strong>${username}</strong> replied to your story`;
                             if (item.content) {
                                 activityText += `: "${item.content}"`;
+                            }
+                            break;
+                        case 'post_report':
+                            iconClass = 'default';
+                            iconName = 'flag';
+                            dataType = 'other';
+                            activityText = `<strong>${username}</strong> reported your post`;
+                            if (item.reason) {
+                                activityText += `: ${item.reason}`;
+                            }
+                            break;
+                        case 'reel_report':
+                            iconClass = 'default';
+                            iconName = 'flag';
+                            dataType = 'other';
+                            activityText = `<strong>${username}</strong> reported your reel`;
+                            if (item.reason) {
+                                activityText += `: ${item.reason}`;
+                            }
+                            break;
+                        case 'my_post_report':
+                            iconClass = 'default';
+                            iconName = 'flag';
+                            dataType = 'other';
+                            activityText = `You reported <strong>${username}</strong>'s scribe`;
+                            if (item.reason) {
+                                activityText += `: ${item.reason}`;
+                            }
+                            break;
+                        case 'my_reel_report':
+                            iconClass = 'default';
+                            iconName = 'flag';
+                            dataType = 'other';
+                            activityText = `You reported <strong>${username}</strong>'s omzo`;
+                            if (item.reason) {
+                                activityText += `: ${item.reason}`;
                             }
                             break;
                         default:
