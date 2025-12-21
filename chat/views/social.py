@@ -131,6 +131,12 @@ def profile_view(request, username=None):
                 'image_url': tweet.image_url,
                 'has_media': tweet.has_media,
                 'recent_comments': recent_comments,
+                # Code Scribe fields
+                'content_type': getattr(tweet, 'content_type', ''),
+                'code_bundle': getattr(tweet, 'code_bundle', ''),
+                'code_html': getattr(tweet, 'code_html', ''),
+                'code_css': getattr(tweet, 'code_css', ''),
+                'code_js': getattr(tweet, 'code_js', ''),
             }
             tweets.append(tweet_data)
 
@@ -408,20 +414,32 @@ def post_tweet(request):
         # Parse form data properly
         content = request.POST.get('content', '').strip()
         image_file = request.FILES.get('image')
+        content_type = request.POST.get('content_type', 'text')
+        code_html = request.POST.get('code_html')
+        code_css = request.POST.get('code_css')
+        code_js = request.POST.get('code_js')
+        code_bundle = request.POST.get('code_bundle')
 
         logger.info(
             f"Content: {content[:50]}..., Has image: {bool(image_file)}")
 
         # Basic validation
-        if not content and not image_file:
-            return JsonResponse({'success': False, 'error': 'Tweet cannot be empty. Please add text or an image.'})
+        if content_type == 'code_scribe':
+            # Allow code-only posts as long as at least one code field is present
+            has_code = any([(code_html and code_html.strip()), (code_css and code_css.strip(
+            )), (code_js and code_js.strip()), (code_bundle and code_bundle.strip())])
+            if not has_code and not content:
+                return JsonResponse({'success': False, 'error': 'Code scribe cannot be empty. Add HTML, CSS, JS, or a caption.'})
+        else:
+            if not content and not image_file:
+                return JsonResponse({'success': False, 'error': 'Tweet cannot be empty. Please add text or an image.'})
 
         if content and len(content) > 280:
             return JsonResponse({'success': False, 'error': 'Tweet must be 280 characters or less.'})
 
         # Duplicate prevention
         tweet_hash = generate_tweet_hash(
-            request.user.id, content or '', bool(image_file))
+            request.user.id, (content or code_bundle or ''), bool(image_file))
         cache_key = f"{TWEET_CACHE_PREFIX}{tweet_hash}"
 
         # Check cache for recent duplicate
@@ -450,7 +468,43 @@ def post_tweet(request):
                 f"Recent duplicate found in database for user {request.user.id}")
             return JsonResponse({'success': False, 'error': 'You already posted this tweet recently. Please wait before posting again.'})
 
-        # Use Django form for proper validation
+        # For code scribe posts, skip TweetForm and construct manually
+        if content_type == 'code_scribe':
+            tweet = Tweet(
+                user=request.user,
+                content=content or '',
+                content_type='code_scribe',
+                code_html=code_html or None,
+                code_css=code_css or None,
+                code_js=code_js or None,
+                code_bundle=code_bundle or None,
+            )
+            # image_file is ignored for code scribe unless provided
+            if image_file:
+                tweet.image = image_file
+            tweet.save()
+            process_tweet_hashtags_mentions(tweet)
+            cache.set(cache_key, True, timeout=TWEET_COOLDOWN)
+            logger.info(
+                f"Code Scribe Tweet {tweet.id} created successfully by user {request.user.id}")
+            return JsonResponse({
+                'success': True,
+                'message': 'Code scribe posted successfully!',
+                'tweet': {
+                    'id': tweet.id,
+                    'content': tweet.content,
+                    'timestamp': tweet.timestamp.strftime('%B %d, %Y at %H:%M'),
+                    'time_ago': 'now',
+                    'like_count': 0,
+                    'comment_count': 0,
+                    'image_url': tweet.image_url,
+                    'has_media': tweet.has_media,
+                    'content_type': tweet.content_type,
+                    'code_bundle': tweet.code_bundle,
+                }
+            })
+
+        # Use Django form for proper validation for standard posts
         form_data = {'content': content} if content else {}
         files_data = {'image': image_file} if image_file else {}
 

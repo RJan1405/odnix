@@ -1,0 +1,72 @@
+Code Scribe overview
+=====================
+
+Purpose
+- Let users author small HTML/CSS/JS snippets, preview them live, and publish as "code_scribe" posts alongside regular tweets.
+
+End-to-end flow (concise)
+- Authoring: dashboard modal opens three editors, seeds starter HTML/CSS/JS, syncs gutters, and live-previews into an iframe via composeCodeScribeDocument() + runCodeScribePreview().
+- Client submit: submitCodeScribe() builds FormData with caption, code_html/css/js, code_bundle (full HTML doc), and content_type=code_scribe; doPostSubmit() POSTs to post_tweet.
+- Server ingest: post_tweet() validates (code required), blocks duplicates, stores code_html/css/js/bundle on Tweet, returns JSON payload.
+- Feed render: feed template outputs an iframe with data-code-* attributes for code_scribe posts.
+- Profile render: profile template hydrates scribes into iframes via initCodeScribePreviews(), using srcdoc to inject stored bundle or reconstructed HTML.
+
+Detailed workflow and connections
+1) Open modal (dashboard)
+	- User clicks Create > Code Scribe; modal displays three panes (HTML/CSS/JS), line numbers via updateLineNumbers(), tab switching via setCodeTab().
+	- Live preview: runCodeScribePreview() writes composeCodeScribeDocument() output into an iframe so the user sees the rendered snippet before posting.
+
+2) Build payload (client)
+	- submitCodeScribe() checks at least one of HTML/CSS/JS exists; assembles FormData:
+	  content (caption, optional), code_html, code_css, code_js, code_bundle (full HTML document), content_type=code_scribe.
+	- doPostSubmit() sends the FormData to the post_tweet endpoint with CSRF headers.
+
+3) Validate and save (server)
+	- post_tweet():
+	  - Accepts content_type=code_scribe; permits code-only posts if any code field is present.
+	  - Computes duplicate hash (user id + content/code bundle + image flag); blocks rapid reposts via cache and DB look-back.
+	  - Persists Tweet with code_html/css/js/bundle (image optional but ignored unless provided); runs hashtag/mention processing.
+	  - Responds JSON: success flag, message, id, content, timestamp/time_ago, like/comment counts, image_url, has_media, content_type, code_bundle.
+
+4) Render in feed (dashboard)
+	- Each code_scribe tweet renders an iframe with data-code-bundle plus per-part attributes; iframe styled as post media.
+	- On load, initCodeScribePreviews() (shared helper) decodes the bundle or rebuilds from parts, then assigns frame.srcdoc for isolated execution.
+
+5) Render in profile grid
+	- Profile page uses the same iframe hydration helper to display scribes inside the grid; falls back to reconstructing HTML if bundle missing.
+
+Data connections at a glance
+- Authoring: dashboard modal writes composed HTML into a preview iframe and a code_bundle string.
+- Submission: same modal POSTs caption + code parts + bundle with content_type=code_scribe to post_tweet.
+- Storage: post_tweet persists the code fields on Tweet and returns a JSON payload used by the UI.
+- Rendering: feed/profile templates read the stored code fields and hydrate an iframe via srcdoc for inline execution.
+
+Security notes (current behavior)
+- Iframes use srcdoc to isolate execution from the parent page; no additional sandbox flags are applied in the feed/profile templates.
+- Uploaded images are ignored for code_scribe unless explicitly provided in the request.
+
+Frontend authoring & preview
+- Code Scribe modal lives in the Instagram-style dashboard. It shows three editors (HTML, CSS, JS), keeps line gutters in sync, and seeds a starter template on first open for quick testing. See templates/chat/dashboard_instagram.html around the Code Scribe script helpers (open modal, gutters, preview, submit).
+- Live preview is rendered into an iframe via composeCodeScribeDocument() and runCodeScribePreview(), writing the composed HTML+CSS+JS into the iframe document before posting.
+
+Posting flow (client)
+- submitCodeScribe() validates that at least one of HTML/CSS/JS is present, collects caption plus code fragments, builds a code_bundle (full HTML document), tags content_type=code_scribe, and posts via doPostSubmit() to the tweet endpoint. See templates/chat/dashboard_instagram.html for the posting helpers.
+
+Backend handling
+- post_tweet() detects content_type=="code_scribe", allows code-only posts (caption optional), enforces duplicate-prevention hash, and saves code_html, code_css, code_js, and code_bundle fields on the Tweet. It returns JSON with the new post metadata. See chat/views/social.py in the post_tweet view.
+
+Feed rendering
+- In the main feed, code_scribe posts render as an iframe, populated via data-code-* attributes (bundle or per-part) so the client can hydrate them. See the Code Scribe branch in the feed card template in templates/chat/dashboard_instagram.html.
+
+Profile rendering
+- Profile grids also show Code Scribe items as iframes. initCodeScribePreviews() decodes the stored bundle (or rebuilds from HTML/CSS/JS) and sets iframe.srcdoc for sandboxed display. See templates/chat/profile_instagram.html near initCodeScribePreviews().
+
+Data connections at a glance
+- Authoring: dashboard modal writes composed HTML into a preview iframe and a code_bundle string.
+- Submission: same modal POSTs caption + code parts + bundle with content_type=code_scribe to post_tweet.
+- Storage: post_tweet persists the code fields on Tweet and returns a JSON payload used by the UI.
+- Rendering: feed/profile templates read the stored code fields and hydrate an iframe via srcdoc for inline execution.
+
+Security notes (current behavior)
+- Iframes use srcdoc to isolate execution from the parent page; no additional sandbox flags are applied in the feed/profile templates.
+- Uploaded images are ignored for code_scribe unless explicitly provided in the request.

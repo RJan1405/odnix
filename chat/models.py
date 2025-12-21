@@ -400,6 +400,13 @@ class Tweet(models.Model):
     image = models.ImageField(
         upload_to='tweet_images/', blank=True, null=True)  # Direct image upload
 
+    # Code Scribe fields (optional)
+    content_type = models.CharField(max_length=32, default='text')
+    code_html = models.TextField(blank=True, null=True)
+    code_css = models.TextField(blank=True, null=True)
+    code_js = models.TextField(blank=True, null=True)
+    code_bundle = models.TextField(blank=True, null=True)
+
     class Meta:
         ordering = ['-timestamp']
 

@@ -138,11 +138,11 @@
     /* ===== CODE SCRIBE MODAL ===== */
     .code-scribe-modal {
         background: var(--ig-surface);
-        border-radius: 16px;
+        border-radius: 12px;
         overflow: hidden;
-        max-width: 900px;
+        max-width: 800px;
         width: 95%;
-        max-height: 90vh;
+        height: 85vh;
         display: flex;
         flex-direction: column;
         box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
@@ -154,82 +154,122 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 14px 18px;
+        padding: 10px 16px;
         border-bottom: 1px solid var(--ig-border);
-        background: linear-gradient(135deg, rgba(102, 126, 234, 0.06), rgba(118, 75, 162, 0.06));
+        background: var(--ig-bg);
     }
 
     .code-scribe-title {
-        font-weight: 700;
+        font-weight: 600;
+        font-size: 14px;
         color: var(--ig-text-primary);
     }
 
     .code-scribe-body {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        padding: 12px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
         overflow: hidden;
+        padding: 0;
+        background: var(--ig-surface);
     }
 
+    /* Tabs styled like file tabs */
     .code-scribe-tabs {
         display: flex;
-        border: 1px solid var(--ig-border);
-        border-radius: 10px;
-        overflow: hidden;
+        border-bottom: 1px solid var(--ig-border);
         background: var(--ig-bg);
+        padding: 0 16px;
+        gap: 24px;
     }
 
     .code-scribe-tab {
-        flex: 1;
-        padding: 10px 12px;
-        text-align: center;
+        padding: 12px 0;
         cursor: pointer;
-        font-weight: 600;
+        font-size: 13px;
         color: var(--ig-text-secondary);
-        border-right: 1px solid var(--ig-border);
-        transition: background 0.2s, color 0.2s;
+        position: relative;
+        transition: color 0.2s;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
-    .code-scribe-tab:last-child {
-        border-right: none;
+    .code-scribe-tab:hover {
+        color: var(--ig-text-primary);
     }
 
     .code-scribe-tab.active {
-        background: var(--ig-surface-hover);
-        color: var(--color-primary);
+        color: #3b82f6;
+        /* Blue active color */
+        font-weight: 500;
     }
 
-    .code-scribe-editor {
-        background: var(--ig-surface);
-        border: 1px solid var(--ig-border);
-        border-radius: 12px;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        min-height: 260px;
-    }
-
-    .code-scribe-editor textarea {
-        flex: 1;
+    .code-scribe-tab.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
         width: 100%;
+        height: 2px;
+        background-color: #3b82f6;
+    }
+
+    /* Editor Area with Line Numbers */
+    .code-scribe-editor-container {
+        flex: 1;
+        display: flex;
+        position: relative;
+        overflow: hidden;
+        background: var(--ig-surface);
+        min-height: 0;
+        /* Important for flex nesting */
+    }
+
+    .code-scribe-gutter {
+        width: 40px;
+        /* Fixed width for line numbers */
+        background: var(--ig-bg);
+        border-right: 1px solid var(--ig-border);
+        color: var(--ig-text-secondary);
+        font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
+        font-size: 13px;
+        line-height: 1.6;
+        padding: 12px 0;
+        text-align: right;
+        padding-right: 8px;
+        user-select: none;
+        overflow: hidden;
+    }
+
+    .code-scribe-textarea-wrapper {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .code-scribe-textarea-wrapper textarea {
+        width: 100%;
+        height: 100%;
         border: none;
-        padding: 12px 14px;
+        padding: 12px;
         background: transparent;
         color: var(--ig-text-primary);
-        font-family: 'Fira Code', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+        font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace;
         font-size: 13px;
+        line-height: 1.6;
         resize: none;
         outline: none;
-        line-height: 1.5;
+        white-space: pre;
+        /* No wrapping for code editor feel */
+        overflow: auto;
     }
 
     .code-scribe-controls {
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 2px;
+        border-top: 1px solid var(--ig-border);
+        background: var(--ig-bg);
     }
 
     .code-scribe-run {
@@ -239,16 +279,17 @@
         border: 1px solid var(--ig-border);
         background: var(--ig-surface);
         color: var(--ig-text-primary);
-        padding: 10px 14px;
-        border-radius: 12px;
+        padding: 8px 12px;
+        border-radius: 8px;
         cursor: pointer;
-        font-weight: 600;
+        font-weight: 500;
+        font-size: 13px;
         transition: all 0.2s;
     }
 
     .code-scribe-run:hover {
         background: var(--ig-surface-hover);
-        transform: translateY(-1px);
+        border-color: var(--ig-text-secondary);
     }
 
     .code-scribe-meta {
@@ -3331,7 +3372,16 @@
                     </header>
 
                     <!-- Post Media -->
-                    {% if tweet.image_url %}
+                    {% if tweet.content_type == 'code_scribe' %}
+                    <div class="ig-post-media">
+                        <iframe id="code-scribe-view-{{ tweet.id }}" class="ig-code-scribe-view" title="Code Scribe"
+                            style="width: 100%; min-height: 260px; border: none; background: #fff;"
+                            data-code-bundle="{{ tweet.code_bundle|urlencode }}"
+                            data-code-html="{{ tweet.code_html|default:''|urlencode }}"
+                            data-code-css="{{ tweet.code_css|default:''|urlencode }}"
+                            data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
+                    </div>
+                    {% elif tweet.image_url %}
                     <div class="ig-post-media" onclick="openImageModal('{{ tweet.image_url }}')">
                         <img src="{{ tweet.image_url }}" alt="Post image">
                     </div>
@@ -3607,64 +3657,89 @@
     </div>
 </div>
 
-    <!-- Code Scribe Modal (HTML/CSS/JS) -->
-    <div id="codeScribeModal" class="ig-modal-overlay" style="display: none;" onclick="closeCodeScribeModal(event)">
-        <div class="code-scribe-modal" onclick="event.stopPropagation()">
-            <header class="code-scribe-header">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <button class="code-scribe-close" onclick="closeCodeScribeModal()" aria-label="Close">
-                        <i data-lucide="x"></i>
-                    </button>
-                    <span class="code-scribe-title">Create Code Scribe</span>
-                </div>
-                <button class="code-scribe-share" onclick="submitCodeScribe()">Post Code Scribe</button>
-            </header>
+<!-- Code Scribe Modal (HTML/CSS/JS) -->
+<div id="codeScribeModal" class="ig-modal-overlay" style="display: none;" onclick="closeCodeScribeModal(event)">
+    <div class="code-scribe-modal" onclick="event.stopPropagation()">
+        <header class="code-scribe-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="code-scribe-close" onclick="closeCodeScribeModal()" aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+                <span class="code-scribe-title">Create Code Scribe</span>
+            </div>
+            <button class="code-scribe-share" onclick="submitCodeScribe()">Post Code Scribe</button>
+        </header>
 
-            <div class="code-scribe-body">
-                <div class="code-scribe-tabs" id="codeScribeTabs">
-                    <div class="code-scribe-tab active" data-tab="html" onclick="setCodeTab('html')">index.html</div>
-                    <div class="code-scribe-tab" data-tab="css" onclick="setCodeTab('css')">styles.css</div>
-                    <div class="code-scribe-tab" data-tab="js" onclick="setCodeTab('js')">script.js</div>
-                </div>
+        <div class="code-scribe-body">
+            <div class="code-scribe-tabs" id="codeScribeTabs">
+                <div class="code-scribe-tab active" data-tab="html" onclick="setCodeTab('html')">index.html</div>
+                <div class="code-scribe-tab" data-tab="css" onclick="setCodeTab('css')">styles.css</div>
+                <div class="code-scribe-tab" data-tab="js" onclick="setCodeTab('js')">script.js</div>
+            </div>
 
-                <div class="code-scribe-editor">
-                    <textarea id="codeHtmlEditor" spellcheck="false" aria-label="HTML editor"></textarea>
-                    <textarea id="codeCssEditor" spellcheck="false" aria-label="CSS editor" style="display: none;"></textarea>
-                    <textarea id="codeJsEditor" spellcheck="false" aria-label="JS editor" style="display: none;"></textarea>
-                </div>
-
-                <div class="code-scribe-controls">
-                    <button class="code-scribe-run" onclick="runCodeScribePreview()">
-                        <i data-lucide="play"></i>
-                        <span>Run & Preview</span>
-                    </button>
-                    <button class="code-scribe-run" onclick="resetCodeScribe()">
-                        <i data-lucide="rotate-ccw"></i>
-                        <span>Reset</span>
-                    </button>
-                    <div class="code-scribe-meta">
-                        <input type="text" id="codeScribeCaption" placeholder="Add a caption (optional)">
-                    </div>
-                </div>
-
-                <div class="code-scribe-preview" aria-live="polite">
-                    <iframe id="codeScribePreview"></iframe>
+            <!-- HTML Pane -->
+            <div id="pane-html" class="code-scribe-editor-container">
+                <div id="gutter-html" class="code-scribe-gutter">1</div>
+                <div class="code-scribe-textarea-wrapper">
+                    <textarea id="codeHtmlEditor" spellcheck="false" placeholder="<!-- HTML goes here -->"
+                        oninput="updateLineNumbers(this, 'gutter-html')"
+                        onscroll="syncScroll(this, 'gutter-html')"></textarea>
                 </div>
             </div>
 
-            <div class="code-scribe-footer">
-                <span style="color: var(--ig-text-secondary); font-size: 12px;">Write HTML, CSS, and JS separately. Run to
-                    preview, then post.</span>
-                <div style="display: flex; gap: 10px;">
-                    <button class="code-scribe-run" onclick="runCodeScribePreview()">
-                        <i data-lucide="eye"></i>
-                        <span>Preview</span>
-                    </button>
-                    <button class="code-scribe-share" onclick="submitCodeScribe()">Post Code Scribe</button>
+            <!-- CSS Pane -->
+            <div id="pane-css" class="code-scribe-editor-container" style="display: none;">
+                <div id="gutter-css" class="code-scribe-gutter">1</div>
+                <div class="code-scribe-textarea-wrapper">
+                    <textarea id="codeCssEditor" spellcheck="false" placeholder="/* CSS goes here */"
+                        oninput="updateLineNumbers(this, 'gutter-css')"
+                        onscroll="syncScroll(this, 'gutter-css')"></textarea>
                 </div>
+            </div>
+
+            <!-- JS Pane -->
+            <div id="pane-js" class="code-scribe-editor-container" style="display: none;">
+                <div id="gutter-js" class="code-scribe-gutter">1</div>
+                <div class="code-scribe-textarea-wrapper">
+                    <textarea id="codeJsEditor" spellcheck="false" placeholder="// JavaScript goes here"
+                        oninput="updateLineNumbers(this, 'gutter-js')"
+                        onscroll="syncScroll(this, 'gutter-js')"></textarea>
+                </div>
+            </div>
+
+            <div class="code-scribe-controls">
+                <button class="code-scribe-run" onclick="runCodeScribePreview()">
+                    <i data-lucide="play" width="14" height="14"></i>
+                    <span>Run</span>
+                </button>
+                <button class="code-scribe-run" onclick="resetCodeScribe()">
+                    <i data-lucide="rotate-ccw" width="14" height="14"></i>
+                    <span>Reset</span>
+                </button>
+                
+            </div>
+
+            <div class="code-scribe-preview" aria-live="polite">
+                <iframe id="codeScribePreview"></iframe>
             </div>
         </div>
+
+        <div class="code-scribe-footer">
+           <!-- <span style="color: var(--ig-text-secondary); font-size: 12px;">Write HTML, CSS, and JS separately. Run to
+                preview, then post.</span>-->
+            <div class="code-scribe-meta">
+                    <input type="text" id="codeScribeCaption" placeholder="Add a caption...">
+            </div>
+            <!--<div style="display: flex; gap: 10px;">
+                <button class="code-scribe-run" onclick="runCodeScribePreview()">
+                    <i data-lucide="eye"></i>
+                    <span>Preview</span>
+                </button>
+                <button class="code-scribe-share" onclick="submitCodeScribe()">Post Code Scribe</button>
+            </div>-->
+        </div>
     </div>
+</div>
 
 <style>
     /* ===== IMPROVED CREATE POST MODAL STYLES ===== */
@@ -5139,7 +5214,7 @@
 </div>
 
 <!-- Create Group Modal -->
-<div id="createGroupModal" class="ig-modal-overlay" style="display: none;" onclick="closeCreateGroupModal(event)">
+<div id="createGroupModal" class="ig-modal-overlay" style="display: none; z-index: 12000;" onclick="closeCreateGroupModal(event)">
     <div class="ig-modal" onclick="event.stopPropagation()">
         <header class="ig-modal-header">
             <h2 class="ig-modal-title">Create Group</h2>
@@ -5514,7 +5589,34 @@
                 }
             });
         }
+
+        // Initialize Code Scribe previews in feed
+        initCodeScribePreviews();
     });
+    function initCodeScribePreviews() {
+        const frames = document.querySelectorAll('.ig-code-scribe-view');
+        frames.forEach(frame => {
+            let encoded = frame.getAttribute('data-code-bundle') || '';
+            let html = encoded ? decodeURIComponent(encoded) : '';
+            if (!html) {
+                const h = frame.getAttribute('data-code-html') || '';
+                const c = frame.getAttribute('data-code-css') || '';
+                const j = frame.getAttribute('data-code-js') || '';
+                const htmlDec = h ? decodeURIComponent(h) : '';
+                const cssDec = c ? decodeURIComponent(c) : '';
+                const jsDec = j ? decodeURIComponent(j) : '';
+                html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${cssDec}</style></head><body>${htmlDec}<script>${jsDec}<\/script></body></html>`;
+            }
+            try {
+                frame.srcdoc = html;
+            } catch (e) {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(html);
+                doc.close();
+            }
+        });
+    }
 
     // Toast notification function
     function showIGToast(message, type) {
@@ -5824,7 +5926,7 @@
         if (!modal) return;
         modal.style.display = 'flex';
 
-        // Prefill with starter template on first open
+        // Prefill with starter template on first open and init line numbers
         const htmlArea = document.getElementById('codeHtmlEditor');
         const cssArea = document.getElementById('codeCssEditor');
         const jsArea = document.getElementById('codeJsEditor');
@@ -5832,14 +5934,25 @@
         if (htmlArea && !htmlArea.dataset.prefilled) {
             htmlArea.value = '<h1 class="title">Hello World!</h1>\n<p id="currentTime"></p>';
             htmlArea.dataset.prefilled = 'true';
+            updateLineNumbers(htmlArea, 'gutter-html');
+        } else if (htmlArea) {
+            updateLineNumbers(htmlArea, 'gutter-html');
         }
+
         if (cssArea && !cssArea.dataset.prefilled) {
             cssArea.value = 'body {\n  font-family: "Fira Code", monospace;\n  background: #f7f7fb;\n  color: #222;\n  text-align: center;\n  padding: 40px;\n}\n\n.title {\n  color: #6b5bff;\n  letter-spacing: 0.5px;\n}\n';
             cssArea.dataset.prefilled = 'true';
+            updateLineNumbers(cssArea, 'gutter-css');
+        } else if (cssArea) {
+            updateLineNumbers(cssArea, 'gutter-css');
         }
+
         if (jsArea && !jsArea.dataset.prefilled) {
             jsArea.value = 'const time = document.getElementById("currentTime");\nconst now = new Date();\ntime.textContent = `Current time: ${now.toLocaleTimeString()}`;\n';
             jsArea.dataset.prefilled = 'true';
+            updateLineNumbers(jsArea, 'gutter-js');
+        } else if (jsArea) {
+            updateLineNumbers(jsArea, 'gutter-js');
         }
 
         runCodeScribePreview();
@@ -5858,9 +5971,31 @@
         const tabs = document.querySelectorAll('.code-scribe-tab');
         tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
 
-        document.getElementById('codeHtmlEditor').style.display = tab === 'html' ? 'block' : 'none';
-        document.getElementById('codeCssEditor').style.display = tab === 'css' ? 'block' : 'none';
-        document.getElementById('codeJsEditor').style.display = tab === 'js' ? 'block' : 'none';
+        // Toggle separate panes instead of just textareas
+        const paneHtml = document.getElementById('pane-html');
+        const paneCss = document.getElementById('pane-css');
+        const paneJs = document.getElementById('pane-js');
+
+        if (paneHtml) paneHtml.style.display = tab === 'html' ? 'flex' : 'none';
+        if (paneCss) paneCss.style.display = tab === 'css' ? 'flex' : 'none';
+        if (paneJs) paneJs.style.display = tab === 'js' ? 'flex' : 'none';
+    }
+
+    function updateLineNumbers(textarea, gutterId) {
+        if (!textarea) return;
+        const text = textarea.value;
+        const lines = text.split('\n').length;
+        const gutter = document.getElementById(gutterId);
+        if (gutter) {
+            gutter.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
+        }
+    }
+
+    function syncScroll(textarea, gutterId) {
+        const gutter = document.getElementById(gutterId);
+        if (gutter) {
+            gutter.scrollTop = textarea.scrollTop;
+        }
     }
 
     function composeCodeScribeDocument() {
@@ -5885,10 +6020,12 @@
         const css = document.getElementById('codeCssEditor');
         const js = document.getElementById('codeJsEditor');
         const caption = document.getElementById('codeScribeCaption');
-        if (html) html.value = '';
-        if (css) css.value = '';
-        if (js) js.value = '';
+
+        if (html) { html.value = ''; updateLineNumbers(html, 'gutter-html'); }
+        if (css) { css.value = ''; updateLineNumbers(css, 'gutter-css'); }
+        if (js) { js.value = ''; updateLineNumbers(js, 'gutter-js'); }
         if (caption) caption.value = '';
+
         runCodeScribePreview();
     }
 
@@ -7047,12 +7184,21 @@
 
     // Group Modal
     function openCreateGroupModal() {
-        document.getElementById('createGroupModal').style.display = 'flex';
+        // Close the DM drawer so the modal is visible at this spot
+        if (typeof closeChatsPanel === 'function') {
+            closeChatsPanel();
+        }
+        const modal = document.getElementById('createGroupModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
     }
 
     function closeCreateGroupModal(event) {
         if (!event || event.target === event.currentTarget) {
             document.getElementById('createGroupModal').style.display = 'none';
+            document.body.style.overflow = '';
         }
     }
 

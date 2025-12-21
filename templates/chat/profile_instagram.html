@@ -1303,7 +1303,13 @@
             <div class="ig-posts-grid">
                 {% for tweet in tweets %}
                 <div class="ig-grid-item" onclick="openPostDetail({{ tweet.id }})">
-                    {% if tweet.image_url %}
+                    {% if tweet.content_type == 'code_scribe' %}
+                    <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" style="width: 100%; height: 100%; border: none; display: block; background: var(--ig-bg);"
+                        data-code-bundle="{{ tweet.code_bundle|urlencode }}"
+                        data-code-html="{{ tweet.code_html|default:''|urlencode }}"
+                        data-code-css="{{ tweet.code_css|default:''|urlencode }}"
+                        data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
+                    {% elif tweet.image_url %}
                     <img src="{{ tweet.image_url }}" alt="" loading="lazy">
                     {% else %}
                     <div class="ig-grid-text-post">
@@ -2536,6 +2542,9 @@
         }
 
         // Tab switching handled below in the complete tab handler
+
+        // Hydrate any Code Scribe iframes in the profile grids
+        initCodeScribePreviews();
     });
 
     // Modal functions
@@ -3918,5 +3927,31 @@
             });
         });
     });
+
+    function initCodeScribePreviews() {
+        const frames = document.querySelectorAll('.ig-code-scribe-view');
+        frames.forEach(frame => {
+            let encoded = frame.getAttribute('data-code-bundle') || '';
+            let html = encoded ? decodeURIComponent(encoded) : '';
+            if (!html) {
+                const h = frame.getAttribute('data-code-html') || '';
+                const c = frame.getAttribute('data-code-css') || '';
+                const j = frame.getAttribute('data-code-js') || '';
+                const htmlDec = h ? decodeURIComponent(h) : '';
+                const cssDec = c ? decodeURIComponent(c) : '';
+                const jsDec = j ? decodeURIComponent(j) : '';
+                html = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>${cssDec}</style></head><body>${htmlDec}<script>${jsDec}<\/script></body></html>`;
+            }
+            // Prefer srcdoc to avoid quoting issues
+            try {
+                frame.srcdoc = html;
+            } catch (e) {
+                const doc = frame.contentDocument || frame.contentWindow.document;
+                doc.open();
+                doc.write(html);
+                doc.close();
+            }
+        });
+    }
 </script>
 {% endblock %}

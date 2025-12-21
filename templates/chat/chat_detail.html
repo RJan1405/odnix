@@ -474,6 +474,59 @@
     </div>
 </div>
 
+<!-- Create Group Modal (available on chat page so navbar Create works without leaving) -->
+<div id="createGroupModal" class="modal-overlay" style="display: none;" onclick="closeCreateGroupModal(event)">
+    <div class="modal-container" style="max-width: 520px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>👥 Create Group</h3>
+            <button class="modal-close-btn" onclick="closeCreateGroupModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="createGroupForm" onsubmit="submitCreateGroupFromChat(event)">
+                <label for="groupName">Group Name</label>
+                <input type="text" id="groupName" name="name" maxlength="100" placeholder="Study buddies" required>
+
+                <label for="groupDescription">Description (optional)</label>
+                <textarea id="groupDescription" name="description" rows="3" placeholder="What is this group about?"></textarea>
+
+                <label for="maxParticipants">Max participants</label>
+                <input type="number" id="maxParticipants" name="max_participants" min="2" max="500" value="50">
+
+                <label class="checkbox-inline">
+                    <input type="checkbox" id="isPublic" name="is_public" checked> Make group public
+                </label>
+
+                <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+                    <button type="button" class="btn btn--secondary" onclick="closeCreateGroupModal()">Cancel</button>
+                    <button type="submit" class="btn btn--primary">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Group Created Confirmation Modal -->
+<div id="groupCreatedModal" class="modal-overlay" style="display: none;" onclick="closeGroupCreatedModal(event)">
+    <div class="modal-container" style="max-width: 480px;" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3>🎉 Group Created</h3>
+            <button class="modal-close-btn" onclick="closeGroupCreatedModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Your group <strong id="createdGroupName"></strong> is ready.</p>
+            <label for="createdInviteLink">Invite link</label>
+            <div class="invite-link-container">
+                <input type="text" id="createdInviteLink" class="invite-link-input" readonly value="">
+                <button type="button" class="btn btn--primary copy-btn" onclick="copyCreatedInviteLink()">📋 Copy</button>
+            </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+            <button type="button" class="btn btn--secondary" onclick="closeGroupCreatedModal()">Close</button>
+            <button type="button" class="btn btn--primary" onclick="goToCreatedGroup()">Open Group</button>
+        </div>
+    </div>
+</div>
+
 <!-- Edit Message Modal -->
 <div id="editMessageModal" class="edit-message-modal">
     <div class="edit-modal-content" onclick="event.stopPropagation()">
@@ -7301,6 +7354,108 @@ function showNotification(message, type) {
     } else {
         // Fallback notification system
         alert(message);
+    }
+}
+
+// Group creation helpers (kept lightweight for chat page use)
+let createdGroupId = null;
+
+function openCreateGroupModal() {
+    const modal = document.getElementById('createGroupModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCreateGroupModal(event) {
+    if (event && event.target && event.currentTarget && event.target !== event.currentTarget) {
+        return;
+    }
+    const modal = document.getElementById('createGroupModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    const form = document.getElementById('createGroupForm');
+    if (form) {
+        form.reset();
+    }
+}
+
+async function submitCreateGroupFromChat(event) {
+    if (event) event.preventDefault();
+
+    const name = document.getElementById('groupName')?.value.trim() || '';
+    const description = document.getElementById('groupDescription')?.value.trim() || '';
+    const maxParticipantsRaw = document.getElementById('maxParticipants')?.value;
+    const maxParticipants = parseInt(maxParticipantsRaw || '50', 10);
+    const isPublic = document.getElementById('isPublic')?.checked || false;
+
+    if (!name) {
+        showNotification('Group name is required', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/create-group/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                name,
+                description,
+                max_participants: isNaN(maxParticipants) ? 50 : maxParticipants,
+                is_public: isPublic
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            createdGroupId = data.group?.id;
+            document.getElementById('createdGroupName').textContent = data.group?.name || 'New Group';
+            document.getElementById('createdInviteLink').value = data.group?.invite_link || '';
+            closeCreateGroupModal();
+            const confirmation = document.getElementById('groupCreatedModal');
+            if (confirmation) {
+                confirmation.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        } else {
+            showNotification(`Failed to create group: ${data.error || 'Unknown error'}`, 'error');
+        }
+    } catch (err) {
+        console.error('Create group error:', err);
+        showNotification('Network error. Please try again.', 'error');
+    }
+}
+
+function closeGroupCreatedModal(event) {
+    if (event && event.target && event.currentTarget && event.target !== event.currentTarget) {
+        return;
+    }
+    const modal = document.getElementById('groupCreatedModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+}
+
+function copyCreatedInviteLink() {
+    const linkInput = document.getElementById('createdInviteLink');
+    if (!linkInput) return;
+    linkInput.select();
+    linkInput.setSelectionRange(0, 99999);
+    const copied = document.execCommand('copy');
+    showNotification(copied ? 'Invite link copied to clipboard!' : 'Copy failed, please copy manually.', copied ? 'success' : 'error');
+}
+
+function goToCreatedGroup() {
+    if (createdGroupId) {
+        window.location.href = `/chat/${createdGroupId}/`;
     }
 }
 

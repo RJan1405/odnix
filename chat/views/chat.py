@@ -133,6 +133,11 @@ def dashboard(request):
         tweets_data.append({
             'id': tweet.id,
             'content': tweet.content,
+            'content_type': getattr(tweet, 'content_type', 'text'),
+            'code_bundle': getattr(tweet, 'code_bundle', None),
+            'code_html': getattr(tweet, 'code_html', None),
+            'code_css': getattr(tweet, 'code_css', None),
+            'code_js': getattr(tweet, 'code_js', None),
             'user': tweet.user,
             'user_id': tweet.user.id,
             'username': tweet.user.username,
