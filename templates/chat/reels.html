@@ -637,10 +637,10 @@
 
     .report-modal-content {
         background: #1e1e1e;
-        border-radius: 16px 16px 0 0;
+        border-radius: 20px 20px 0 0;
         width: 100%;
         max-width: 450px; /* match omzo container */
-        max-height: 50dvh; /* half of screen/omzo height */
+        max-height: 70vh; /* match comments sheet height */
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -663,9 +663,30 @@
 
     .report-modal-body {
         padding: 16px 20px;
-        color: #fff;
+        background: #1e1e1e;
+        color: #e5e7eb;
         overflow-y: auto; /* scrollable content */
         flex: 1;
+        scrollbar-width: thin;
+        scrollbar-color: #3a3a3a #141414;
+    }
+
+    .report-modal-body::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    .report-modal-body::-webkit-scrollbar-track {
+        background: #141414;
+    }
+
+    .report-modal-body::-webkit-scrollbar-thumb {
+        background: #3a3a3a;
+        border-radius: 999px;
+        border: 2px solid #141414;
+    }
+
+    .report-modal-body::-webkit-scrollbar-thumb:hover {
+        background: #4a4a4a;
     }
 
     .report-reasons {
@@ -679,28 +700,41 @@
         display: flex;
         align-items: center;
         gap: 10px;
-        background: #2a2a2a;
+        background: #262626;
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 10px;
         padding: 10px 12px;
         cursor: pointer;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .report-reason-item:hover {
+        background: #2f2f2f;
+        border-color: rgba(255,255,255,0.18);
     }
 
     .report-description {
         width: 100%;
-        background: #2a2a2a;
-        border: 1px solid rgba(255,255,255,0.15);
+        background: #3a3a3a;
+        border: 1px solid rgba(255,255,255,0.12);
         border-radius: 10px;
         padding: 10px 12px;
-        color: #fff;
+        color: #e5e7eb;
         min-height: 70px;
         resize: vertical;
         outline: none;
+        transition: border-color 0.2s, background 0.2s;
+    }
+
+    .report-description:focus {
+        border-color: rgba(102, 126, 234, 0.5);
+        background: #444;
     }
 
     .report-modal-actions {
         padding: 16px 20px;
         border-top: 1px solid rgba(255,255,255,0.1);
+        background: #262626;
         display: flex;
         gap: 12px;
     }
@@ -716,8 +750,8 @@
     }
 
     .report-btn.cancel {
-        background: transparent;
-        border: 1px solid rgba(255,255,255,0.3);
+        background: #3a3a3a;
+        border: none;
         color: #fff;
     }
 
