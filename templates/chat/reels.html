@@ -69,7 +69,7 @@
         z-index: 15;
     }
 
-    .reel-video:paused ~ .reel-play-overlay {
+    .reel-video:paused~.reel-play-overlay {
         display: flex;
     }
 
@@ -257,10 +257,21 @@
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .reel-toast.success { border-left: 4px solid #4ade80; }
-    .reel-toast.error { border-left: 4px solid #f87171; }
-    .reel-toast.info { border-left: 4px solid #60a5fa; }
-    .reel-toast.uploading { border-left: 4px solid #fbbf24; }
+    .reel-toast.success {
+        border-left: 4px solid #4ade80;
+    }
+
+    .reel-toast.error {
+        border-left: 4px solid #f87171;
+    }
+
+    .reel-toast.info {
+        border-left: 4px solid #60a5fa;
+    }
+
+    .reel-toast.uploading {
+        border-left: 4px solid #fbbf24;
+    }
 
     .reel-toast-icon {
         width: 24px;
@@ -268,10 +279,21 @@
         flex-shrink: 0;
     }
 
-    .reel-toast.success .reel-toast-icon { color: #4ade80; }
-    .reel-toast.error .reel-toast-icon { color: #f87171; }
-    .reel-toast.info .reel-toast-icon { color: #60a5fa; }
-    .reel-toast.uploading .reel-toast-icon { color: #fbbf24; }
+    .reel-toast.success .reel-toast-icon {
+        color: #4ade80;
+    }
+
+    .reel-toast.error .reel-toast-icon {
+        color: #f87171;
+    }
+
+    .reel-toast.info .reel-toast-icon {
+        color: #60a5fa;
+    }
+
+    .reel-toast.uploading .reel-toast-icon {
+        color: #fbbf24;
+    }
 
     .reel-toast-content {
         flex: 1;
@@ -306,18 +328,41 @@
     }
 
     @keyframes toastSlideIn {
-        from { transform: translateY(-20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
+        from {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
     }
 
     @keyframes toastSlideOut {
-        from { transform: translateY(0); opacity: 1; }
-        to { transform: translateY(-20px); opacity: 0; }
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        to {
+            transform: translateY(-20px);
+            opacity: 0;
+        }
     }
 
     @keyframes progressPulse {
-        0%, 100% { width: 30%; margin-left: 0; }
-        50% { width: 60%; margin-left: 20%; }
+
+        0%,
+        100% {
+            width: 30%;
+            margin-left: 0;
+        }
+
+        50% {
+            width: 60%;
+            margin-left: 20%;
+        }
     }
 
     /* ===== Comments Modal ===== */
@@ -350,8 +395,13 @@
     }
 
     @keyframes slideUp {
-        from { transform: translateY(100%); }
-        to { transform: translateY(0); }
+        from {
+            transform: translateY(100%);
+        }
+
+        to {
+            transform: translateY(0);
+        }
     }
 
     .reel-comments-header {
@@ -517,8 +567,15 @@
     }
 
     @keyframes modalZoomIn {
-        from { transform: scale(0.9); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
+        from {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
     }
 
     .caption-modal-header {
@@ -628,19 +685,24 @@
         bottom: 0;
         background: rgba(0, 0, 0, 0.5);
         z-index: 3500;
-        align-items: flex-end; /* show as bottom sheet */
+        align-items: flex-end;
+        /* show as bottom sheet */
         justify-content: center;
         padding: 20px;
     }
 
-    .report-modal.show { display: flex; }
+    .report-modal.show {
+        display: flex;
+    }
 
     .report-modal-content {
         background: #1e1e1e;
         border-radius: 20px 20px 0 0;
         width: 100%;
-        max-width: 450px; /* match omzo container */
-        max-height: 70vh; /* match comments sheet height */
+        max-width: 450px;
+        /* match omzo container */
+        max-height: 70vh;
+        /* match comments sheet height */
         overflow: hidden;
         display: flex;
         flex-direction: column;
@@ -648,7 +710,7 @@
 
     .report-modal-header {
         padding: 16px 20px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -665,7 +727,8 @@
         padding: 16px 20px;
         background: #1e1e1e;
         color: #e5e7eb;
-        overflow-y: auto; /* scrollable content */
+        overflow-y: auto;
+        /* scrollable content */
         flex: 1;
         scrollbar-width: thin;
         scrollbar-color: #3a3a3a #141414;
@@ -701,7 +764,7 @@
         align-items: center;
         gap: 10px;
         background: #262626;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         border-radius: 10px;
         padding: 10px 12px;
         cursor: pointer;
@@ -710,13 +773,13 @@
 
     .report-reason-item:hover {
         background: #2f2f2f;
-        border-color: rgba(255,255,255,0.18);
+        border-color: rgba(255, 255, 255, 0.18);
     }
 
     .report-description {
         width: 100%;
         background: #3a3a3a;
-        border: 1px solid rgba(255,255,255,0.12);
+        border: 1px solid rgba(255, 255, 255, 0.12);
         border-radius: 10px;
         padding: 10px 12px;
         color: #e5e7eb;
@@ -733,7 +796,7 @@
 
     .report-modal-actions {
         padding: 16px 20px;
-        border-top: 1px solid rgba(255,255,255,0.1);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
         background: #262626;
         display: flex;
         gap: 12px;
@@ -770,14 +833,13 @@
     <div class="omzo-container" id="omzoContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}" onclick="togglePlay(this)"></video>
-            <div class="reel-play-overlay" onclick="this.style.display='none'; togglePlay(this.closest('.reel-item').querySelector('video'))">
-                <i data-lucide="play-circle" style="width: 80px; height: 80px; color: white; opacity: 0.8;"></i>
-            </div>
+            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}"
+                onclick="toggleReelPlay(this)"></video>
 
             <div class="reel-actions">
-                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false" title="Toggle sound">
-                    <i data-lucide="volume-2"></i>
+                <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false"
+                    title="Toggle sound">
+                    <i data-lucide="volume-x"></i>
                 </button>
                 <button class="action-btn" onclick="toggleReelLike({{ reel.id }}, this)" title="Like">
                     <i data-lucide="heart" class="{% if reel.is_liked %}liked-heart{% endif %}"></i>
@@ -876,7 +938,8 @@
                 <!-- Comments will be loaded here -->
             </div>
             <div class="reel-comments-input-container">
-                <input type="text" class="reel-comments-input" id="reelCommentInput" placeholder="Add a comment..." onkeydown="if(event.key === 'Enter') submitReelComment()">
+                <input type="text" class="reel-comments-input" id="reelCommentInput" placeholder="Add a comment..."
+                    onkeydown="if(event.key === 'Enter') submitReelComment()">
                 <button class="reel-comments-submit" onclick="submitReelComment()">Post</button>
             </div>
         </div>
@@ -895,7 +958,8 @@
                 <div class="caption-preview">
                     <video id="captionPreviewVideo" muted loop></video>
                 </div>
-                <textarea class="caption-input" id="captionInput" placeholder="Write a caption for your reel..." maxlength="500"></textarea>
+                <textarea class="caption-input" id="captionInput" placeholder="Write a caption for your reel..."
+                    maxlength="500"></textarea>
             </div>
             <div class="caption-modal-actions">
                 <button class="caption-modal-btn cancel" onclick="closeCaptionModal()">Cancel</button>
@@ -909,23 +973,33 @@
         <div class="report-modal-content" onclick="event.stopPropagation()">
             <div class="report-modal-header">
                 <h3>Report Omzo</h3>
-                <button class="caption-modal-close" onclick="closeReportModal()" style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;">
+                <button class="caption-modal-close" onclick="closeReportModal()"
+                    style="background:none;border:none;color:#fff;cursor:pointer;padding:8px;">
                     <i data-lucide="x" style="width:20px;height:20px;"></i>
                 </button>
             </div>
             <div class="report-modal-body">
                 <div style="font-size:13px;opacity:.8;margin-bottom:10px;">Select a reason:</div>
                 <div class="report-reasons">
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="spam"> <span>Spam</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="inappropriate"> <span>Inappropriate Content</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="harassment"> <span>Harassment or Bullying</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="violence"> <span>Violence or Threats</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="hate_speech"> <span>Hate Speech</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="false_info"> <span>False Information</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="copyright"> <span>Copyright Infringement</span></label>
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="other"> <span>Other</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="copyright">
+                        <span>Copyright Infringement</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="spam">
+                        <span>Spam</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="inappropriate">
+                        <span>Inappropriate Content</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="harassment">
+                        <span>Harassment or Bullying</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="violence">
+                        <span>Violence or Threats</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="hate_speech">
+                        <span>Hate Speech</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="false_info">
+                        <span>False Information</span></label>
+                    <label class="report-reason-item"><input type="radio" name="reportReason" value="other">
+                        <span>Other</span></label>
                 </div>
-                <textarea id="reportDescription" class="report-description" placeholder="Optional details (helps our review team)"></textarea>
+                <textarea id="reportDescription" class="report-description"
+                    placeholder="Optional details (helps our review team)"></textarea>
             </div>
             <div class="report-modal-actions">
                 <button class="report-btn cancel" onclick="closeReportModal()">Cancel</button>
@@ -936,23 +1010,129 @@
 </div>
 
 <script>
-    // Global state - initialize from user preference (localStorage)
-    let globalMuted = localStorage.getItem('omzoMuted') === 'true' ? true : false;
+    // Global state
     let currentReelId = null;
     let pendingReelFile = null;
+
+    // --- NEW REELS LOGIC START ---
+    // Optimistic: Default to TRUE (Sound On) if no preference is saved.
+    // This attempts to play sound immediately. If browser blocks it, our fail-safe handles it.
+    let storedSoundObj = localStorage.getItem('omzo_sound_unlocked');
+    let soundUnlocked = storedSoundObj === null ? true : (storedSoundObj === 'true');
+
+    // Safe autoplay
+    function autoPlay(video) {
+        // Try to respect preference
+        video.muted = !soundUnlocked;
+
+        var playPromise = video.play();
+        if (playPromise !== undefined) {
+            playPromise.catch(error => {
+                // Browser blocked audio autoplay.
+                // We MUST fall back to muted to allow playback.
+                if (!video.muted) {
+                    video.muted = true;
+                    video.play().then(() => {
+                        // Inform user ONLY if they expected sound (soundUnlocked is true)
+                        if (soundUnlocked) {
+                            showReelToast('Tap to Unmute', 'Browser blocked auto-sound', 'info', false);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    // Single source of truth for Icon Sync
+    // When the browser or our code changes video.muted, this updates the icon.
+    function syncMuteIcon(video) {
+        const btn = video.closest('.reel-item').querySelector('.mute-btn');
+        if (!btn) return;
+        const icon = btn.querySelector('i') || btn.querySelector('svg');
+        if (icon) {
+            icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+
+    // IntersectionObserver for reels
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            const video = entry.target.querySelector('video');
+            if (!video) return;
+
+            if (entry.isIntersecting) {
+                // Attach sync listener
+                video.onvolumechange = () => syncMuteIcon(video);
+
+                // Trigger Autoplay
+                autoPlay(video);
+
+                // Initial sync
+                syncMuteIcon(video);
+
+            } else {
+                video.pause();
+                // We DO NOT reset soundUnlocked here. If user left sound on, it stays on for the next reel.
+            }
+        });
+    }, { threshold: 0.6 });
+
+    // Observe all reels
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.reel-item').forEach(item => {
+            observer.observe(item);
+        });
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+
+    // Play/Pause on Tap
+    function toggleReelPlay(video) {
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+
+    // Mute Button Logic
+    function toggleReelMute(btn, e) {
+        e.stopPropagation();
+        const video = btn.closest('.reel-item').querySelector('video');
+
+        video.muted = !video.muted;
+
+        // UPDATE GLOBAL SESSION STATE
+        // If user explicitly unmutes one video, they likely want the next ones to have sound too.
+        // If they explicitly mute, they likely want silence.
+        soundUnlocked = !video.muted;
+        localStorage.setItem('omzo_sound_unlocked', soundUnlocked);
+
+        const icon = btn.querySelector('i') || btn.querySelector('svg');
+        if (icon) {
+            icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
+        }
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+    // --- NEW REELS LOGIC END ---
 
     // ===== Toast Notifications =====
     function showReelToast(title, message, type = 'info', persistent = false) {
         const container = document.getElementById('reelToastContainer');
         const toastId = 'toast-' + Date.now();
-        
+
         const iconMap = {
             'success': 'check-circle',
             'error': 'alert-circle',
             'info': 'info',
             'uploading': 'upload'
         };
-        
+
         const toast = document.createElement('div');
         toast.className = `reel-toast ${type}`;
         toast.id = toastId;
@@ -964,19 +1144,19 @@
                 ${type === 'uploading' ? '<div class="reel-toast-progress"><div class="reel-toast-progress-bar"></div></div>' : ''}
             </div>
         `;
-        
+
         container.appendChild(toast);
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
         if (!persistent) {
             setTimeout(() => {
                 removeToast(toastId);
             }, 4000);
         }
-        
+
         return toastId;
     }
 
@@ -991,34 +1171,34 @@
     // ===== Reel Upload Handling =====
     function handleReelUpload(input) {
         if (!input.files || !input.files[0]) return;
-        
+
         const file = input.files[0];
-        
+
         // Validate file size (100MB max)
         if (file.size > 100 * 1024 * 1024) {
             showReelToast('File Too Large', 'Please upload a video under 100MB.', 'error');
             input.value = '';
             return;
         }
-        
+
         // Validate video duration
         const video = document.createElement('video');
         video.preload = 'metadata';
-        
-        video.onloadedmetadata = function() {
+
+        video.onloadedmetadata = function () {
             URL.revokeObjectURL(video.src);
-            
+
             if (video.duration > 120) {
                 showReelToast('Video Too Long', 'Omzo must be 2 minutes or less.', 'error');
                 input.value = '';
                 return;
             }
-            
+
             // Store the file and show caption modal
             pendingReelFile = file;
             openCaptionModal(file);
         };
-        
+
         video.src = URL.createObjectURL(file);
     }
 
@@ -1026,21 +1206,21 @@
         const modal = document.getElementById('captionModal');
         const preview = document.getElementById('captionPreviewVideo');
         const captionInput = document.getElementById('captionInput');
-        
+
         // Set preview
         preview.src = URL.createObjectURL(file);
         preview.play();
-        
+
         // Clear previous caption
         captionInput.value = '';
-        
+
         // Show modal
         modal.classList.add('show');
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
         // Focus on caption input
         setTimeout(() => captionInput.focus(), 100);
     }
@@ -1048,60 +1228,60 @@
     function closeCaptionModal() {
         const modal = document.getElementById('captionModal');
         const preview = document.getElementById('captionPreviewVideo');
-        
+
         modal.classList.remove('show');
         preview.pause();
         preview.src = '';
         pendingReelFile = null;
-        
+
         // Reset file input
         document.getElementById('uploadReelInput').value = '';
     }
 
     function submitReel() {
         if (!pendingReelFile) return;
-        
+
         const caption = document.getElementById('captionInput').value.trim();
-        
+
         // Close caption modal
         closeCaptionModal();
-        
+
         // Show uploading toast
         const toastId = showReelToast('Uploading Reel', 'Please wait while your reel is being processed...', 'uploading', true);
-        
+
         const formData = new FormData();
         formData.append('video', pendingReelFile);
         formData.append('caption', caption);
-        
+
         fetch('/chat/api/reels/upload/', {
             method: 'POST',
             body: formData,
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
-        .then(r => r.json())
-        .then(data => {
-            removeToast(toastId);
-            
-            if (data.success) {
-                showReelToast('Reel Posted!', 'Your reel has been shared successfully.', 'success');
-                
-                // Reload after a short delay to show the success message
-                setTimeout(() => {
-                    if (window.location.pathname.includes('/reels')) {
-                        location.reload();
-                    } else {
-                        window.location.href = '{% url "reels" %}';
-                    }
-                }, 1500);
-            } else {
-                showReelToast('Upload Failed', data.error || 'Something went wrong. Please try again.', 'error');
-            }
-        })
-        .catch(err => {
-            removeToast(toastId);
-            console.error(err);
-            showReelToast('Upload Failed', 'Network error. Please check your connection.', 'error');
-        });
+            .then(r => r.json())
+            .then(data => {
+                removeToast(toastId);
+
+                if (data.success) {
+                    showReelToast('Reel Posted!', 'Your reel has been shared successfully.', 'success');
+
+                    // Reload after a short delay to show the success message
+                    setTimeout(() => {
+                        if (window.location.pathname.includes('/reels')) {
+                            location.reload();
+                        } else {
+                            window.location.href = '{% url "reels" %}';
+                        }
+                    }, 1500);
+                } else {
+                    showReelToast('Upload Failed', data.error || 'Something went wrong. Please try again.', 'error');
+                }
+            })
+            .catch(err => {
+                removeToast(toastId);
+                console.error(err);
+                showReelToast('Upload Failed', 'Network error. Please check your connection.', 'error');
+            });
     }
 
     // ===== Comments Functionality =====
@@ -1109,56 +1289,56 @@
         currentReelId = reelId;
         const modal = document.getElementById('reelCommentsModal');
         const list = document.getElementById('reelCommentsList');
-        
+
         // Show modal
         modal.classList.add('show');
-        
+
         // Show loading state
         list.innerHTML = '<div class="reel-comments-empty"><div style="color: rgba(255,255,255,0.6);">Loading comments...</div></div>';
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
         // Fetch comments
         fetch(`/chat/api/reels/${reelId}/comments/`, {
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.comments) {
-                renderComments(data.comments);
-            } else {
-                list.innerHTML = `
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.comments) {
+                    renderComments(data.comments);
+                } else {
+                    list.innerHTML = `
                     <div class="reel-comments-empty">
                         <i data-lucide="message-circle"></i>
                         <p>No comments yet</p>
                         <p style="font-size: 13px; opacity: 0.7;">Be the first to comment!</p>
                     </div>
                 `;
-            }
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            list.innerHTML = `
+                }
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                list.innerHTML = `
                 <div class="reel-comments-empty">
                     <i data-lucide="message-circle"></i>
                     <p>No comments yet</p>
                     <p style="font-size: 13px; opacity: 0.7;">Be the first to comment!</p>
                 </div>
             `;
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
     }
 
     function renderComments(comments) {
         const list = document.getElementById('reelCommentsList');
-        
+
         if (!comments || comments.length === 0) {
             list.innerHTML = `
                 <div class="reel-comments-empty">
@@ -1169,7 +1349,7 @@
             `;
             return;
         }
-        
+
         list.innerHTML = comments.map(c => `
             <div class="reel-comment-item">
                 <img src="${c.user.avatar || 'https://ui-avatars.com/api/?name=' + c.user.username}" class="reel-comment-avatar">
@@ -1192,16 +1372,16 @@
 
     function submitReelComment() {
         if (!currentReelId) return;
-        
+
         const input = document.getElementById('reelCommentInput');
         const text = input.value.trim();
-        
+
         if (!text) return;
-        
+
         // Disable submit button
         const submitBtn = document.querySelector('.reel-comments-submit');
         submitBtn.disabled = true;
-        
+
         fetch('/chat/api/reels/comment/', {
             method: 'POST',
             body: JSON.stringify({ reel_id: currentReelId, content: text }),
@@ -1210,82 +1390,38 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             }
         })
-        .then(r => r.json())
-        .then(data => {
-            submitBtn.disabled = false;
-            
-            if (data.success) {
-                input.value = '';
-                
-                // Update comment count on the reel
-                const countEl = document.querySelector(`.comment-count[data-reel-id="${currentReelId}"]`);
-                if (countEl && data.comments_count !== undefined) {
-                    countEl.textContent = data.comments_count;
+            .then(r => r.json())
+            .then(data => {
+                submitBtn.disabled = false;
+
+                if (data.success) {
+                    input.value = '';
+
+                    // Update comment count on the reel
+                    const countEl = document.querySelector(`.comment-count[data-reel-id="${currentReelId}"]`);
+                    if (countEl && data.comments_count !== undefined) {
+                        countEl.textContent = data.comments_count;
+                    }
+
+                    // Refresh comments
+                    openReelComments(currentReelId);
+
+                    showReelToast('Comment Posted', 'Your comment has been added.', 'success');
+                } else {
+                    showReelToast('Error', data.error || 'Failed to post comment.', 'error');
                 }
-                
-                // Refresh comments
-                openReelComments(currentReelId);
-                
-                showReelToast('Comment Posted', 'Your comment has been added.', 'success');
-            } else {
-                showReelToast('Error', data.error || 'Failed to post comment.', 'error');
-            }
-        })
-        .catch(err => {
-            submitBtn.disabled = false;
-            console.error(err);
-            showReelToast('Error', 'Failed to post comment. Please try again.', 'error');
-        });
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                console.error(err);
+                showReelToast('Error', 'Failed to post comment. Please try again.', 'error');
+            });
     }
 
     // ===== Mute/Sound Controls =====
-    function toggleGlobalMute(btn) {
-        globalMuted = !globalMuted;
-        localStorage.setItem('omzoMuted', globalMuted);
-        const icon = btn.querySelector('i') || btn.querySelector('svg');
-        
-        // Update all videos
-        document.querySelectorAll('.reel-video').forEach(video => {
-            video.muted = globalMuted;
-        });
 
-        // Update icon
-        if (icon) {
-            icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
-    }
 
-    function toggleReelMute(btn, event) {
-        event.stopPropagation();
-        const reel = btn.closest('.reel-item');
-        const video = reel.querySelector('video');
-        const icon = btn.querySelector('i') || btn.querySelector('svg');
-        
-        // Toggle mute state for this specific reel
-        video.muted = !video.muted;
-        btn.setAttribute('data-muted', video.muted);
-        
-        // Update icon
-        if (icon) {
-            icon.setAttribute('data-lucide', video.muted ? 'volume-x' : 'volume-2');
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
-    }
 
-    function togglePlay(video) {
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
-        }
-        // Use global mute state when user interacts
-        video.muted = globalMuted;
-    }
 
     // ===== Like Functionality =====
     function toggleReelLike(reelId, btn) {
@@ -1297,24 +1433,24 @@
                 'X-CSRFToken': '{{ csrf_token }}'
             }
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                const icon = btn.querySelector('svg') || btn.querySelector('i');
-                const count = btn.querySelector('.like-count');
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const icon = btn.querySelector('svg') || btn.querySelector('i');
+                    const count = btn.querySelector('.like-count');
 
-                if (data.is_liked) {
-                    icon.style.fill = '#ff3040';
-                    icon.style.color = '#ff3040';
-                    icon.classList.add('liked-heart');
-                } else {
-                    icon.style.fill = 'none';
-                    icon.style.color = 'white';
-                    icon.classList.remove('liked-heart');
+                    if (data.is_liked) {
+                        icon.style.fill = '#ff3040';
+                        icon.style.color = '#ff3040';
+                        icon.classList.add('liked-heart');
+                    } else {
+                        icon.style.fill = 'none';
+                        icon.style.color = 'white';
+                        icon.classList.remove('liked-heart');
+                    }
+                    count.textContent = data.likes_count;
                 }
-                count.textContent = data.likes_count;
-            }
-        });
+            });
     }
 
     // ===== Share Functionality =====
@@ -1337,90 +1473,7 @@
     }
 
     // ===== Auto-play on scroll =====
-    document.addEventListener('DOMContentLoaded', () => {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
 
-        function safePlay(video) {
-            if (!video) return;
-            
-            video.muted = true;
-            
-            const playPromise = video.play();
-            if (playPromise !== undefined) {
-                playPromise.then(() => {
-                    setTimeout(() => {
-                        if (!globalMuted) {
-                            video.muted = false;
-                        }
-                    }, 50);
-                }).catch(err => {
-                    console.log("Autoplay failed:", err);
-                });
-            }
-        }
-
-        let observerOptions = {
-            threshold: 0.6
-        };
-
-        let observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                let video = entry.target.querySelector('video');
-                if (!video) return;
-
-                if (entry.isIntersecting) {
-                    video.currentTime = 0;
-                    safePlay(video);
-                } else {
-                    video.pause();
-                }
-            });
-        }, observerOptions);
-
-        const reelItems = document.querySelectorAll('.reel-item');
-        reelItems.forEach(item => {
-            const video = item.querySelector('video');
-            const overlay = item.querySelector('.reel-play-overlay');
-            
-            video.addEventListener('play', () => {
-                if (overlay) overlay.style.display = 'none';
-            });
-            
-            video.addEventListener('pause', () => {
-                if (overlay && video.currentTime > 0 && !video.ended) {
-                    overlay.style.display = 'flex';
-                }
-            });
-            
-            observer.observe(item);
-        });
-        
-        // Force auto-play first reel - try immediately and on loadedmetadata
-        const firstReel = document.querySelector('.reel-item');
-        if (firstReel) {
-            const firstVideo = firstReel.querySelector('video');
-            if (firstVideo) {
-                // Try to play immediately
-                safePlay(firstVideo);
-                
-                // Also try when metadata loads
-                firstVideo.addEventListener('loadedmetadata', () => {
-                    if (firstVideo.paused) {
-                        safePlay(firstVideo);
-                    }
-                }, { once: true });
-                
-                // Fallback: try again after 500ms
-                setTimeout(() => {
-                    if (firstVideo.paused) {
-                        safePlay(firstVideo);
-                    }
-                }, 500);
-            }
-        }
-    });
 
     // ===== Error Modal (legacy, keeping for compatibility) =====
     function closeErrorModal() {
@@ -1463,47 +1516,22 @@
             },
             body: JSON.stringify({ reel_id: currentReelId, reason: reason, description: description })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
-                closeReportModal();
-            } else {
-                showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            showReelToast('Error', 'Failed to submit report.', 'error');
-        });
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
+                    closeReportModal();
+                } else {
+                    showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showReelToast('Error', 'Failed to submit report.', 'error');
+            });
     }
 
     // ===== Initialize Omzo =====
-    function initializeOmzo() {
-        // Update all videos and mute buttons to match global state
-        document.querySelectorAll('.reel-video').forEach(video => {
-            video.muted = globalMuted;
-        });
-        
-        document.querySelectorAll('.mute-btn').forEach(btn => {
-            btn.setAttribute('data-muted', globalMuted);
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
-                // Force icon update
-                icon.className = ''; // Reset classes
-                icon.setAttribute('data-lucide', globalMuted ? 'volume-x' : 'volume-2');
-            }
-        });
-        
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
 
-    // Initialize when page loads
-    document.addEventListener('DOMContentLoaded', initializeOmzo);
-    // Also run after a small delay to ensure Lucide is ready
-    setTimeout(initializeOmzo, 100);
 </script>
 {% endblock %}
