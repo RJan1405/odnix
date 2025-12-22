@@ -1,13 +1,13 @@
 {% extends 'chat/base.html' %}
 {% load static %}
+{% load tweet_extras %}
 
-{% block title %}Discover Groups - Odnix{% endblock %}
+{% block title %}Explore - Odnix{% endblock %}
 
 {% block extra_head %}
 <meta name="user-id" content="{{ user.id }}">
 <meta name="csrf-token" content="{{ csrf_token }}">
 <style>
-    /* Hide legacy sidebar on this page */
     .sidebar-enhanced {
         display: none !important;
     }
@@ -16,7 +16,6 @@
         display: none !important;
     }
 
-    /* Adjust main container for new navbar */
     .ig-discover-container {
         padding-top: 90px;
         padding-bottom: 100px;
@@ -25,28 +24,171 @@
     }
 
     .ig-discover-content {
-        max-width: 935px;
+        max-width: 1100px;
         margin: 0 auto;
         padding: 0 var(--spacing-lg);
     }
 
     .ig-discover-header {
         margin-bottom: var(--spacing-xl);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
     .ig-discover-title {
         font-size: 28px;
         font-weight: 700;
         color: var(--ig-text-primary);
-        margin-bottom: var(--spacing-sm);
-        background: var(--odnix-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        margin: 0;
     }
 
     .ig-discover-subtitle {
-        font-size: 14px;
+        color: var(--ig-text-secondary);
+        margin: 0;
+    }
+
+    .ig-explore-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 300px);
+        gap: var(--spacing-lg);
+        justify-content: start;
+    }
+
+    .explore-card {
+        background: var(--ig-surface);
+        border: 1px solid var(--ig-border);
+        border-radius: 16px;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 1;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .explore-card:hover {
+        opacity: 0.9;
+    }
+
+    .explore-card-media-container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+    }
+
+    .explore-card-media {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .explore-card-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.3) 100%);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .explore-card:hover .explore-card-overlay {
+        opacity: 1;
+    }
+
+    .explore-card-tag {
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .explore-card-caption {
+        color: white;
+        font-size: 12px;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .explore-reel-play-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.3);
+        backdrop-filter: blur(10px);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .explore-card:hover .explore-reel-play-icon {
+        opacity: 1;
+    }
+
+    /* Hide people and groups by default */
+    .explore-card[data-type="person"]:not(.search-active),
+    .explore-card[data-type="group"]:not(.search-active) {
+        display: none;
+    }
+
+    .explore-reel-play-icon i,
+    .explore-reel-play-icon svg {
+        width: 24px;
+        height: 24px;
+        color: white;
+    }
+
+    .ig-empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--ig-text-secondary);
+        border: 1px solid var(--ig-border);
+        border-radius: 16px;
+        background: var(--ig-surface);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .ig-empty-state h3 {
+        margin: 0;
+        color: var(--ig-text-primary);
+    }
+
+    .ig-empty-state p {
+        margin: 0;
+    }
+
+    .ig-empty-state i,
+    .ig-empty-state svg {
+        width: 28px;
+        height: 28px;
         color: var(--ig-text-secondary);
     }
 
@@ -54,483 +196,295 @@
         display: flex;
         align-items: center;
         gap: 12px;
-        margin-top: var(--spacing-lg);
-        padding: 14px 20px;
-        background: var(--ig-bg);
+        background: var(--ig-input-bg);
         border: 1px solid var(--ig-border);
-        border-radius: 16px;
-        transition: all 0.3s ease;
+        border-radius: 24px;
+        padding: 10px 16px;
+        margin-top: 16px;
     }
 
-    .ig-discover-search:focus-within {
-        border-color: var(--color-primary);
-        box-shadow: 0 0 0 4px var(--odnix-glow);
-        background: var(--ig-surface);
-    }
-
-    .ig-discover-search .search-icon {
-        width: 20px;
-        height: 20px;
+    .ig-discover-search i,
+    .ig-discover-search svg {
+        width: 18px;
+        height: 18px;
         color: var(--ig-text-secondary);
         flex-shrink: 0;
     }
 
     .ig-discover-search input {
         flex: 1;
-        border: none;
         background: none;
+        border: none;
         outline: none;
-        font-size: 15px;
         color: var(--ig-text-primary);
+        font-size: 14px;
+        font-family: inherit;
     }
 
     .ig-discover-search input::placeholder {
         color: var(--ig-text-secondary);
     }
 
-    .ig-discover-tabs {
-        display: flex;
-        gap: var(--spacing-lg);
-        margin-bottom: var(--spacing-xl);
-        border-bottom: 1px solid var(--ig-border);
-    }
-
-    .ig-discover-tab {
-        padding: var(--spacing-md) 0;
-        font-size: 14px;
-        font-weight: 600;
-        color: var(--ig-text-secondary);
-        background: none;
-        border: none;
-        cursor: pointer;
-        border-bottom: 2px solid transparent;
-        margin-bottom: -1px;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .ig-discover-tab:hover,
-    .ig-discover-tab.active {
-        color: var(--ig-text-primary);
-        border-bottom-color: var(--color-primary);
-    }
-
-    .ig-discover-tab .tab-count {
-        background: var(--ig-surface-hover);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-
-    .ig-discover-tab.active .tab-count {
-        background: var(--color-primary);
-        color: white;
-    }
-
-    .ig-discover-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: var(--spacing-lg);
-    }
-
-    .ig-group-card {
-        background: var(--ig-surface);
-        border: 1px solid var(--ig-border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        transition: box-shadow 0.3s ease, border-color 0.3s ease;
-        position: relative;
-    }
-
-    .ig-group-card:hover {
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        border-color: rgba(102, 126, 234, 0.3);
-    }
-
-    .ig-group-banner {
-        height: 80px;
-        background: var(--odnix-gradient);
-        position: relative;
-    }
-
-    .ig-group-avatar {
-        position: absolute;
-        bottom: -32px;
-        left: 50%;
-        margin-left: -32px;
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: 4px solid var(--ig-surface);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        z-index: 1;
-    }
-
-    .ig-group-avatar svg,
-    .ig-group-avatar i {
-        width: 28px;
-        height: 28px;
-        color: white !important;
-    }
-
-    .ig-group-info {
-        padding: 45px var(--spacing-lg) var(--spacing-lg);
+    .ig-search-no-results {
         text-align: center;
-        position: relative;
-        z-index: 0;
-    }
-
-    padding: 45px var(--spacing-lg) var(--spacing-lg);
-    text-align: center;
-    }
-
-    .ig-group-name {
-        font-size: 18px;
-        font-weight: 700;
-        color: var(--ig-text-primary);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .ig-group-desc {
-        font-size: 14px;
-        color: var(--ig-text-secondary);
-        margin-bottom: var(--spacing-md);
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        min-height: 40px;
-    }
-
-    .ig-group-meta {
-        display: flex;
-        justify-content: center;
-        gap: var(--spacing-lg);
-        font-size: 12px;
-        color: var(--ig-text-secondary);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .ig-group-meta span {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-    }
-
-    .ig-group-meta svg {
-        width: 14px;
-        height: 14px;
-    }
-
-    .ig-group-action {
-        width: 100%;
-        padding: 12px var(--spacing-lg);
-        border-radius: var(--radius-md);
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: var(--odnix-gradient);
-        color: white;
-        border: none;
-        text-decoration: none;
-        display: inline-block;
-        text-align: center;
-    }
-
-    .ig-group-action:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-
-    .ig-group-action.joined {
-        background: var(--ig-surface-hover);
-        color: var(--ig-text-primary);
-        border: 1px solid var(--ig-border);
-    }
-
-    .ig-group-action.joined:hover {
-        background: var(--ig-surface);
-        box-shadow: none;
-    }
-
-    /* Users section */
-    .ig-users-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: var(--spacing-lg);
-    }
-
-    .ig-user-card {
-        background: var(--ig-surface);
-        border: 1px solid var(--ig-border);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-lg);
-        text-align: center;
-        text-decoration: none;
-        color: inherit;
-        transition: all 0.2s;
-    }
-
-    .ig-user-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        border-color: var(--color-primary);
-    }
-
-    .ig-user-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin: 0 auto var(--spacing-md);
-        border: 3px solid transparent;
-        background: linear-gradient(var(--ig-surface), var(--ig-surface)) padding-box,
-            var(--odnix-gradient) border-box;
-    }
-
-    .ig-user-avatar-placeholder {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        background: var(--odnix-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto var(--spacing-md);
-        color: white;
-        font-size: 28px;
-        font-weight: 600;
-    }
-
-    .ig-user-name {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--ig-text-primary);
-        margin-bottom: 4px;
-    }
-
-    .ig-user-username {
-        font-size: 14px;
-        color: var(--ig-text-secondary);
-        margin-bottom: var(--spacing-md);
-    }
-
-    .ig-user-follow-btn {
-        padding: 8px 16px;
-        border-radius: var(--radius-md);
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        background: var(--odnix-gradient);
-        color: white;
-        border: none;
-    }
-
-    .ig-user-follow-btn:hover {
-        transform: scale(1.05);
-    }
-
-    .ig-user-follow-btn.following {
-        background: var(--ig-surface-hover);
-        color: var(--ig-text-primary);
-        border: 1px solid var(--ig-border);
-    }
-
-    /* Empty state */
-    .ig-empty-state {
-        grid-column: 1/-1;
-        text-align: center;
-        padding: 60px 20px;
+        padding: 40px 20px;
         color: var(--ig-text-secondary);
     }
 
-    .ig-empty-state svg {
-        width: 64px;
-        height: 64px;
-        margin-bottom: var(--spacing-lg);
+    .ig-search-no-results i,
+    .ig-search-no-results svg {
+        width: 40px;
+        height: 40px;
         opacity: 0.5;
+        margin-bottom: 12px;
     }
 
-    .ig-empty-state h3 {
-        font-size: 20px;
-        font-weight: 600;
-        color: var(--ig-text-primary);
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .ig-empty-state p {
-        font-size: 14px;
-        margin-bottom: var(--spacing-lg);
-    }
-
-    /* Modal Overlay */
-    .ig-modal-overlay {
+    /* Post Modal Styles */
+    .post-modal-overlay {
+        display: none;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.65);
-        z-index: 2000;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .post-modal-overlay.show {
+        display: flex;
+    }
+
+    .post-modal-content {
+        background: var(--ig-surface);
+        border-radius: 16px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow: hidden;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-modal-close {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: var(--ig-surface-hover);
+        border: 1px solid var(--ig-border);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
         display: flex;
         align-items: center;
         justify-content: center;
-        backdrop-filter: blur(4px);
+        cursor: pointer;
+        z-index: 10;
+        transition: background 0.2s;
     }
 
-    .ig-modal {
-        background: var(--ig-surface);
-        border-radius: 16px;
-        width: 90%;
-        max-width: 450px;
+    .post-modal-close:hover {
+        background: var(--ig-bg);
+    }
+
+    .post-modal-close i,
+    .post-modal-close svg {
+        width: 20px;
+        height: 20px;
+        color: var(--ig-text-primary);
+    }
+
+    .post-modal-body {
+        padding: 0;
+        display: flex;
+        flex-direction: column;
         max-height: 90vh;
-        overflow: hidden;
-        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
     }
 
-    /* ===== RESPONSIVE STYLES ===== */
-    @media (max-width: 1024px) {
+    .post-modal-image-section {
+        flex-shrink: 0;
+        background: #000;
+    }
 
-        .ig-discover-grid,
-        .ig-users-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
+    .post-modal-info {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+    }
+
+    .post-modal-actions {
+        flex-shrink: 0;
+        padding: 12px 16px;
+        border-top: 1px solid var(--ig-border);
+        display: flex;
+        gap: 0;
+    }
+
+    .post-modal-action-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 12px;
+        background: none;
+        border: none;
+        color: var(--ig-text-primary);
+        cursor: pointer;
+        font-size: 13px;
+        transition: background 0.2s;
+    }
+
+    .post-modal-action-btn:hover {
+        background: var(--ig-surface-hover);
+    }
+
+    .post-modal-action-btn.liked {
+        color: #e63946;
+    }
+
+    .post-modal-comments-section {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        border-top: 1px solid var(--ig-border);
+        max-height: 300px;
+    }
+
+    .post-modal-comment-item {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--ig-border);
+    }
+
+    .post-modal-comment-item:last-child {
+        border-bottom: none;
+    }
+
+    .post-modal-comment-input {
+        flex-shrink: 0;
+        padding: 12px 16px;
+        border-top: 1px solid var(--ig-border);
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .post-modal-comment-input input {
+        flex: 1;
+        background: var(--ig-bg);
+        border: 1px solid var(--ig-border);
+        border-radius: 20px;
+        padding: 8px 16px;
+        color: var(--ig-text-primary);
+        font-size: 13px;
+        outline: none;
+    }
+
+    .post-modal-comment-input input::placeholder {
+        color: var(--ig-text-secondary);
+    }
+
+    .post-modal-comment-input button {
+        background: none;
+        border: none;
+        color: var(--ig-link);
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        padding: 8px 12px;
+    }
+
+    .post-modal-comment-input button:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
+
+
+    .post-modal-header {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--ig-border);
+    }
+
+    .post-modal-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .post-modal-user-info {
+        flex: 1;
+    }
+
+    .post-modal-username {
+        font-weight: 700;
+        color: var(--ig-text-primary);
+        font-size: 14px;
+    }
+
+    .post-modal-time {
+        color: var(--ig-text-secondary);
+        font-size: 12px;
+    }
+
+    .post-modal-image {
+        width: 100%;
+        border-radius: 12px;
+        margin-bottom: 16px;
+    }
+
+    .post-modal-caption {
+        color: var(--ig-text-primary);
+        line-height: 1.5;
+        margin-bottom: 16px;
+    }
+
+    .post-modal-stats {
+        display: flex;
+        gap: 20px;
+        padding-top: 16px;
+        border-top: 1px solid var(--ig-border);
+        color: var(--ig-text-secondary);
+        font-size: 13px;
+    }
+
+    .post-modal-loading {
+        text-align: center;
+        padding: 40px 20px;
+        color: var(--ig-text-secondary);
     }
 
     @media (max-width: 768px) {
         .ig-discover-container {
-            padding-top: 20px;
+            padding-top: 72px;
             padding-bottom: 80px;
         }
 
-        .ig-discover-header {
-            padding: 0 16px 16px;
+        .ig-discover-content {
+            padding: 0 var(--spacing-md);
         }
 
         .ig-discover-title {
             font-size: 24px;
         }
 
-        .ig-discover-grid,
-        .ig-users-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            padding: 0 12px;
-        }
-
-        .ig-discover-tabs {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            scrollbar-width: none;
-            padding: 0 12px;
-        }
-
-        .ig-discover-tabs::-webkit-scrollbar {
-            display: none;
-        }
-
-        .ig-group-card,
-        .ig-user-card {
-            padding: 16px 12px;
-        }
-
-        .ig-group-avatar,
-        .ig-user-avatar {
-            width: 50px;
-            height: 50px;
-        }
-
-        .ig-group-name,
-        .ig-user-name {
-            font-size: 14px;
-        }
-
-        .ig-discover-search input {
-            font-size: 15px;
-            padding: 12px 16px 12px 44px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .ig-discover-container {
-            padding: 12px 0 80px;
-        }
-
-        .ig-discover-grid,
-        .ig-users-grid {
+        .ig-explore-grid {
             grid-template-columns: 1fr;
-            gap: 10px;
-            padding: 0 12px;
         }
 
-        .ig-group-card,
-        .ig-user-card {
-            flex-direction: row;
-            text-align: left;
-            gap: 12px;
-            padding: 14px;
+        .explore-reel-video {
+            height: 500px;
         }
 
-        .ig-group-banner {
-            display: none;
-        }
-
-        .ig-group-info,
-        .ig-user-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .ig-group-name,
-        .ig-user-name {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .ig-group-join-btn,
-        .ig-user-follow-btn {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .ig-discover-tab {
-            padding: 10px 14px;
-            font-size: 13px;
-        }
-    }
-
-    @media (max-width: 374px) {
-        .ig-discover-header {
-            padding: 0 12px 12px;
-        }
-
-        .ig-discover-title {
-            font-size: 20px;
-        }
-
-        .ig-discover-subtitle {
-            font-size: 13px;
-        }
-
-        .ig-group-avatar,
-        .ig-user-avatar {
-            width: 44px;
-            height: 44px;
-        }
-    }
-
-    /* Make bottom nav visible on mobile for discover page */
-    @media (max-width: 768px) {
         .ig-bottom-nav {
             display: flex !important;
             align-items: center;
@@ -545,1105 +499,552 @@
 {% endblock %}
 
 {% block content %}
-<!-- Include Shared Navbar -->
 {% include 'chat/partials/navbar.html' %}
 
 <div class="ig-discover-container">
     <div class="ig-discover-content">
         <header class="ig-discover-header">
-            <h1 class="ig-discover-title">Discover</h1>
-            <p class="ig-discover-subtitle">Find groups and people to connect with</p>
-
-            <!-- Search Bar -->
+            <h1 class="ig-discover-title">Explore</h1>
+            <p class="ig-discover-subtitle">Dive into random Scribes and Omzo picks.</p>
             <div class="ig-discover-search">
-                <i data-lucide="search" class="search-icon"></i>
-                <input type="text" id="discoverSearchInput" placeholder="Search groups and people..."
-                    onkeyup="filterDiscover(event)">
+                <i data-lucide="search"></i>
+                <input type="text" id="exploreSearchInput" placeholder="Search people, groups, scribes, omzo..." 
+                    onkeyup="filterExploreContent(this.value)">
             </div>
         </header>
 
-        <div class="ig-discover-tabs">
-            <button class="ig-discover-tab active" onclick="showTab('groups', this)">
-                <i data-lucide="users"></i>
-                Groups
-                <span class="tab-count">{{ public_groups|length }}</span>
-            </button>
-            <button class="ig-discover-tab" onclick="showTab('people', this)">
-                <i data-lucide="user"></i>
-                People
-                <span class="tab-count">{{ suggested_users|length }}</span>
-            </button>
-        </div>
-
-        <div id="groupsTab" class="ig-discover-grid">
-            {% for group in public_groups %}
-            <div class="ig-group-card">
-                <div class="ig-group-banner">
-                    <div class="ig-group-avatar">
-                        <i data-lucide="users"></i>
-                    </div>
-                </div>
-                <div class="ig-group-info">
-                    <h3 class="ig-group-name">{{ group.name }}</h3>
-                    <p class="ig-group-desc">{{ group.description|default:"No description" }}</p>
-                    <div class="ig-group-meta">
-                        <span>
-                            <i data-lucide="users"></i>
-                            {{ group.member_count }} members
-                        </span>
-                        <span>
-                            <i data-lucide="message-circle"></i>
-                            {{ group.message_count }} messages
-                        </span>
-                    </div>
-                    {% if group.is_member %}
-                    <a href="{% url 'chat_detail' group.id %}" class="ig-group-action joined">
-                        <i data-lucide="message-circle"
-                            style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
-                        Open Chat
-                    </a>
-                    {% else %}
-                    <button class="ig-group-action" onclick="joinGroup({{ group.id }})">
-                        <i data-lucide="user-plus"
-                            style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
-                        Join Group
-                    </button>
-                    {% endif %}
-                </div>
-            </div>
-            {% empty %}
-            <div class="ig-empty-state">
-                <i data-lucide="users"></i>
-                <h3>No Groups Yet</h3>
-                <p>Be the first to create a group!</p>
-                <button class="ig-group-action" onclick="openCreateGroupModal()"
-                    style="max-width: 200px; margin: 0 auto;">
-                    <i data-lucide="plus"
-                        style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
-                    Create Group
-                </button>
-            </div>
-            {% endfor %}
-        </div>
-
-        <div id="peopleTab" class="ig-users-grid" style="display: none;">
-            {% for person in suggested_users %}
-            <div class="ig-user-card">
-                <a href="{% url 'user_profile' person.username %}">
-                    {% if person.profile_picture %}
-                    <img src="{{ person.profile_picture.url }}" alt="{{ person.full_name }}" class="ig-user-avatar"
-                        onerror="this.outerHTML='<div class=\'ig-user-avatar-placeholder\'>{{ person.name|slice:':1'|upper }}</div>'">
-                    {% else %}
-                    <div class="ig-user-avatar-placeholder">{{ person.name|slice:':1'|upper }}</div>
-                    {% endif %}
-                </a>
-                <a href="{% url 'user_profile' person.username %}" style="text-decoration: none;">
-                    <div class="ig-user-name">{{ person.full_name }}</div>
-                    <div class="ig-user-username">@{{ person.username }}</div>
-                </a>
-                {% if person.is_following %}
-                <button class="ig-user-follow-btn following"
-                    onclick="toggleFollow('{{ person.username }}', this)">Following</button>
-                {% else %}
-                <button class="ig-user-follow-btn" onclick="toggleFollow('{{ person.username }}', this)">Follow</button>
+        {% if mixed_content %}
+        <div class="ig-explore-grid" id="exploreGrid">
+            {% for item in mixed_content %}
+                {% if item.type == 'scribe' %}
+                    {% with scribe=item.object %}
+                    <article class="explore-card" data-type="scribe" data-search-text="{{ scribe.user.full_name|default:scribe.user.username }} @{{ scribe.user.username }} {{ scribe.content }}" onclick="openScribePost({{ scribe.id }})">
+                        <div class="explore-card-media-container">
+                            {% if scribe.image_url %}
+                            <img src="{{ scribe.image_url }}" alt="Scribe media" loading="lazy" class="explore-card-media">
+                            {% else %}
+                            <div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="image" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="explore-card-overlay">
+                                <div class="explore-card-tag">Scribe</div>
+                                {% if scribe.content %}
+                                <div class="explore-card-caption">{{ scribe.content|truncatewords:15 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endwith %}
+                {% elif item.type == 'reel' %}
+                    {% with reel=item.object %}
+                    <article class="explore-card" data-type="reel" data-search-text="{{ reel.user.full_name|default:reel.user.username }} @{{ reel.user.username }} {{ reel.caption }}" onclick="openReelInOmzo({{ reel.id }})">
+                        <div class="explore-card-media-container">
+                            {% if reel.video_file %}
+                            <video class="explore-card-media" muted autoplay loop playsinline onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
+                                <source src="{{ reel.video_file.url }}" type="video/mp4">
+                            </video>
+                            <div class="explore-reel-play-icon" onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
+                                <i data-lucide="play"></i>
+                            </div>
+                            {% else %}
+                            <div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="video" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                            </div>
+                            {% endif %}
+                            <div class="explore-card-overlay">
+                                <div class="explore-card-tag">Omzo</div>
+                                {% if reel.caption %}
+                                <div class="explore-card-caption">{{ reel.caption|truncatewords:15 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </article>
+                    {% endwith %}
+                {% elif item.type == 'person' %}
+                    {% with person=item.object %}
+                    <article class="explore-card" data-type="person" data-search-text="{{ person.full_name|default:person.username }} @{{ person.username }}" onclick="window.location.href='{% url 'user_profile' person.username %}'">
+                        <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                            <div style="text-align: center;">
+                                {% if person.profile_picture %}
+                                    <img src="{{ person.profile_picture.url }}" alt="{{ person.full_name }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;" onerror="this.style.display='none';">
+                                {% else %}
+                                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);">
+                                        <i data-lucide="user" style="width: 36px; height: 36px;"></i>
+                                    </div>
+                                {% endif %}
+                                <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">{{ person.full_name|default:person.username }}</div>
+                                <div style="color: var(--ig-text-secondary); font-size: 12px;">@{{ person.username }}</div>
+                            </div>
+                        </div>
+                    </article>
+                    {% endwith %}
+                {% elif item.type == 'group' %}
+                    {% with group=item.object %}
+                    <article class="explore-card" data-type="group" data-search-text="{{ group.name }}" onclick="window.location.href='{% url 'chat_detail' group.id %}'">
+                        <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                            <div style="text-align: center;">
+                                <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="users" style="width: 36px; height: 36px; color: var(--ig-text-secondary);"></i>
+                                </div>
+                                <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">{{ group.name }}</div>
+                                <div style="color: var(--ig-text-secondary); font-size: 12px;">Group</div>
+                            </div>
+                        </div>
+                    </article>
+                    {% endwith %}
                 {% endif %}
-            </div>
-            {% empty %}
-            <div class="ig-empty-state">
-                <i data-lucide="users"></i>
-                <h3>No Users Found</h3>
-                <p>Check back later for people to connect with!</p>
-            </div>
             {% endfor %}
         </div>
-    </div>
-</div>
-
-<!-- Create Group Modal -->
-<div id="createGroupModal" class="ig-modal-overlay" style="display: none;" onclick="closeCreateGroupModal(event)">
-    <div class="ig-modal" onclick="event.stopPropagation()">
-        <header
-            style="padding: 16px 20px; border-bottom: 1px solid var(--ig-border); display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 18px; font-weight: 600; color: var(--ig-text-primary); margin: 0;">Create New Group
-            </h2>
-            <button onclick="closeCreateGroupModal()"
-                style="background: none; border: none; cursor: pointer; padding: 8px; border-radius: 50%; transition: background 0.2s;">
-                <i data-lucide="x" style="width: 20px; height: 20px; color: var(--ig-text-secondary);"></i>
-            </button>
-        </header>
-        <div style="padding: 20px;">
-            <form id="createGroupForm" onsubmit="submitCreateGroup(event)">
-                <div style="margin-bottom: 20px;">
-                    <label
-                        style="display: block; font-size: 14px; font-weight: 600; color: var(--ig-text-primary); margin-bottom: 8px;">Group
-                        Name</label>
-                    <input type="text" id="groupName" required placeholder="Enter group name..."
-                        style="width: 100%; padding: 12px 16px; border: 1px solid var(--ig-border); border-radius: 12px; font-size: 14px; background: var(--ig-input-bg); color: var(--ig-text-primary); transition: border-color 0.2s;">
-                </div>
-                <div style="margin-bottom: 24px;">
-                    <label
-                        style="display: block; font-size: 14px; font-weight: 600; color: var(--ig-text-primary); margin-bottom: 8px;">Description
-                        (Optional)</label>
-                    <textarea id="groupDescription" rows="3" placeholder="What's this group about?"
-                        style="width: 100%; padding: 12px 16px; border: 1px solid var(--ig-border); border-radius: 12px; font-size: 14px; resize: none; background: var(--ig-input-bg); color: var(--ig-text-primary);"></textarea>
-                </div>
-                <button type="submit" class="ig-group-action" style="width: 100%;">
-                    <i data-lucide="plus"
-                        style="width:16px;height:16px;display:inline-block;vertical-align:middle;margin-right:6px;"></i>
-                    Create Group
-                </button>
-            </form>
+        {% else %}
+        <div class="ig-empty-state">
+            <i data-lucide="sparkles"></i>
+            <h3>Nothing to explore yet</h3>
+            <p>Post a Scribe or Omzo to be featured here.</p>
         </div>
+        {% endif %}
     </div>
 </div>
 
-<!-- Create Post Modal - Professional Design with Text + Image + GIF Support -->
-<div id="createPostModal" class="ig-modal-overlay" style="display: none;" onclick="closeCreatePostModal(event)">
-    <div class="ig-create-modal" onclick="event.stopPropagation()">
-        <header class="ig-create-header">
-            <button class="ig-create-back" onclick="closeCreatePostModal()">
-                <i data-lucide="x"></i>
-            </button>
-            <h2 class="ig-create-title">Create Post</h2>
-            <button class="ig-create-next" onclick="submitPost()" id="sharePostBtn">Share</button>
-        </header>
-        <div class="ig-create-body">
-            <div class="ig-create-sidebar" id="createSidebar">
-                <div class="ig-create-user">
-                    <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username }}&background=667eea&color=fff{% endif %}"
-                        alt="{{ user.username }}" class="ig-create-avatar"
-                        onerror="this.outerHTML='<div class=\'ig-create-avatar-placeholder\'>{{ user.username|slice:':1'|upper }}</div>'">
-                    <div class="ig-create-user-info">
-                        <span class="ig-create-username">{{ user.username }}</span>
-                        <span class="ig-create-visibility"><i data-lucide="globe"
-                                style="width: 12px; height: 12px;"></i> Public</span>
-                    </div>
+<!-- Post Modal -->
+<div class="post-modal-overlay" id="postModal" onclick="closePostModal(event)">
+    <div class="post-modal-content" onclick="event.stopPropagation()">
+        <div class="post-modal-close" onclick="closePostModal()">
+            <i data-lucide="x"></i>
+        </div>
+        <div class="post-modal-body" id="postModalBody">
+            <div class="post-modal-loading">
+                <div style="animation: spin 1s linear infinite;">
+                    <i data-lucide="loader" style="width: 32px; height: 32px;"></i>
                 </div>
-
-                <div class="ig-create-textarea-wrapper">
-                    <textarea class="ig-create-textarea" id="postCaption" placeholder="What's happening?"
-                        maxlength="280" oninput="updateCharCount()"></textarea>
-
-                    <div id="postImagePreview" class="ig-create-image-preview" style="display: none;">
-                        <button class="ig-create-image-remove" onclick="removePostImage()">
-                            <i data-lucide="x"></i>
-                        </button>
-                        <img id="postPreviewImg" src="" alt="Preview">
-                    </div>
-                </div>
-
-                <div class="ig-create-actions">
-                    <div class="ig-create-actions-left">
-                        <label class="ig-create-action-btn" title="Add photo">
-                            <i data-lucide="image"></i>
-                            <input type="file" accept="image/*" id="postImageInput" style="display: none;"
-                                onchange="handlePostImageSelect(event)">
-                        </label>
-                        <button type="button" class="ig-create-action-btn" onclick="toggleGifPicker()" title="Add GIF">
-                            <i data-lucide="sparkles"></i>
-                        </button>
-                        <button type="button" class="ig-create-action-btn emoji-btn" onclick="toggleEmojiPicker()"
-                            title="Add emoji">
-                            <i data-lucide="smile"></i>
-                        </button>
-                        <button type="button" class="ig-create-action-btn" onclick="#"
-                            title="Create web code snippet">
-                            <i data-lucide="code-editor"></i>
-                        </button>
-                    </div>
-                    <div class="ig-create-actions-right">
-                        <div class="ig-create-char-count">
-                            <svg viewBox="0 0 36 36" class="ig-char-circle">
-                                <path class="ig-char-bg"
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
-                                </path>
-                                <path class="ig-char-progress" id="charCircle" stroke-dasharray="0, 100"
-                                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
-                                </path>
-                            </svg>
-                            <span id="captionCharCount" class="ig-char-number">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- GIF Picker -->
-                <div class="ig-gif-picker" id="gifPicker" style="display: none;">
-                    <div class="ig-gif-search">
-                        <i data-lucide="search"></i>
-                        <input type="text" id="gifSearchInput" placeholder="Search GIFs..."
-                            oninput="searchGifs(this.value)">
-                    </div>
-                    <div class="ig-gif-grid" id="gifGrid">
-                        <div class="ig-gif-loading">
-                            <div class="ig-gif-spinner"></div>
-                            <span>Loading GIFs...</span>
-                        </div>
-                    </div>
-                    <div class="ig-gif-powered">
-                        <span>Powered by GIPHY</span>
-                    </div>
-                </div>
-
-                <!-- Quick Emoji Row -->
-                <div class="ig-create-emoji-row" id="emojiPicker" style="display: none;">
-                    <button type="button" onclick="insertEmoji('😊')">😊</button>
-                    <button type="button" onclick="insertEmoji('❤️')">❤️</button>
-                    <button type="button" onclick="insertEmoji('🔥')">🔥</button>
-                    <button type="button" onclick="insertEmoji('👏')">👏</button>
-                    <button type="button" onclick="insertEmoji('😂')">😂</button>
-                    <button type="button" onclick="insertEmoji('🎉')">🎉</button>
-                    <button type="button" onclick="insertEmoji('💯')">💯</button>
-                    <button type="button" onclick="insertEmoji('✨')">✨</button>
-                    <button type="button" onclick="insertEmoji('🙌')">🙌</button>
-                    <button type="button" onclick="insertEmoji('😍')">😍</button>
-                    <button type="button" onclick="insertEmoji('🤔')">🤔</button>
-                    <button type="button" onclick="insertEmoji('👀')">👀</button>
-                </div>
+                <p style="margin-top: 16px;">Loading post...</p>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    /* ===== CREATE POST MODAL STYLES ===== */
-    .ig-create-modal {
-        background: var(--ig-surface);
-        border-radius: 20px;
-        width: 95%;
-        max-width: 580px;
-        overflow: hidden;
-        animation: modalSlideUp 0.3s ease;
-    }
-
-    @keyframes modalSlideUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .ig-create-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 16px;
-        border-bottom: 1px solid var(--ig-border);
-    }
-
-    .ig-create-back {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 8px;
-        display: flex;
-        color: var(--ig-text-primary);
-    }
-
-    .ig-create-back i {
-        width: 24px;
-        height: 24px;
-    }
-
-    .ig-create-title {
-        font-size: 16px;
-        font-weight: 600;
-        color: var(--ig-text-primary);
-    }
-
-    .ig-create-next {
-        background: var(--odnix-gradient);
-        border: none;
-        color: white;
-        font-weight: 600;
-        font-size: 14px;
-        cursor: pointer;
-        padding: 8px 16px;
-        border-radius: 8px;
-    }
-
-    .ig-create-next:hover {
-        opacity: 0.9;
-    }
-
-    .ig-create-body {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .ig-create-sidebar {
-        width: 100%;
-        padding: 20px;
-        background: var(--ig-surface);
-        box-sizing: border-box;
-    }
-
-    .ig-create-user {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-    }
-
-    .ig-create-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid transparent;
-        background: linear-gradient(var(--ig-surface), var(--ig-surface)) padding-box,
-            var(--odnix-gradient) border-box;
-    }
-
-    .ig-create-avatar-placeholder {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: var(--odnix-gradient);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: white;
-        font-size: 16px;
-    }
-
-    .ig-create-user-info {
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-    }
-
-    .ig-create-username {
-        font-weight: 600;
-        font-size: 15px;
-        color: var(--ig-text-primary);
-    }
-
-    .ig-create-visibility {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        font-size: 12px;
-        color: var(--ig-text-secondary);
-    }
-
-    .ig-create-textarea-wrapper {
-        position: relative;
-    }
-
-    .ig-create-textarea {
-        width: 100%;
-        min-height: 120px;
-        max-height: 200px;
-        border: none;
-        background: transparent;
-        resize: none;
-        font-size: 18px;
-        color: var(--ig-text-primary);
-        padding: 0;
-        line-height: 1.5;
-        font-family: inherit;
-        box-sizing: border-box;
-        outline: none;
-    }
-
-    .ig-create-textarea::placeholder {
-        color: var(--ig-text-secondary);
-    }
-
-    .ig-create-image-preview {
-        position: relative;
-        margin-top: 16px;
-        border-radius: 16px;
-        overflow: hidden;
-        background: var(--ig-bg);
-        border: 1px solid var(--ig-border);
-    }
-
-    .ig-create-image-preview img {
-        width: 100%;
-        max-height: 350px;
-        object-fit: contain;
-        display: block;
-    }
-
-    .ig-create-image-remove {
-        position: absolute;
-        top: 12px;
-        right: 12px;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10;
-        transition: all 0.2s;
-        color: white;
-    }
-
-    .ig-create-image-remove:hover {
-        background: rgba(0, 0, 0, 0.85);
-        transform: scale(1.1);
-    }
-
-    .ig-create-image-remove i {
-        width: 18px;
-        height: 18px;
-    }
-
-    .ig-create-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-top: 16px;
-        margin-top: 16px;
-        border-top: 1px solid var(--ig-border);
-    }
-
-    .ig-create-actions-left {
-        display: flex;
-        gap: 4px;
-    }
-
-    .ig-create-action-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 42px;
-        height: 42px;
-        border-radius: 50%;
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        color: var(--color-primary);
-    }
-
-    .ig-create-action-btn:hover {
-        background: var(--ig-surface-hover);
-        transform: scale(1.1);
-    }
-
-    .ig-create-action-btn i {
-        width: 22px;
-        height: 22px;
-    }
-
-    .ig-create-actions-right {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .ig-create-char-count {
-        position: relative;
-        width: 30px;
-        height: 30px;
-    }
-
-    .ig-char-circle {
-        width: 30px;
-        height: 30px;
-        transform: rotate(-90deg);
-    }
-
-    .ig-char-bg {
-        fill: none;
-        stroke: var(--ig-border);
-        stroke-width: 2;
-    }
-
-    .ig-char-progress {
-        fill: none;
-        stroke: var(--color-primary);
-        stroke-width: 2;
-        stroke-linecap: round;
-        transition: stroke-dasharray 0.2s;
-    }
-
-    .ig-char-progress.warning {
-        stroke: #f59e0b;
-    }
-
-    .ig-char-progress.danger {
-        stroke: #ef4444;
-    }
-
-    .ig-char-number {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 9px;
-        font-weight: 600;
-        color: var(--ig-text-secondary);
-        display: none;
-    }
-
-    .ig-char-number.show {
-        display: block;
-    }
-
-    .ig-create-emoji-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        padding: 12px;
-        margin-top: 12px;
-        background: var(--ig-bg);
-        border-radius: 12px;
-        animation: fadeIn 0.2s ease;
-    }
-
-    .ig-create-emoji-row button {
-        width: 36px;
-        height: 36px;
-        border: none;
-        background: transparent;
-        cursor: pointer;
-        font-size: 20px;
-        border-radius: 8px;
-        transition: all 0.2s;
-    }
-
-    .ig-create-emoji-row button:hover {
-        background: var(--ig-surface-hover);
-        transform: scale(1.15);
-    }
-
-    /* GIF Picker Styles */
-    .ig-gif-picker {
-        margin-top: 12px;
-        background: var(--ig-bg);
-        border-radius: 14px;
-        overflow: hidden;
-        animation: fadeIn 0.2s ease;
-        border: 1px solid var(--ig-border);
-    }
-
-    .ig-gif-search {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 12px 14px;
-        border-bottom: 1px solid var(--ig-border);
-    }
-
-    .ig-gif-search i {
-        width: 18px;
-        height: 18px;
-        color: var(--ig-text-secondary);
-    }
-
-    .ig-gif-search input {
-        flex: 1;
-        border: none;
-        background: transparent;
-        font-size: 14px;
-        color: var(--ig-text-primary);
-        outline: none;
-    }
-
-    .ig-gif-search input::placeholder {
-        color: var(--ig-text-secondary);
-    }
-
-    .ig-gif-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 4px;
-        max-height: 250px;
-        overflow-y: auto;
-        padding: 4px;
-    }
-
-    .ig-gif-item {
-        aspect-ratio: 1;
-        overflow: hidden;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: all 0.2s;
-        position: relative;
-    }
-
-    .ig-gif-item:hover {
-        transform: scale(1.03);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
-    .ig-gif-item img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .ig-gif-loading {
-        grid-column: 1 / -1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 40px;
-        gap: 12px;
-        color: var(--ig-text-secondary);
-        font-size: 13px;
-    }
-
-    .ig-gif-spinner {
-        width: 28px;
-        height: 28px;
-        border: 3px solid var(--ig-border);
-        border-top-color: var(--color-primary);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-    }
-
     @keyframes spin {
-        to {
-            transform: rotate(360deg);
-        }
-    }
-
-    .ig-gif-powered {
-        padding: 8px;
-        text-align: center;
-        font-size: 11px;
-        color: var(--ig-text-secondary);
-        background: var(--ig-surface);
-        border-top: 1px solid var(--ig-border);
-    }
-
-    .ig-gif-empty {
-        grid-column: 1 / -1;
-        padding: 40px 20px;
-        text-align: center;
-        color: var(--ig-text-secondary);
-        font-size: 13px;
-    }
-
-    /* Responsive */
-    @media (max-width: 480px) {
-        .ig-create-modal {
-            max-width: 100%;
-            max-height: 100vh;
-            border-radius: 0;
-        }
-
-        .ig-create-textarea {
-            font-size: 16px;
-            min-height: 100px;
-        }
-
-        .ig-create-avatar {
-            width: 40px;
-            height: 40px;
-        }
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
     }
 </style>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-    // Search/Filter functionality
-    function filterDiscover(event) {
-        const query = event.target.value.toLowerCase().trim();
+// Open scribe/post detail in modal
+function openScribePost(postId) {
+    const modal = document.getElementById('postModal');
+    const body = document.getElementById('postModalBody');
+    
+    // Show modal with loading state
+    modal.classList.add('show');
+    body.innerHTML = `
+        <div class="post-modal-loading">
+            <div style="animation: spin 1s linear infinite;">
+                <i data-lucide="loader" style="width: 32px; height: 32px;"></i>
+            </div>
+            <p style="margin-top: 16px;">Loading post...</p>
+        </div>
+    `;
+    
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    // Fetch post data
+    fetch(`/chat/api/tweet/${postId}/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.tweet) {
+                const tweet = data.tweet;
+                const isLiked = tweet.is_liked || false;
+                
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; height: 100%; max-height: 90vh;">
+                        <!-- Image Section -->
+                        <div class="post-modal-image-section" style="flex-shrink: 0;">
+                            ${tweet.image_url ? `<img src="${tweet.image_url}" alt="Post image" style="width: 100%; height: auto; max-height: 400px; object-fit: cover;">` : `<div style="width: 100%; height: 250px; background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);"><i data-lucide="image" style="width: 48px; height: 48px; opacity: 0.3;"></i></div>`}
+                        </div>
 
-        // Filter groups
-        document.querySelectorAll('#groupsTab .ig-group-card').forEach(card => {
-            const name = card.querySelector('.ig-group-name')?.textContent.toLowerCase() || '';
-            const desc = card.querySelector('.ig-group-desc')?.textContent.toLowerCase() || '';
-            if (name.includes(query) || desc.includes(query) || query === '') {
+                        <!-- Info Section -->
+                        <div class="post-modal-info" style="flex-shrink: 0;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <img src="${tweet.avatar || 'https://ui-avatars.com/api/?name=' + tweet.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none';">
+                                <div>
+                                    <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${tweet.full_name || tweet.username}</div>
+                                    <div style="color: var(--ig-text-secondary); font-size: 12px;">@${tweet.username}</div>
+                                </div>
+                            </div>
+
+                            ${tweet.content ? `<div style="color: var(--ig-text-primary); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">${tweet.content}</div>` : ''}
+
+                            <div style="display: flex; gap: 16px; font-size: 13px; color: var(--ig-text-secondary);">
+                                <span id="likeCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.like_count || 0}</strong> Likes</span>
+                                <span id="commentCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.comment_count || 0}</strong> Comments</span>
+                                <span style="color: var(--ig-text-secondary); font-size: 11px;">${tweet.time_ago}</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="post-modal-actions">
+                            <button class="post-modal-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLikeInModal(${postId}, this)" data-liked="${isLiked ? 'true' : 'false'}" data-post-id="${postId}">
+                                <i data-lucide="heart" style="width: 18px; height: 18px; ${isLiked ? 'fill: currentColor;' : ''};"></i>
+                                <span>Like</span>
+                            </button>
+                            <button class="post-modal-action-btn" onclick="event.stopPropagation(); document.getElementById('commentInput${postId}').focus()">
+                                <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
+                                <span>Comment</span>
+                            </button>
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="post-modal-comments-section" id="commentsSection${postId}">
+                            <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                                <i data-lucide="loader" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+                            </div>
+                        </div>
+
+                        <!-- Comment Input -->
+                        <div class="post-modal-comment-input">
+                            <input type="text" id="commentInput${postId}" placeholder="Add a comment..." onkeypress="if(event.key === 'Enter' && this.value.trim()) { postComment(${postId}, this.value); this.value = ''; }">
+                            <button onclick="event.stopPropagation(); const input = document.getElementById('commentInput${postId}'); if(input.value.trim()) { postComment(${postId}, input.value); input.value = ''; }" id="commentBtn${postId}">Post</button>
+                        </div>
+                    </div>
+                `;
+                
+                // Load comments
+                loadCommentsInModal(postId);
+            } else {
+                body.innerHTML = `
+                    <div class="post-modal-loading">
+                        <i data-lucide="alert-circle" style="width: 40px; height: 40px; opacity: 0.5;"></i>
+                        <p style="margin-top: 12px;">Failed to load post</p>
+                    </div>
+                `;
+            }
+            
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            body.innerHTML = `
+                <div class="post-modal-loading">
+                    <i data-lucide="alert-circle" style="width: 40px; height: 40px; opacity: 0.5;"></i>
+                    <p style="margin-top: 12px;">Error loading post</p>
+                </div>
+            `;
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+}
+
+// Toggle like on a post in modal
+function toggleLikeInModal(postId, button) {
+    const isLiked = button.getAttribute('data-liked') === 'true';
+    
+    fetch(`/chat/api/toggle-like/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ tweet_id: postId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const newIsLiked = !isLiked;
+            button.setAttribute('data-liked', newIsLiked ? 'true' : 'false');
+            if (newIsLiked) {
+                button.classList.add('liked');
+            } else {
+                button.classList.remove('liked');
+            }
+            
+            // Update like count
+            const likeCountEl = document.getElementById('likeCount' + postId);
+            if (likeCountEl && data.like_count !== undefined) {
+                likeCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.like_count}</strong> Likes`;
+            }
+            
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    })
+    .catch(err => console.error('Like error:', err));
+}
+
+// Load comments in modal
+function loadCommentsInModal(postId) {
+    const commentsSection = document.getElementById('commentsSection' + postId);
+    if (!commentsSection) return;
+    
+    fetch(`/chat/api/tweet/${postId}/comments/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.comments) {
+                const comments = data.comments;
+                if (comments.length === 0) {
+                    commentsSection.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                            <i data-lucide="message-circle" style="width: 24px; height: 24px; opacity: 0.3; margin-bottom: 8px;"></i>
+                            <div style="font-size: 13px;">No comments yet</div>
+                            <div style="font-size: 12px; margin-top: 4px;">Be the first to comment!</div>
+                        </div>
+                    `;
+                } else {
+                    commentsSection.innerHTML = comments.map(comment => `
+                        <div class="post-modal-comment-item">
+                            <div style="display: flex; gap: 10px;">
+                                <img src="${comment.avatar || 'https://ui-avatars.com/api/?name=' + comment.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none';">
+                                <div style="flex: 1;">
+                                    <div style="margin-bottom: 4px;">
+                                        <span style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${comment.full_name || comment.username}</span>
+                                        <span style="color: var(--ig-text-secondary); font-size: 12px; margin-left: 6px;">@${comment.username}</span>
+                                    </div>
+                                    <div style="color: var(--ig-text-primary); font-size: 13px; line-height: 1.4;">${comment.content || ''}</div>
+                                    <div style="color: var(--ig-text-secondary); font-size: 11px; margin-top: 6px;">${comment.time_ago || ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                commentsSection.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                        <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.3;"></i>
+                        <div style="font-size: 13px; margin-top: 8px;">Failed to load comments</div>
+                    </div>
+                `;
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })
+        .catch(err => {
+            console.error('Comments error:', err);
+            commentsSection.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.3;"></i>
+                    <div style="font-size: 13px; margin-top: 8px;">Error loading comments</div>
+                </div>
+            `;
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        });
+}
+
+// Post a comment
+function postComment(postId, commentText) {
+    if (!commentText || !commentText.trim()) return;
+    
+    fetch(`/chat/api/add-comment/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            tweet_id: postId,
+            content: commentText.trim()
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Reload comments to show the new one
+            loadCommentsInModal(postId);
+            
+            // Update comment count
+            const commentCountEl = document.getElementById('commentCount' + postId);
+            if (commentCountEl && data.comment_count !== undefined) {
+                commentCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.comment_count}</strong> Comments`;
+            }
+        } else {
+            alert('Failed to post comment');
+        }
+    })
+    .catch(err => {
+        console.error('Comment error:', err);
+        alert('Error posting comment');
+    });
+}
+
+// Toggle like on a post (kept for backwards compatibility)
+function toggleLikePost(postId, button, event) {
+    if (event) event.stopPropagation();
+    toggleLikeInModal(postId, button);
+}
+
+// Toggle comments view (kept for backwards compatibility)
+function toggleCommentsView(postId) {
+    openViewComments(postId);
+}
+
+// Load and display comments for a post
+function loadComments(postId) {
+    const commentsSection = document.getElementById('commentsSection');
+    
+    fetch(`/chat/api/tweet/${postId}/comments/`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.comments) {
+                const comments = data.comments;
+                if (comments.length === 0) {
+                    commentsSection.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                            <i data-lucide="message-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
+                            No comments yet
+                        </div>
+                    `;
+                } else {
+                    commentsSection.innerHTML = comments.map(comment => `
+                        <div style="padding: 12px; border-bottom: 1px solid var(--ig-border);">
+                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <img src="${comment.avatar || 'https://ui-avatars.com/api/?name=' + comment.username}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none';">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500; color: var(--ig-text-primary); font-size: 13px;">
+                                        ${comment.full_name || comment.username}
+                                        <span style="color: var(--ig-text-secondary); font-weight: normal;"> @${comment.username}</span>
+                                    </div>
+                                    <div style="color: var(--ig-text-primary); font-size: 13px; margin-top: 4px;">${comment.content || ''}</div>
+                                    <div style="color: var(--ig-text-secondary); font-size: 12px; margin-top: 6px;">${comment.time_ago || ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                commentsSection.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                        <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
+                        Failed to load comments
+                    </div>
+                `;
+            }
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        })
+        .catch(err => {
+            console.error('Comments error:', err);
+            commentsSection.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
+                    Error loading comments
+                </div>
+            `;
+        });
+}
+
+
+function closePostModal(event) {
+    if (event && event.target !== event.currentTarget) return;
+    const modal = document.getElementById('postModal');
+    modal.classList.remove('show');
+}
+
+// Store the scroll position and return URL for back navigation
+function openReelInOmzo(reelId) {
+    // Save current scroll position and page state
+    sessionStorage.setItem('exploreScrollPosition', window.scrollY);
+    sessionStorage.setItem('exploreReturnPage', window.location.pathname);
+    
+    // Navigate to Omzo page with the specific reel using href to preserve history
+    window.location.href = `/chat/reels/?reel=${reelId}`;
+}
+
+// Filter explore content based on search query
+function filterExploreContent(query) {
+    const grid = document.getElementById('exploreGrid');
+    if (!grid) {
+        console.warn('Explore grid not found');
+        return;
+    }
+    
+    const cards = grid.querySelectorAll('.explore-card');
+    const searchText = query.toLowerCase().trim();
+    let visibleCount = 0;
+    
+    if (!searchText) {
+        // Show only scribes and reels if search is empty
+        cards.forEach(card => {
+            const dataType = card.getAttribute('data-type');
+            card.classList.remove('search-active');
+            if (dataType === 'scribe' || dataType === 'reel') {
                 card.style.display = '';
             } else {
                 card.style.display = 'none';
             }
         });
-
-        // Filter people
-        document.querySelectorAll('#peopleTab .ig-user-card').forEach(card => {
-            const name = card.querySelector('.ig-user-name')?.textContent.toLowerCase() || '';
-            const username = card.querySelector('.ig-user-username')?.textContent.toLowerCase() || '';
-            if (name.includes(query) || username.includes(query) || query === '') {
-                card.style.display = '';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-
-        // Update tab counts
-        const visibleGroups = document.querySelectorAll('#groupsTab .ig-group-card:not([style*="display: none"])').length;
-        const visiblePeople = document.querySelectorAll('#peopleTab .ig-user-card:not([style*="display: none"])').length;
-
-        document.querySelectorAll('.ig-discover-tab').forEach(tab => {
-            const count = tab.querySelector('.tab-count');
-            if (tab.textContent.includes('Groups') && count) {
-                count.textContent = visibleGroups;
-            }
-            if (tab.textContent.includes('People') && count) {
-                count.textContent = visiblePeople;
-            }
-        });
-    }
-
-    // Tab switching
-    function showTab(tab, btn) {
-        document.querySelectorAll('.ig-discover-tab').forEach(t => t.classList.remove('active'));
-        btn.classList.add('active');
-
-        document.getElementById('groupsTab').style.display = tab === 'groups' ? 'grid' : 'none';
-        document.getElementById('peopleTab').style.display = tab === 'people' ? 'grid' : 'none';
-
-        // Re-initialize lucide icons
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
+        // Remove no results message if visible
+        const noResultsMsg = document.getElementById('exploreNoResults');
+        if (noResultsMsg) {
+            noResultsMsg.remove();
         }
+        return;
     }
-
-    // Join group
-    function joinGroup(groupId) {
-        fetch('/api/join-group/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: JSON.stringify({ group_id: groupId })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    alert(data.error || 'Failed to join group');
-                }
-            })
-            .catch(err => {
-                console.error('Join error:', err);
-                alert('Failed to join group');
-            });
-    }
-
-    // Toggle follow
-    function toggleFollow(username, btn) {
-        const isFollowing = btn.classList.contains('following');
-        const url = '/api/toggle-follow/';
-
-        fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: JSON.stringify({ username: username })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    if (isFollowing) {
-                        btn.classList.remove('following');
-                        btn.textContent = 'Follow';
-                    } else {
-                        btn.classList.add('following');
-                        btn.textContent = 'Following';
-                    }
-                } else {
-                    alert(data.error || 'Action failed');
-                }
-            })
-            .catch(err => {
-                console.error('Follow error:', err);
-                alert('Action failed');
-            });
-    }
-
-    // Modal functions
-    function openCreateGroupModal() {
-        document.getElementById('createGroupModal').style.display = 'flex';
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
-
-    function closeCreateGroupModal(event) {
-        if (!event || event.target === event.currentTarget) {
-            document.getElementById('createGroupModal').style.display = 'none';
-        }
-    }
-
-    function submitCreateGroup(event) {
-        event.preventDefault();
-
-        const name = document.getElementById('groupName').value.trim();
-        const description = document.getElementById('groupDescription').value.trim();
-
-        if (!name) {
-            alert('Please enter a group name');
-            return;
-        }
-
-        fetch('/api/create-group/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: JSON.stringify({ name, description, is_public: true })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    const groupId = data.group?.id || data.chat_id;
-                    window.location.href = '/chat/chat/' + groupId + '/';
-                } else {
-                    alert(data.error || 'Failed to create group');
-                }
-            })
-            .catch(err => {
-                console.error('Create error:', err);
-                alert('Failed to create group');
-            });
-    }
-
-    // Initialize icons on page load
-    document.addEventListener('DOMContentLoaded', function () {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-
-        // Caption character counter
-        const captionInput = document.getElementById('postCaption');
-        if (captionInput) {
-            captionInput.addEventListener('input', function () {
-                document.getElementById('captionCharCount').textContent = this.value.length;
-            });
+    
+    // When searching, show all types that match
+    cards.forEach(card => {
+        const cardSearchText = card.getAttribute('data-search-text') || '';
+        const dataType = card.getAttribute('data-type');
+        const matches = cardSearchText.toLowerCase().includes(searchText);
+        
+        if (matches) {
+            card.classList.add('search-active');
+            card.style.display = '';
+            visibleCount++;
+        } else {
+            card.classList.remove('search-active');
+            card.style.display = 'none';
         }
     });
-
-    // Create Post Modal Functions
-    const GIPHY_API_KEY = 'GlVGYHkr3WSBnllca54iNt0yFbjz7L65';
-    let selectedGifUrl = null;
-    let gifSearchTimeout = null;
-
-    function openCreatePostModal() {
-        document.getElementById('createPostModal').style.display = 'flex';
-        document.getElementById('postCaption').value = '';
-        document.getElementById('captionCharCount').textContent = '0';
-        selectedGifUrl = null;
-        removePostImage();
-        updateCharCount();
-        document.getElementById('gifPicker').style.display = 'none';
-        document.getElementById('emojiPicker').style.display = 'none';
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-    window.openCreatePostModal = openCreatePostModal;
-
-    function closeCreatePostModal(event) {
-        if (!event || event.target === event.currentTarget) {
-            document.getElementById('createPostModal').style.display = 'none';
-            selectedGifUrl = null;
+    
+    // Show "no results" message if nothing matches
+    let noResultsMsg = document.getElementById('exploreNoResults');
+    if (visibleCount === 0 && !noResultsMsg) {
+        noResultsMsg = document.createElement('div');
+        noResultsMsg.id = 'exploreNoResults';
+        noResultsMsg.className = 'ig-search-no-results';
+        noResultsMsg.innerHTML = `
+            <i data-lucide="search"></i>
+            <h3 style="color: var(--ig-text-primary); margin: 12px 0 8px 0;">No results found</h3>
+            <p>Try searching for different keywords</p>
+        `;
+        grid.parentNode.insertBefore(noResultsMsg, grid.nextSibling);
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
         }
+    } else if (visibleCount > 0 && noResultsMsg) {
+        noResultsMsg.remove();
+    }
+}
+
+// On page load, restore scroll position if returning from Omzo
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
 
-    function updateCharCount() {
-        const textarea = document.getElementById('postCaption');
-        const count = textarea.value.length;
-        const maxLength = 280;
-        const countDisplay = document.getElementById('captionCharCount');
-        const circle = document.getElementById('charCircle');
-
-        const percentage = (count / maxLength) * 100;
-        circle.setAttribute('stroke-dasharray', `${percentage}, 100`);
-
-        circle.classList.remove('warning', 'danger');
-        countDisplay.classList.remove('show');
-
-        if (count >= maxLength - 20) {
-            countDisplay.textContent = maxLength - count;
-            countDisplay.classList.add('show');
-            if (count >= maxLength) {
-                circle.classList.add('danger');
-            } else {
-                circle.classList.add('warning');
-            }
-        }
+    // Check if we're returning from Omzo
+    const returnPage = sessionStorage.getItem('exploreReturnPage');
+    const scrollPos = sessionStorage.getItem('exploreScrollPosition');
+    
+    if (returnPage === window.location.pathname && scrollPos) {
+        // Restore scroll position after a short delay to ensure DOM is ready
+        setTimeout(() => {
+            window.scrollTo(0, parseInt(scrollPos));
+            // Clear the stored values
+            sessionStorage.removeItem('exploreScrollPosition');
+            sessionStorage.removeItem('exploreReturnPage');
+        }, 100);
     }
-
-    function handlePostImageSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            selectedGifUrl = null; // Clear any selected GIF
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                document.getElementById('postPreviewImg').src = e.target.result;
-                document.getElementById('postImagePreview').style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    function removePostImage() {
-        document.getElementById('postPreviewImg').src = '';
-        document.getElementById('postImagePreview').style.display = 'none';
-        const postImageInput = document.getElementById('postImageInput');
-        if (postImageInput) postImageInput.value = '';
-        selectedGifUrl = null;
-    }
-
-    // GIF Picker Functions
-    function toggleGifPicker() {
-        const gifPicker = document.getElementById('gifPicker');
-        const emojiPicker = document.getElementById('emojiPicker');
-
-        if (gifPicker.style.display === 'none') {
-            gifPicker.style.display = 'block';
-            emojiPicker.style.display = 'none';
-            loadTrendingGifs();
-        } else {
-            gifPicker.style.display = 'none';
-        }
-    }
-
-    function loadTrendingGifs() {
-        const grid = document.getElementById('gifGrid');
-        grid.innerHTML = '<div class="ig-gif-loading"><div class="ig-gif-spinner"></div><span>Loading GIFs...</span></div>';
-
-        fetch(`https://api.giphy.com/v1/gifs/trending?api_key=${GIPHY_API_KEY}&limit=12&rating=g`)
-            .then(r => r.json())
-            .then(data => displayGifs(data.data))
-            .catch(err => {
-                console.error('GIF load error:', err);
-                grid.innerHTML = '<div class="ig-gif-empty">Failed to load GIFs</div>';
-            });
-    }
-
-    function searchGifs(query) {
-        clearTimeout(gifSearchTimeout);
-
-        if (!query.trim()) {
-            loadTrendingGifs();
-            return;
-        }
-
-        gifSearchTimeout = setTimeout(() => {
-            const grid = document.getElementById('gifGrid');
-            grid.innerHTML = '<div class="ig-gif-loading"><div class="ig-gif-spinner"></div><span>Searching...</span></div>';
-
-            fetch(`https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=12&rating=g`)
-                .then(r => r.json())
-                .then(data => displayGifs(data.data))
-                .catch(err => {
-                    console.error('GIF search error:', err);
-                    grid.innerHTML = '<div class="ig-gif-empty">Failed to search GIFs</div>';
-                });
-        }, 300);
-    }
-
-    function displayGifs(gifs) {
-        const grid = document.getElementById('gifGrid');
-
-        if (!gifs || gifs.length === 0) {
-            grid.innerHTML = '<div class="ig-gif-empty">No GIFs found</div>';
-            return;
-        }
-
-        grid.innerHTML = gifs.map(gif => `
-        <div class="ig-gif-item" onclick="selectGif('${gif.images.fixed_height.url}')">
-            <img src="${gif.images.fixed_height_small.url}" alt="${gif.title}" loading="lazy">
-        </div>
-    `).join('');
-    }
-
-    function selectGif(url) {
-        selectedGifUrl = url;
-        document.getElementById('postPreviewImg').src = url;
-        document.getElementById('postImagePreview').style.display = 'block';
-        document.getElementById('gifPicker').style.display = 'none';
-
-        // Clear file input since we're using a GIF
-        const postImageInput = document.getElementById('postImageInput');
-        if (postImageInput) postImageInput.value = '';
-    }
-
-    // Emoji Functions
-    function toggleEmojiPicker() {
-        const emojiPicker = document.getElementById('emojiPicker');
-        const gifPicker = document.getElementById('gifPicker');
-
-        if (emojiPicker.style.display === 'none') {
-            emojiPicker.style.display = 'flex';
-            gifPicker.style.display = 'none';
-        } else {
-            emojiPicker.style.display = 'none';
-        }
-    }
-
-    function insertEmoji(emoji) {
-        const textarea = document.getElementById('postCaption');
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const text = textarea.value;
-
-        textarea.value = text.substring(0, start) + emoji + text.substring(end);
-        textarea.selectionStart = textarea.selectionEnd = start + emoji.length;
-        textarea.focus();
-        updateCharCount();
-    }
-
-    function submitPost() {
-        const caption = document.getElementById('postCaption').value.trim();
-        const imageInput = document.getElementById('postImageInput');
-
-        if (!caption && !imageInput?.files[0] && !selectedGifUrl) {
-            alert('Please add a caption, image, or GIF');
-            return;
-        }
-
-        const formData = new FormData();
-        formData.append('content', caption);
-        if (imageInput?.files[0]) {
-            formData.append('image', imageInput.files[0]);
-        }
-        if (selectedGifUrl) {
-            formData.append('gif_url', selectedGifUrl);
-        }
-
-        const btn = document.getElementById('sharePostBtn');
-        btn.disabled = true;
-        btn.textContent = 'Posting...';
-
-        fetch('/api/create-post/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: formData
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    closeCreatePostModal();
-                    window.location.href = '{% url "dashboard" %}';
-                } else {
-                    alert(data.error || 'Failed to create post');
-                }
-            })
-            .catch(err => {
-                console.error('Post error:', err);
-                alert('Failed to create post');
-            })
-            .finally(() => {
-                btn.disabled = false;
-                btn.textContent = 'Share';
-            });
-    }
+});
 </script>
 {% endblock %}

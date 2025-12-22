@@ -15,7 +15,7 @@ from datetime import timedelta
 from chat.models import (
     CustomUser, Chat, Message, GroupJoinRequest, Follow, Story, StoryView,
     StoryLike, StoryReply, Tweet, Like, Comment, MessageDeletion, MessageRead,
-    MessageReaction, StarredMessage, PinnedChat, SavedPost
+    MessageReaction, StarredMessage, PinnedChat, SavedPost, Reel
 )
 from chat.forms import TweetForm
 from .media import handle_media_upload
@@ -692,53 +692,59 @@ def join_group_view(request, invite_code):
 
 @login_required
 def discover_groups_view(request):
-    """View for discovering public groups and people"""
-    search_query = request.GET.get('q', '').strip()
+    """Explore page: show random scribes, omzo reels, people, and groups."""
+    import random
 
-    # Get all public groups (both joined and not joined for proper display)
-    public_groups = Chat.objects.filter(
-        chat_type='group',
-        is_public=True
-    ).annotate(
-        member_count=Count('participants'),
-        message_count=Count('messages')
-    ).order_by('-created_at')
+    # Pull all scribes and reels (unlimited)
+    random_scribes = list(
+        Tweet.objects.select_related('user').order_by('?'))
+    random_reels = list(Reel.objects.select_related('user').order_by('?'))
 
-    # Apply search filter if provided
-    if search_query:
-        public_groups = public_groups.filter(
-            Q(name__icontains=search_query) |
-            Q(description__icontains=search_query)
-        )
+    # Pull all people (exclude current user)
+    random_people = list(
+        CustomUser.objects.exclude(id=request.user.id).order_by('?'))
 
-    # Get user's groups for the "is_member" check
-    user_groups = Chat.objects.filter(
-        chat_type='group',
-        participants=request.user
-    ).values_list('id', flat=True)
-    user_group_ids = list(user_groups)
+    # Pull all public groups
+    random_groups = list(
+        Chat.objects.filter(chat_type='group').order_by('?'))
 
-    # Add is_member flag to each group
-    for group in public_groups:
-        group.is_member = group.id in user_group_ids
+    # Mix them together and randomize the order
+    mixed_content = []
 
-    # Get ALL users except current user for the People tab
-    all_users = CustomUser.objects.exclude(
-        id=request.user.id
-    ).order_by('name', 'lastname')
+    # Add scribes with type marker
+    for scribe in random_scribes:
+        mixed_content.append({
+            'type': 'scribe',
+            'object': scribe,
+            'sort_key': random.random()
+        })
 
-    if search_query:
-        all_users = all_users.filter(
-            Q(username__icontains=search_query) |
-            Q(name__icontains=search_query) |
-            Q(lastname__icontains=search_query)
-        )
+    # Add reels with type marker
+    for reel in random_reels:
+        mixed_content.append({
+            'type': 'reel',
+            'object': reel,
+            'sort_key': random.random()
+        })
 
-    # Get following status for each user
-    following_ids = set(Follow.objects.filter(
-        follower=request.user).values_list('following_id', flat=True))
-    for person in all_users:
-        person.is_following = person.id in following_ids
+    # Add people with type marker
+    for person in random_people:
+        mixed_content.append({
+            'type': 'person',
+            'object': person,
+            'sort_key': random.random()
+        })
+
+    # Add groups with type marker
+    for group in random_groups:
+        mixed_content.append({
+            'type': 'group',
+            'object': group,
+            'sort_key': random.random()
+        })
+
+    # Shuffle by random sort key
+    mixed_content.sort(key=lambda x: x['sort_key'])
 
     # Get user's chats for the DM panel in navbar
     private_chats = Chat.objects.filter(
@@ -764,10 +770,7 @@ def discover_groups_view(request):
     ).count()
 
     context = {
-        'public_groups': public_groups,
-        'search_query': search_query,
-        'user_groups': user_group_ids,
-        'suggested_users': all_users[:50],  # Limit to 50 users
+        'mixed_content': mixed_content,
         'current_user': request.user,
         'private_chats': private_chats,
         'group_chats': group_chats,

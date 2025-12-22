@@ -1532,6 +1532,37 @@
     }
 
     // ===== Initialize Omzo =====
+    // Handle opening specific reel from Explore page
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const targetReelId = urlParams.get('reel');
+        
+        if (targetReelId) {
+            // Find the reel and jump directly to it without scrolling animation
+            const container = document.getElementById('omzoContainer');
+            const reels = container.querySelectorAll('.reel-item');
+            let targetIndex = -1;
+            
+            // Find the index of the target reel
+            reels.forEach((reel, index) => {
+                if (reel.getAttribute('data-id') === targetReelId) {
+                    targetIndex = index;
+                }
+            });
+            
+            if (targetIndex !== -1) {
+                // Jump directly to the reel without scroll animation
+                // Each reel is full viewport height
+                const scrollPosition = targetIndex * window.innerHeight;
+                container.scrollTop = scrollPosition;
+            } else {
+                console.warn(`Reel ${targetReelId} not found in feed`);
+            }
+            
+            // Clean up the URL to hide the reel parameter
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    });
 
 </script>
 {% endblock %}

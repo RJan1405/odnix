@@ -1128,6 +1128,159 @@
     .ig-no-requests p {
         font-size: 14px;
     }
+
+    /* ===== Scribe Feed (Twitter-style timeline) ===== */
+    .scribe-feed {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    .scribe-card {
+        display: flex;
+        gap: 12px;
+        padding: 14px 16px;
+        background: var(--ig-surface);
+        border: 1px solid var(--ig-border);
+        border-radius: 14px;
+        box-shadow: var(--shadow-sm);
+        transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .scribe-card:hover {
+        background: var(--ig-surface-hover);
+        border-color: var(--ig-border-light);
+    }
+
+    .scribe-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--ig-surface-hover);
+        border: 1px solid var(--ig-border);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+        color: var(--ig-text-secondary);
+    }
+
+    .scribe-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .scribe-avatar-fallback {
+        display: none;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        background: var(--ig-surface-hover);
+        color: var(--ig-text-secondary);
+    }
+
+    .scribe-main {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .scribe-header-top {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .scribe-name {
+        font-weight: 700;
+        color: var(--ig-text-primary);
+    }
+
+    .scribe-username,
+    .scribe-time,
+    .scribe-dot {
+        color: var(--ig-text-secondary);
+        font-size: 13px;
+    }
+
+    .scribe-body {
+        margin-top: 6px;
+        cursor: pointer;
+    }
+
+    .scribe-text {
+        margin: 0 0 10px 0;
+        color: var(--ig-text-primary);
+        font-size: 15px;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .scribe-media {
+        margin-top: 8px;
+        overflow: hidden;
+        border-radius: 12px;
+        border: 1px solid var(--ig-border);
+        background: var(--ig-surface-hover);
+    }
+
+    .scribe-media img {
+        width: 100%;
+        display: block;
+        object-fit: cover;
+    }
+
+    .scribe-code {
+        margin-top: 8px;
+        border: 1px solid var(--ig-border);
+        border-radius: 12px;
+        overflow: hidden;
+        background: var(--ig-surface-hover);
+    }
+
+    .scribe-code iframe {
+        width: 100%;
+        min-height: 220px;
+        display: block;
+    }
+
+    .scribe-footer {
+        display: flex;
+        gap: 18px;
+        align-items: center;
+        margin-top: 10px;
+        color: var(--ig-text-secondary);
+        font-size: 13px;
+    }
+
+    .scribe-metric {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .scribe-metric i,
+    .scribe-metric svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    @media (max-width: 768px) {
+        .scribe-card {
+            padding: 12px 14px;
+        }
+
+        .scribe-feed {
+            max-width: 100%;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -1300,29 +1453,53 @@
         {% if can_view_profile %}
         <div class="ig-profile-content" id="postsTab">
             {% if tweets %}
-            <div class="ig-posts-grid">
+            <div class="scribe-feed">
                 {% for tweet in tweets %}
-                <div class="ig-grid-item" onclick="openPostDetail({{ tweet.id }})">
-                    {% if tweet.content_type == 'code_scribe' %}
-                    <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" style="width: 100%; height: 100%; border: none; display: block; background: var(--ig-bg);"
-                        data-code-bundle="{{ tweet.code_bundle|urlencode }}"
-                        data-code-html="{{ tweet.code_html|default:''|urlencode }}"
-                        data-code-css="{{ tweet.code_css|default:''|urlencode }}"
-                        data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
-                    {% elif tweet.image_url %}
-                    <img src="{{ tweet.image_url }}" alt="" loading="lazy">
-                    {% else %}
-                    <div class="ig-grid-text-post">
-                        <p>{{ tweet.content|truncatechars:100 }}</p>
+                <article class="scribe-card" data-id="{{ tweet.id }}">
+                    <div class="scribe-avatar">
+                        <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                        <div class="scribe-avatar-fallback">{{ tweet.user.initials }}</div>
                     </div>
-                    {% endif %}
-                    <div class="ig-grid-overlay">
-                        <div class="ig-grid-stats">
-                            <span><i data-lucide="heart"></i> {{ tweet.like_count }}</span>
-                            <span><i data-lucide="message-circle"></i> {{ tweet.comment_count }}</span>
+                    <div class="scribe-main">
+                        <div class="scribe-header-top">
+                            <span class="scribe-name">{{ tweet.user.full_name }}</span>
+                            <span class="scribe-username">@{{ tweet.user.username }}</span>
+                            <span class="scribe-dot">•</span>
+                            <span class="scribe-time">{{ tweet.timestamp|timesince }} ago</span>
+                        </div>
+
+                        <div class="scribe-body" onclick="openPostDetail({{ tweet.id }})">
+                            {% if tweet.content %}
+                            <p class="scribe-text">{{ tweet.content|linkify_hashtags_mentions }}</p>
+                            {% endif %}
+
+                            {% if tweet.content_type == 'code_scribe' %}
+                            <div class="scribe-code">
+                                <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" style="width: 100%; height: 100%; border: none; display: block; background: var(--ig-bg);"
+                                    data-code-bundle="{{ tweet.code_bundle|urlencode }}"
+                                    data-code-html="{{ tweet.code_html|default:''|urlencode }}"
+                                    data-code-css="{{ tweet.code_css|default:''|urlencode }}"
+                                    data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
+                            </div>
+                            {% elif tweet.image_url %}
+                            <div class="scribe-media">
+                                <img src="{{ tweet.image_url }}" alt="Scribe media" loading="lazy">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="scribe-footer">
+                            <div class="scribe-metric">
+                                <i data-lucide="message-circle"></i>
+                                <span>{{ tweet.comment_count }}</span>
+                            </div>
+                            <div class="scribe-metric">
+                                <i data-lucide="heart"></i>
+                                <span>{{ tweet.like_count }}</span>
+                            </div>
                         </div>
                     </div>
-                </div>
+                </article>
                 {% endfor %}
             </div>
             {% else %}
@@ -1332,10 +1509,10 @@
                 <div class="ig-no-posts-icon">
                     <i data-lucide="camera"></i>
                 </div>
-                <h3>Share Photos</h3>
-                <p>When you share photos, they will appear on your profile.</p>
+                <h3>Share Scribes</h3>
+                <p>When you share scribes, they will appear in your profile timeline.</p>
                 <button class="ig-auth-btn" onclick="openCreatePostModal()"
-                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Share your first photo</button>
+                    style="width: auto; padding: 8px 16px; margin-top: 16px;">Share your first scribe</button>
                 {% else %}
                 <div class="ig-no-posts-icon">
                     <i data-lucide="camera-off"></i>
