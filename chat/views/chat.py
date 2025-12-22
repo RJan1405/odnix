@@ -690,61 +690,77 @@ def join_group_view(request, invite_code):
     return render(request, 'chat/join_group.html', {'chat': chat, 'already_member': False})
 
 
+def _get_explore_content_batch(page=1, per_page=15):
+    """Helper function to get a batch of explore content with pagination
+    Optimized for production - only loads needed items from database
+    Only shows scribes with images/code (no text-only scribes)"""
+    import random
+    from django.core.cache import cache
+
+    # Create a cache key for the shuffled order (changes every hour)
+    cache_key = 'explore_order_' + str(int(__import__('time').time()) // 3600)
+
+    # Try to get cached order from Redis/Cache
+    shuffled_ids = cache.get(cache_key)
+
+    if shuffled_ids is None:
+        # Cache miss - rebuild the shuffled order
+        # Get only the IDs and types (lightweight)
+        # Show scribes with actual images or code bundles (excluding empty/text-only)
+        scribes_ids = list(
+            Tweet.objects.filter(
+                # Has actual image (non-empty)
+                Q(image__isnull=False, image__gt='') |
+                Q(code_bundle__isnull=False) |           # Has code bundle
+                Q(code_html__isnull=False)              # Has code HTML
+            )
+            .values_list('id', flat=True)
+            .order_by('-timestamp'))
+
+        reels_ids = list(
+            Reel.objects.values_list('id', flat=True)
+            .order_by('-created_at'))
+
+        # Create combined list of (id, type) tuples
+        shuffled_ids = [(sid, 'scribe') for sid in scribes_ids] + \
+                       [(rid, 'reel') for rid in reels_ids]
+
+        # Shuffle
+        random.shuffle(shuffled_ids)
+
+        # Cache for 1 hour
+        cache.set(cache_key, shuffled_ids, 3600)
+
+    # Get only the items needed for this page
+    offset = (page - 1) * per_page
+    page_ids = shuffled_ids[offset:offset + per_page]
+
+    if not page_ids:
+        return []
+
+    # Fetch only the needed items from database
+    paginated = []
+    for item_id, item_type in page_ids:
+        if item_type == 'scribe':
+            obj = Tweet.objects.select_related('user').get(id=item_id)
+        else:
+            obj = Reel.objects.select_related('user').get(id=item_id)
+
+        paginated.append({
+            'type': item_type,
+            'object': obj,
+            'sort_key': random.random()
+        })
+
+    return paginated
+
+
 @login_required
 def discover_groups_view(request):
-    """Explore page: show random scribes, omzo reels, people, and groups."""
-    import random
+    """Explore page: show random scribes, omzo reels, people, and groups with pagination."""
 
-    # Pull all scribes and reels (unlimited)
-    random_scribes = list(
-        Tweet.objects.select_related('user').order_by('?'))
-    random_reels = list(Reel.objects.select_related('user').order_by('?'))
-
-    # Pull all people (exclude current user)
-    random_people = list(
-        CustomUser.objects.exclude(id=request.user.id).order_by('?'))
-
-    # Pull all public groups
-    random_groups = list(
-        Chat.objects.filter(chat_type='group').order_by('?'))
-
-    # Mix them together and randomize the order
-    mixed_content = []
-
-    # Add scribes with type marker
-    for scribe in random_scribes:
-        mixed_content.append({
-            'type': 'scribe',
-            'object': scribe,
-            'sort_key': random.random()
-        })
-
-    # Add reels with type marker
-    for reel in random_reels:
-        mixed_content.append({
-            'type': 'reel',
-            'object': reel,
-            'sort_key': random.random()
-        })
-
-    # Add people with type marker
-    for person in random_people:
-        mixed_content.append({
-            'type': 'person',
-            'object': person,
-            'sort_key': random.random()
-        })
-
-    # Add groups with type marker
-    for group in random_groups:
-        mixed_content.append({
-            'type': 'group',
-            'object': group,
-            'sort_key': random.random()
-        })
-
-    # Shuffle by random sort key
-    mixed_content.sort(key=lambda x: x['sort_key'])
+    # Get first page (15 items)
+    mixed_content = _get_explore_content_batch(page=1, per_page=15)
 
     # Get user's chats for the DM panel in navbar
     private_chats = Chat.objects.filter(
@@ -779,6 +795,74 @@ def discover_groups_view(request):
     }
 
     return render(request, 'chat/discover_groups.html', context)
+
+
+@login_required
+def load_more_explore_content(request):
+    """API endpoint for infinite scroll on explore page"""
+    try:
+        page = int(request.GET.get('page', 2))
+        per_page = 15
+
+        mixed_content = _get_explore_content_batch(
+            page=page, per_page=per_page)
+
+        # Serialize to JSON
+        data = []
+        for item in mixed_content:
+            obj = item['object']
+            item_data = {'type': item['type']}
+
+            if item['type'] == 'scribe':
+                item_data.update({
+                    'id': obj.id,
+                    'content': obj.content,
+                    'image_url': obj.image.url if obj.image else None,
+                    'code_bundle': obj.code_bundle,
+                    'code_html': obj.code_html,
+                    'code_css': obj.code_css,
+                    'code_js': obj.code_js,
+                    'user': {
+                        'username': obj.user.username,
+                        'full_name': obj.user.full_name,
+                    }
+                })
+            elif item['type'] == 'reel':
+                item_data.update({
+                    'id': obj.id,
+                    'caption': obj.caption,
+                    'video_url': obj.video_file.url if obj.video_file else None,
+                    'user': {
+                        'username': obj.user.username,
+                        'full_name': obj.user.full_name,
+                    }
+                })
+            elif item['type'] == 'person':
+                item_data.update({
+                    'username': obj.username,
+                    'full_name': obj.full_name,
+                    'profile_picture': obj.profile_picture.url if obj.profile_picture else None,
+                })
+            elif item['type'] == 'group':
+                item_data.update({
+                    'id': obj.id,
+                    'name': obj.name,
+                })
+
+            data.append(item_data)
+
+        has_next = len(data) >= per_page
+
+        return JsonResponse({
+            'success': True,
+            'content': data,
+            'has_next': has_next,
+            'page': page
+        })
+
+    except Exception as e:
+        logger.error(f"Error in load_more_explore_content: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Failed to load content'})
 
 
 @login_required

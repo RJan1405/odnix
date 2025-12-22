@@ -6926,3 +6926,391 @@ Error serving media file: Media file not found
 Error serving media file: Media file not found
 Error serving media file: Media file not found
 Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Internal Server Error: /chat/discover-groups/
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 704, in discover_groups_view
+    .filter(Q(image_url__isnull=False) | Q(code_bundle__isnull=False) | Q(code_html__isnull=False))
+     ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\query.py", line 1476, in filter
+    return self._filter_or_exclude(False, args, kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\query.py", line 1494, in _filter_or_exclude
+    clone._filter_or_exclude_inplace(negate, args, kwargs)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\query.py", line 1501, in _filter_or_exclude_inplace
+    self._query.add_q(Q(*args, **kwargs))
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1600, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+                ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1459, in build_filter
+    return self._add_q(
+           ~~~~~~~~~~~^
+        filter_expr,
+        ^^^^^^^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1632, in _add_q
+    child_clause, needed_inner = self.build_filter(
+                                 ~~~~~~~~~~~~~~~~~^
+        child,
+        ^^^^^^
+    ...<7 lines>...
+        update_join_types=update_join_types,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1482, in build_filter
+    lookups, parts, reffed_expression = self.solve_lookup_type(arg, summarize)
+                                        ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1294, in solve_lookup_type
+    _, field, _, lookup_parts = self.names_to_path(lookup_splitted, self.get_meta())
+                                ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\VulnTech3\odnix\.venv\Lib\site-packages\django\db\models\sql\query.py", line 1759, in names_to_path
+    raise FieldError(
+    ...<2 lines>...
+    )
+django.core.exceptions.FieldError: Cannot resolve keyword 'image_url' into field. Choices are: code_bundle, code_css, code_html, code_js, comments, content, content_type, id, image, mentions, reports, saved_by, timestamp, tweet_hashtags, tweet_likes, user, user_id
+[35;1mHTTP GET /chat/discover-groups/ 500 [0.06, 127.0.0.1:61055][0m
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Compression failed, falling back to original: name 'File' is not defined
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error in get_chats_api: Cannot resolve keyword 'read_by' into field. Choices are: chat, chat_id, consumed_at, content, deletions, edited_at, id, is_edited, is_pinned, is_read, media_filename, media_size, media_type, media_url, message_reactions, message_type, one_time, original_content, pinned_at, pinned_by, pinned_by_id, reactions, read_receipts, replies, reply_to, reply_to_id, sender, sender_id, starred_by, timestamp
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found
+Error serving media file: Media file not found

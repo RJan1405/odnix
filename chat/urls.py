@@ -34,6 +34,8 @@ urlpatterns = [
 
     # Group discovery URL
     path('discover-groups/', views.discover_groups_view, name='discover_groups'),
+    path('api/explore/load-more/', views.load_more_explore_content,
+         name='load_more_explore'),
 
     # FIXED: Media serving URL with correct parameter name
     re_path(r'^media/(?P<file_path>.*)$',

@@ -24,9 +24,9 @@
     }
 
     .ig-discover-content {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 var(--spacing-lg);
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
 
     .ig-discover-header {
@@ -34,6 +34,10 @@
         display: flex;
         flex-direction: column;
         gap: 8px;
+        padding: 0 var(--spacing-lg);
+        max-width: 1100px;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .ig-discover-title {
@@ -50,20 +54,23 @@
 
     .ig-explore-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, 300px);
-        gap: var(--spacing-lg);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
         justify-content: start;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
+        background: #e0e0e0;
     }
 
     .explore-card {
         background: var(--ig-surface);
-        border: 1px solid var(--ig-border);
-        border-radius: 16px;
+        border: none;
+        border-radius: 0;
         padding: 0;
         display: flex;
         flex-direction: column;
         gap: 0;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        box-shadow: none;
         overflow: hidden;
         position: relative;
         aspect-ratio: 1;
@@ -72,32 +79,43 @@
     }
 
     .explore-card:hover {
-        opacity: 0.9;
-    }
-
-    .explore-card-media-container {
-        position: relative;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #000;
-    }
-
-    .explore-card-media {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
+        opacity: 0.8;
+        background: rgba(0, 0, 0, 0.1);
     }
 
     .explore-card-overlay {
         position: absolute;
         inset: 0;
-        background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.3) 100%);
-        padding: 16px;
+        background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.6) 100%);
+        padding: 12px;
         display: flex;
         flex-direction: column;
         justify-content: flex-end;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .explore-card:hover .explore-card-overlay {
+        opacity: 1;
+    }
+
+    .explore-card-tag {
+        font-size: 11px;
+        font-weight: 600;
+        color: #fff;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .explore-card-caption {
+        color: #fff;
+        font-size: 12px;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
         opacity: 0;
         transition: opacity 0.2s;
     }
@@ -125,42 +143,56 @@
         line-height: 1.4;
         display: -webkit-box;
         -webkit-line-clamp: 2;
+        line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
     }
 
     .explore-reel-play-icon {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 48px;
-        height: 48px;
-        background: rgba(255, 255, 255, 0.3);
+        top: 8px;
+        right: 8px;
+        width: 32px;
+        height: 32px;
+        background: rgba(255, 255, 255, 0.4);
         backdrop-filter: blur(10px);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        opacity: 0;
-        transition: opacity 0.2s;
+        opacity: 1;
+        transition: background 0.2s;
     }
 
     .explore-card:hover .explore-reel-play-icon {
-        opacity: 1;
-    }
-
-    /* Hide people and groups by default */
-    .explore-card[data-type="person"]:not(.search-active),
-    .explore-card[data-type="group"]:not(.search-active) {
-        display: none;
+        background: rgba(255, 255, 255, 0.6);
     }
 
     .explore-reel-play-icon i,
     .explore-reel-play-icon svg {
-        width: 24px;
-        height: 24px;
+        width: 16px;
+        height: 16px;
         color: white;
+    }
+
+    /* Code scribe badge */
+    .explore-card[data-type="scribe"] .explore-code-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: rgba(0, 149, 246, 0.8);
+        backdrop-filter: blur(10px);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 10px;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+        display: none;
+    }
+
+    .explore-card[data-has-code="true"] .explore-code-badge {
+        display: block;
     }
 
     .ig-empty-state {
@@ -465,24 +497,44 @@
 
     @media (max-width: 768px) {
         .ig-discover-container {
-            padding-top: 72px;
+            padding-top: 60px;
             padding-bottom: 80px;
         }
 
         .ig-discover-content {
-            padding: 0 var(--spacing-md);
+            padding: 0;
+            max-width: 100%;
+        }
+
+        .ig-discover-header {
+            padding: 0 16px;
+            margin-bottom: 12px;
+        }
+
+        .ig-discover-search {
+            display: none;
         }
 
         .ig-discover-title {
-            font-size: 24px;
+            font-size: 22px;
+            margin-bottom: 8px;
+        }
+
+        .ig-discover-subtitle {
+            display: none;
         }
 
         .ig-explore-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            margin: 0;
+            width: 100vw;
+            margin-left: calc(-50vw + 50%);
         }
 
-        .explore-reel-video {
-            height: 500px;
+        .explore-card {
+            border-radius: 0;
+            border: none;
         }
 
         .ig-bottom-nav {
@@ -493,6 +545,25 @@
 
         .ig-top-nav {
             display: none !important;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .ig-explore-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+        }
+
+        .ig-discover-title {
+            font-size: 20px;
+        }
+
+        .explore-card-tag {
+            font-size: 10px;
+        }
+
+        .explore-card-caption {
+            font-size: 11px;
         }
     }
 </style>
@@ -508,543 +579,706 @@
             <p class="ig-discover-subtitle">Dive into random Scribes and Omzo picks.</p>
             <div class="ig-discover-search">
                 <i data-lucide="search"></i>
-                <input type="text" id="exploreSearchInput" placeholder="Search people, groups, scribes, omzo..." 
+                <input type="text" id="exploreSearchInput" placeholder="Search people, groups, scribes, omzo..."
                     onkeyup="filterExploreContent(this.value)">
             </div>
         </header>
+    </div>
 
-        {% if mixed_content %}
-        <div class="ig-explore-grid" id="exploreGrid">
+    {% if mixed_content %}
+    <div class="ig-explore-grid" id="exploreGrid">
             {% for item in mixed_content %}
-                {% if item.type == 'scribe' %}
-                    {% with scribe=item.object %}
-                    <article class="explore-card" data-type="scribe" data-search-text="{{ scribe.user.full_name|default:scribe.user.username }} @{{ scribe.user.username }} {{ scribe.content }}" onclick="openScribePost({{ scribe.id }})">
-                        <div class="explore-card-media-container">
-                            {% if scribe.image_url %}
-                            <img src="{{ scribe.image_url }}" alt="Scribe media" loading="lazy" class="explore-card-media">
-                            {% else %}
-                            <div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="image" style="width: 48px; height: 48px; opacity: 0.3;"></i>
-                            </div>
-                            {% endif %}
-                            <div class="explore-card-overlay">
-                                <div class="explore-card-tag">Scribe</div>
-                                {% if scribe.content %}
-                                <div class="explore-card-caption">{{ scribe.content|truncatewords:15 }}</div>
-                                {% endif %}
-                            </div>
+            {% if item.type == 'scribe' %}
+            {% with scribe=item.object %}
+            <article class="explore-card" data-type="scribe"
+                data-has-code="{% if scribe.code_bundle or scribe.code_html %}true{% else %}false{% endif %}"
+                data-search-text="{{ scribe.user.full_name|default:scribe.user.username }} @{{ scribe.user.username }} {{ scribe.content }}"
+                onclick="openScribePost({{ scribe.id }})">
+                <div class="explore-card-media-container">
+                    {% if scribe.image_url %}
+                    <img src="{{ scribe.image_url }}" alt="Scribe media" loading="lazy" class="explore-card-media">
+                    {% elif scribe.code_bundle %}
+                    <iframe class="explore-card-media" srcdoc="{{ scribe.code_bundle|escape }}"
+                        style="border: none; width: 100%; height: 100%; pointer-events: none;" sandbox="allow-scripts"
+                        loading="lazy">
+                    </iframe>
+                    {% elif scribe.code_html %}
+                    <iframe class="explore-card-media"
+                        srcdoc="<style>{{ scribe.code_css|default:'' }}</style>{{ scribe.code_html }}<script>{{ scribe.code_js|default:'' }}</script>"
+                        style="border: none; width: 100%; height: 100%; pointer-events: none;" sandbox="allow-scripts"
+                        loading="lazy">
+                    </iframe>
+                    {% else %}
+                    <div class="explore-card-media"
+                        style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                    </div>
+                    {% endif %}
+                    {% if scribe.code_bundle or scribe.code_html %}<span class="explore-code-badge"><i data-lucide="code" style="width: 10px; height: 10px; display: inline-block;"></i> Code</span>{% endif %}
+                    <div class="explore-card-overlay">
+                        <div class="explore-card-tag">{% if scribe.code_bundle or scribe.code_html %}Code Scribe{% else
+                            %}Scribe{% endif %}</div>
+                        {% if scribe.content %}
+                        <div class="explore-card-caption">{{ scribe.content|truncatewords:15 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endwith %}
+            {% elif item.type == 'reel' %}
+            {% with reel=item.object %}
+            <article class="explore-card" data-type="reel"
+                data-search-text="{{ reel.user.full_name|default:reel.user.username }} @{{ reel.user.username }} {{ reel.caption }}"
+                onclick="openReelInOmzo({{ reel.id }})">
+                <div class="explore-card-media-container">
+                    {% if reel.video_file %}
+                    <video class="explore-card-media" muted autoplay loop playsinline
+                        onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
+                        <source src="{{ reel.video_file.url }}" type="video/mp4">
+                    </video>
+                    <div class="explore-reel-play-icon"
+                        onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
+                        <i data-lucide="play"></i>
+                    </div>
+                    {% else %}
+                    <div class="explore-card-media"
+                        style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="video" style="width: 48px; height: 48px; opacity: 0.3;"></i>
+                    </div>
+                    {% endif %}
+                    <div class="explore-card-overlay">
+                        <div class="explore-card-tag">Omzo</div>
+                        {% if reel.caption %}
+                        <div class="explore-card-caption">{{ reel.caption|truncatewords:15 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+            {% endwith %}
+            {% elif item.type == 'person' %}
+            {% with person=item.object %}
+            <article class="explore-card" data-type="person"
+                data-search-text="{{ person.full_name|default:person.username }} @{{ person.username }}"
+                onclick="window.location.href='{% url 'user_profile' person.username %}'">
+                <div class="explore-card-media-container"
+                    style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        {% if person.profile_picture %}
+                        <img src="{{ person.profile_picture.url }}" alt="{{ person.full_name }}"
+                            style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;"
+                            onerror="this.style.display='none';">
+                        {% else %}
+                        <div
+                            style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);">
+                            <i data-lucide="user" style="width: 36px; height: 36px;"></i>
                         </div>
-                    </article>
-                    {% endwith %}
-                {% elif item.type == 'reel' %}
-                    {% with reel=item.object %}
-                    <article class="explore-card" data-type="reel" data-search-text="{{ reel.user.full_name|default:reel.user.username }} @{{ reel.user.username }} {{ reel.caption }}" onclick="openReelInOmzo({{ reel.id }})">
-                        <div class="explore-card-media-container">
-                            {% if reel.video_file %}
-                            <video class="explore-card-media" muted autoplay loop playsinline onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
-                                <source src="{{ reel.video_file.url }}" type="video/mp4">
-                            </video>
-                            <div class="explore-reel-play-icon" onclick="event.stopPropagation(); openReelInOmzo({{ reel.id }})">
-                                <i data-lucide="play"></i>
-                            </div>
-                            {% else %}
-                            <div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;">
-                                <i data-lucide="video" style="width: 48px; height: 48px; opacity: 0.3;"></i>
-                            </div>
-                            {% endif %}
-                            <div class="explore-card-overlay">
-                                <div class="explore-card-tag">Omzo</div>
-                                {% if reel.caption %}
-                                <div class="explore-card-caption">{{ reel.caption|truncatewords:15 }}</div>
-                                {% endif %}
-                            </div>
+                        {% endif %}
+                        <div
+                            style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">
+                            {{ person.full_name|default:person.username }}</div>
+                        <div style="color: var(--ig-text-secondary); font-size: 12px;">@{{ person.username }}</div>
+                    </div>
+                </div>
+            </article>
+            {% endwith %}
+            {% elif item.type == 'group' %}
+            {% with group=item.object %}
+            <article class="explore-card" data-type="group" data-search-text="{{ group.name }}"
+                onclick="window.location.href='{% url 'chat_detail' group.id %}'">
+                <div class="explore-card-media-container"
+                    style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div
+                            style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
+                            <i data-lucide="users"
+                                style="width: 36px; height: 36px; color: var(--ig-text-secondary);"></i>
                         </div>
-                    </article>
-                    {% endwith %}
-                {% elif item.type == 'person' %}
-                    {% with person=item.object %}
-                    <article class="explore-card" data-type="person" data-search-text="{{ person.full_name|default:person.username }} @{{ person.username }}" onclick="window.location.href='{% url 'user_profile' person.username %}'">
-                        <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
-                            <div style="text-align: center;">
-                                {% if person.profile_picture %}
-                                    <img src="{{ person.profile_picture.url }}" alt="{{ person.full_name }}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;" onerror="this.style.display='none';">
-                                {% else %}
-                                    <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);">
-                                        <i data-lucide="user" style="width: 36px; height: 36px;"></i>
-                                    </div>
-                                {% endif %}
-                                <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">{{ person.full_name|default:person.username }}</div>
-                                <div style="color: var(--ig-text-secondary); font-size: 12px;">@{{ person.username }}</div>
-                            </div>
-                        </div>
-                    </article>
-                    {% endwith %}
-                {% elif item.type == 'group' %}
-                    {% with group=item.object %}
-                    <article class="explore-card" data-type="group" data-search-text="{{ group.name }}" onclick="window.location.href='{% url 'chat_detail' group.id %}'">
-                        <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
-                            <div style="text-align: center;">
-                                <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;">
-                                    <i data-lucide="users" style="width: 36px; height: 36px; color: var(--ig-text-secondary);"></i>
-                                </div>
-                                <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">{{ group.name }}</div>
-                                <div style="color: var(--ig-text-secondary); font-size: 12px;">Group</div>
-                            </div>
-                        </div>
-                    </article>
-                    {% endwith %}
-                {% endif %}
+                        <div
+                            style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">
+                            {{ group.name }}</div>
+                        <div style="color: var(--ig-text-secondary); font-size: 12px;">Group</div>
+                    </div>
+                </div>
+            </article>
+            {% endwith %}
+            {% endif %}
             {% endfor %}
         </div>
         {% else %}
-        <div class="ig-empty-state">
-            <i data-lucide="sparkles"></i>
-            <h3>Nothing to explore yet</h3>
-            <p>Post a Scribe or Omzo to be featured here.</p>
+        <div class="ig-discover-content">
+            <div class="ig-empty-state">
+                <i data-lucide="sparkles"></i>
+                <h3>Nothing to explore yet</h3>
+                <p>Post a Scribe or Omzo to be featured here.</p>
+            </div>
         </div>
         {% endif %}
     </div>
 </div>
 
 <!-- Post Modal -->
-<div class="post-modal-overlay" id="postModal" onclick="closePostModal(event)">
-    <div class="post-modal-content" onclick="event.stopPropagation()">
-        <div class="post-modal-close" onclick="closePostModal()">
+<div class="post-modal-overlay" id="postModal">
+    <div class="post-modal-content">
+        <button class="post-modal-close" onclick="document.getElementById('postModal').classList.remove('show')">
             <i data-lucide="x"></i>
-        </div>
-        <div class="post-modal-body" id="postModalBody">
+        </button>
+        <div class="post-modal-body" id="postModalBody"></div>
+    </div>
+</div>
+
+<!-- Reel Modal -->
+<div class="post-modal-overlay" id="reelModal">
+    <div class="post-modal-content">
+        <button class="post-modal-close" onclick="document.getElementById('reelModal').classList.remove('show')">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="post-modal-body" id="reelModalBody"></div>
+    </div>
+</div>
+
+<script>
+    // Global State
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMore = true;
+
+    // --- Modal Functions ---
+
+    function openScribePost(postId) {
+        const modal = document.getElementById('postModal');
+        const body = document.getElementById('postModalBody');
+
+        modal.classList.add('show');
+        body.innerHTML = `
             <div class="post-modal-loading">
                 <div style="animation: spin 1s linear infinite;">
                     <i data-lucide="loader" style="width: 32px; height: 32px;"></i>
                 </div>
                 <p style="margin-top: 16px;">Loading post...</p>
             </div>
-        </div>
-    </div>
-</div>
+        `;
 
-<style>
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        fetch(`/chat/api/tweet/${postId}/`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.tweet) {
+                    const tweet = data.tweet;
+                    const isLiked = tweet.is_liked || false;
+
+                    // Render Image/Media Section
+                    let mediaSection = '';
+                    if (tweet.image_url) {
+                        mediaSection = `<img src="${tweet.image_url}" alt="Post image" style="width: 100%; height: auto; max-height: 400px; object-fit: cover;">`;
+                    } else if (tweet.code_bundle || tweet.code_html) {
+                        // Render code scribe using iframe
+                        const srcContent = tweet.code_bundle ? escapeHtml(tweet.code_bundle) :
+                            escapeHtml(`<style>${tweet.code_css || ''}</style>${tweet.code_html}<script>${tweet.code_js || ''}<\/script>`);
+                        mediaSection = `<iframe style="width: 100%; height: 400px; border: none;" sandbox="allow-scripts" srcdoc="${srcContent}"></iframe>`;
+                    } else {
+                        mediaSection = `<div style="width: 100%; height: 250px; background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);"><i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.3;"></i></div>`;
+                    }
+
+                    body.innerHTML = `
+                        <div style="display: flex; flex-direction: column; height: 100%; max-height: 90vh;">
+                            <div class="post-modal-image-section" style="flex-shrink: 0; overflow: hidden; background: #000;">
+                                ${mediaSection}
+                            </div>
+                            
+                            <div class="post-modal-info" style="flex-shrink: 0;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <img src="${tweet.avatar || 'https://ui-avatars.com/api/?name=' + tweet.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none';">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${tweet.full_name || tweet.username}</div>
+                                        <div style="color: var(--ig-text-secondary); font-size: 12px;">@${tweet.username}</div>
+                                    </div>
+                                </div>
+                                
+                                ${tweet.content ? `<div style="color: var(--ig-text-primary); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">${tweet.content}</div>` : ''}
+                                
+                                <div style="display: flex; gap: 16px; font-size: 13px; color: var(--ig-text-secondary);">
+                                    <span id="likeCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.like_count || 0}</strong> Likes</span>
+                                    <span id="commentCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.comment_count || 0}</strong> Comments</span>
+                                    <span style="color: var(--ig-text-secondary); font-size: 11px;">${tweet.time_ago}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="post-modal-actions">
+                                <button class="post-modal-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLikeInModal(${postId}, this)" data-liked="${isLiked ? 'true' : 'false'}" data-post-id="${postId}">
+                                    <i data-lucide="heart" style="width: 18px; height: 18px; ${isLiked ? 'fill: currentColor;' : ''}"></i>
+                                    <span>Like</span>
+                                </button>
+                                <button class="post-modal-action-btn" onclick="event.stopPropagation(); document.getElementById('commentInput${postId}').focus()">
+                                    <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
+                                    <span>Comment</span>
+                                </button>
+                            </div>
+                            
+                            <div class="post-modal-comments-section" id="commentsSection${postId}">
+                                <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
+                                    <i data-lucide="loader" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="post-modal-comment-input">
+                                <input type="text" id="commentInput${postId}" placeholder="Add a comment..." onkeypress="if(event.key === 'Enter' && this.value.trim()) { postComment(${postId}, this.value); this.value = ''; }">
+                                <button onclick="event.stopPropagation(); const input = document.getElementById('commentInput${postId}'); if(input.value.trim()) { postComment(${postId}, input.value); input.value = ''; }" id="commentBtn${postId}">Post</button>
+                            </div>
+                        </div>
+                    `;
+
+                    loadCommentsInModal(postId);
+                } else {
+                    body.innerHTML = renderErrorState('Failed to load post');
+                }
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            })
+            .catch(err => {
+                console.error(err);
+                body.innerHTML = renderErrorState('Error loading post');
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
     }
-</style>
 
-<script>
-// Open scribe/post detail in modal
-function openScribePost(postId) {
-    const modal = document.getElementById('postModal');
-    const body = document.getElementById('postModalBody');
-    
-    // Show modal with loading state
-    modal.classList.add('show');
-    body.innerHTML = `
-        <div class="post-modal-loading">
-            <div style="animation: spin 1s linear infinite;">
-                <i data-lucide="loader" style="width: 32px; height: 32px;"></i>
+    function renderErrorState(message) {
+        return `
+            <div class="post-modal-loading">
+                <i data-lucide="alert-circle" style="width: 40px; height: 40px; opacity: 0.5;"></i>
+                <p style="margin-top: 12px;">${message}</p>
             </div>
-            <p style="margin-top: 16px;">Loading post...</p>
-        </div>
-    `;
-    
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
+        `;
     }
-    
-    // Fetch post data
-    fetch(`/chat/api/tweet/${postId}/`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.tweet) {
-                const tweet = data.tweet;
-                const isLiked = tweet.is_liked || false;
-                
-                body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; height: 100%; max-height: 90vh;">
-                        <!-- Image Section -->
-                        <div class="post-modal-image-section" style="flex-shrink: 0;">
-                            ${tweet.image_url ? `<img src="${tweet.image_url}" alt="Post image" style="width: 100%; height: auto; max-height: 400px; object-fit: cover;">` : `<div style="width: 100%; height: 250px; background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);"><i data-lucide="image" style="width: 48px; height: 48px; opacity: 0.3;"></i></div>`}
-                        </div>
 
-                        <!-- Info Section -->
-                        <div class="post-modal-info" style="flex-shrink: 0;">
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
-                                <img src="${tweet.avatar || 'https://ui-avatars.com/api/?name=' + tweet.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none';">
-                                <div>
-                                    <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${tweet.full_name || tweet.username}</div>
-                                    <div style="color: var(--ig-text-secondary); font-size: 12px;">@${tweet.username}</div>
-                                </div>
-                            </div>
+    function toggleLikeInModal(postId, button) {
+        const isLiked = button.getAttribute('data-liked') === 'true';
+        fetch(`/chat/api/toggle-like/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tweet_id: postId })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const newIsLiked = !isLiked;
+                    button.setAttribute('data-liked', newIsLiked ? 'true' : 'false');
+                    button.classList.toggle('liked', newIsLiked);
 
-                            ${tweet.content ? `<div style="color: var(--ig-text-primary); font-size: 14px; line-height: 1.5; margin-bottom: 12px;">${tweet.content}</div>` : ''}
+                    // Update icon fill
+                    const icon = button.querySelector('svg') || button.querySelector('i');
+                    if (icon) {
+                        icon.style.fill = newIsLiked ? 'currentColor' : 'none';
+                    }
 
-                            <div style="display: flex; gap: 16px; font-size: 13px; color: var(--ig-text-secondary);">
-                                <span id="likeCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.like_count || 0}</strong> Likes</span>
-                                <span id="commentCount${postId}"><strong style="color: var(--ig-text-primary);">${tweet.comment_count || 0}</strong> Comments</span>
-                                <span style="color: var(--ig-text-secondary); font-size: 11px;">${tweet.time_ago}</span>
-                            </div>
-                        </div>
+                    const likeCountEl = document.getElementById('likeCount' + postId);
+                    if (likeCountEl && data.like_count !== undefined) {
+                        likeCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.like_count}</strong> Likes`;
+                    }
+                }
+            })
+            .catch(console.error);
+    }
 
-                        <!-- Action Buttons -->
-                        <div class="post-modal-actions">
-                            <button class="post-modal-action-btn like-btn ${isLiked ? 'liked' : ''}" onclick="event.stopPropagation(); toggleLikeInModal(${postId}, this)" data-liked="${isLiked ? 'true' : 'false'}" data-post-id="${postId}">
-                                <i data-lucide="heart" style="width: 18px; height: 18px; ${isLiked ? 'fill: currentColor;' : ''};"></i>
-                                <span>Like</span>
-                            </button>
-                            <button class="post-modal-action-btn" onclick="event.stopPropagation(); document.getElementById('commentInput${postId}').focus()">
-                                <i data-lucide="message-circle" style="width: 18px; height: 18px;"></i>
-                                <span>Comment</span>
-                            </button>
-                        </div>
+    function loadCommentsInModal(postId) {
+        const commentsSection = document.getElementById('commentsSection' + postId);
+        if (!commentsSection) return;
 
-                        <!-- Comments Section -->
-                        <div class="post-modal-comments-section" id="commentsSection${postId}">
+        fetch(`/chat/api/tweet/${postId}/comments/`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.comments) {
+                    if (data.comments.length === 0) {
+                        commentsSection.innerHTML = `
                             <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                                <i data-lucide="loader" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+                                <i data-lucide="message-circle" style="width: 24px; height: 24px; opacity: 0.3; margin-bottom: 8px;"></i>
+                                <div style="font-size: 13px;">No comments yet</div>
                             </div>
-                        </div>
-
-                        <!-- Comment Input -->
-                        <div class="post-modal-comment-input">
-                            <input type="text" id="commentInput${postId}" placeholder="Add a comment..." onkeypress="if(event.key === 'Enter' && this.value.trim()) { postComment(${postId}, this.value); this.value = ''; }">
-                            <button onclick="event.stopPropagation(); const input = document.getElementById('commentInput${postId}'); if(input.value.trim()) { postComment(${postId}, input.value); input.value = ''; }" id="commentBtn${postId}">Post</button>
-                        </div>
-                    </div>
-                `;
-                
-                // Load comments
-                loadCommentsInModal(postId);
-            } else {
-                body.innerHTML = `
-                    <div class="post-modal-loading">
-                        <i data-lucide="alert-circle" style="width: 40px; height: 40px; opacity: 0.5;"></i>
-                        <p style="margin-top: 12px;">Failed to load post</p>
-                    </div>
-                `;
-            }
-            
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            body.innerHTML = `
-                <div class="post-modal-loading">
-                    <i data-lucide="alert-circle" style="width: 40px; height: 40px; opacity: 0.5;"></i>
-                    <p style="margin-top: 12px;">Error loading post</p>
-                </div>
-            `;
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-}
-
-// Toggle like on a post in modal
-function toggleLikeInModal(postId, button) {
-    const isLiked = button.getAttribute('data-liked') === 'true';
-    
-    fetch(`/chat/api/toggle-like/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ tweet_id: postId })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const newIsLiked = !isLiked;
-            button.setAttribute('data-liked', newIsLiked ? 'true' : 'false');
-            if (newIsLiked) {
-                button.classList.add('liked');
-            } else {
-                button.classList.remove('liked');
-            }
-            
-            // Update like count
-            const likeCountEl = document.getElementById('likeCount' + postId);
-            if (likeCountEl && data.like_count !== undefined) {
-                likeCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.like_count}</strong> Likes`;
-            }
-            
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        }
-    })
-    .catch(err => console.error('Like error:', err));
-}
-
-// Load comments in modal
-function loadCommentsInModal(postId) {
-    const commentsSection = document.getElementById('commentsSection' + postId);
-    if (!commentsSection) return;
-    
-    fetch(`/chat/api/tweet/${postId}/comments/`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.comments) {
-                const comments = data.comments;
-                if (comments.length === 0) {
-                    commentsSection.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                            <i data-lucide="message-circle" style="width: 24px; height: 24px; opacity: 0.3; margin-bottom: 8px;"></i>
-                            <div style="font-size: 13px;">No comments yet</div>
-                            <div style="font-size: 12px; margin-top: 4px;">Be the first to comment!</div>
-                        </div>
-                    `;
-                } else {
-                    commentsSection.innerHTML = comments.map(comment => `
-                        <div class="post-modal-comment-item">
-                            <div style="display: flex; gap: 10px;">
-                                <img src="${comment.avatar || 'https://ui-avatars.com/api/?name=' + comment.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none';">
-                                <div style="flex: 1;">
-                                    <div style="margin-bottom: 4px;">
-                                        <span style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${comment.full_name || comment.username}</span>
-                                        <span style="color: var(--ig-text-secondary); font-size: 12px; margin-left: 6px;">@${comment.username}</span>
+                        `;
+                    } else {
+                        commentsSection.innerHTML = data.comments.map(comment => `
+                            <div class="post-modal-comment-item">
+                                <div style="display: flex; gap: 10px;">
+                                    <img src="${comment.avatar || 'https://ui-avatars.com/api/?name=' + comment.username}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;" onerror="this.style.display='none';">
+                                    <div style="flex: 1;">
+                                        <div style="margin-bottom: 4px;">
+                                            <span style="font-weight: 600; color: var(--ig-text-primary); font-size: 13px;">${comment.full_name || comment.username}</span>
+                                            <span style="color: var(--ig-text-secondary); font-size: 12px; margin-left: 6px;">@${comment.username}</span>
+                                        </div>
+                                        <div style="color: var(--ig-text-primary); font-size: 13px; line-height: 1.4;">${comment.content || ''}</div>
+                                        <div style="color: var(--ig-text-secondary); font-size: 11px; margin-top: 6px;">${comment.time_ago || ''}</div>
                                     </div>
-                                    <div style="color: var(--ig-text-primary); font-size: 13px; line-height: 1.4;">${comment.content || ''}</div>
-                                    <div style="color: var(--ig-text-secondary); font-size: 11px; margin-top: 6px;">${comment.time_ago || ''}</div>
                                 </div>
                             </div>
-                        </div>
-                    `).join('');
-                }
-            } else {
-                commentsSection.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                        <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.3;"></i>
-                        <div style="font-size: 13px; margin-top: 8px;">Failed to load comments</div>
-                    </div>
-                `;
-            }
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        })
-        .catch(err => {
-            console.error('Comments error:', err);
-            commentsSection.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.3;"></i>
-                    <div style="font-size: 13px; margin-top: 8px;">Error loading comments</div>
-                </div>
-            `;
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        });
-}
-
-// Post a comment
-function postComment(postId, commentText) {
-    if (!commentText || !commentText.trim()) return;
-    
-    fetch(`/chat/api/add-comment/`, {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            tweet_id: postId,
-            content: commentText.trim()
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            // Reload comments to show the new one
-            loadCommentsInModal(postId);
-            
-            // Update comment count
-            const commentCountEl = document.getElementById('commentCount' + postId);
-            if (commentCountEl && data.comment_count !== undefined) {
-                commentCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.comment_count}</strong> Comments`;
-            }
-        } else {
-            alert('Failed to post comment');
-        }
-    })
-    .catch(err => {
-        console.error('Comment error:', err);
-        alert('Error posting comment');
-    });
-}
-
-// Toggle like on a post (kept for backwards compatibility)
-function toggleLikePost(postId, button, event) {
-    if (event) event.stopPropagation();
-    toggleLikeInModal(postId, button);
-}
-
-// Toggle comments view (kept for backwards compatibility)
-function toggleCommentsView(postId) {
-    openViewComments(postId);
-}
-
-// Load and display comments for a post
-function loadComments(postId) {
-    const commentsSection = document.getElementById('commentsSection');
-    
-    fetch(`/chat/api/tweet/${postId}/comments/`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.comments) {
-                const comments = data.comments;
-                if (comments.length === 0) {
-                    commentsSection.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                            <i data-lucide="message-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
-                            No comments yet
-                        </div>
-                    `;
+                        `).join('');
+                    }
                 } else {
-                    commentsSection.innerHTML = comments.map(comment => `
-                        <div style="padding: 12px; border-bottom: 1px solid var(--ig-border);">
-                            <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-                                <img src="${comment.avatar || 'https://ui-avatars.com/api/?name=' + comment.username}" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none';">
-                                <div style="flex: 1;">
-                                    <div style="font-weight: 500; color: var(--ig-text-primary); font-size: 13px;">
-                                        ${comment.full_name || comment.username}
-                                        <span style="color: var(--ig-text-secondary); font-weight: normal;"> @${comment.username}</span>
-                                    </div>
-                                    <div style="color: var(--ig-text-primary); font-size: 13px; margin-top: 4px;">${comment.content || ''}</div>
-                                    <div style="color: var(--ig-text-secondary); font-size: 12px; margin-top: 6px;">${comment.time_ago || ''}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('');
+                    commentsSection.innerHTML = `<div style="text-align: center; padding: 20px; font-size:13px; color: var(--ig-text-secondary);">Failed to load comments</div>`;
                 }
-            } else {
-                commentsSection.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                        <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
-                        Failed to load comments
-                    </div>
-                `;
-            }
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
-        })
-        .catch(err => {
-            console.error('Comments error:', err);
-            commentsSection.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: var(--ig-text-secondary);">
-                    <i data-lucide="alert-circle" style="width: 24px; height: 24px; opacity: 0.5; display: block; margin-bottom: 8px;"></i>
-                    Error loading comments
-                </div>
-            `;
-        });
-}
-
-
-function closePostModal(event) {
-    if (event && event.target !== event.currentTarget) return;
-    const modal = document.getElementById('postModal');
-    modal.classList.remove('show');
-}
-
-// Store the scroll position and return URL for back navigation
-function openReelInOmzo(reelId) {
-    // Save current scroll position and page state
-    sessionStorage.setItem('exploreScrollPosition', window.scrollY);
-    sessionStorage.setItem('exploreReturnPage', window.location.pathname);
-    
-    // Navigate to Omzo page with the specific reel using href to preserve history
-    window.location.href = `/chat/reels/?reel=${reelId}`;
-}
-
-// Filter explore content based on search query
-function filterExploreContent(query) {
-    const grid = document.getElementById('exploreGrid');
-    if (!grid) {
-        console.warn('Explore grid not found');
-        return;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            })
+            .catch(() => {
+                commentsSection.innerHTML = `<div style="text-align: center; padding: 20px; font-size:13px; color: var(--ig-text-secondary);">Error loading comments</div>`;
+            });
     }
-    
-    const cards = grid.querySelectorAll('.explore-card');
-    const searchText = query.toLowerCase().trim();
-    let visibleCount = 0;
-    
-    if (!searchText) {
-        // Show only scribes and reels if search is empty
+
+    function postComment(postId, commentText) {
+        if (!commentText || !commentText.trim()) return;
+        fetch(`/chat/api/add-comment/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ tweet_id: postId, content: commentText.trim() })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    loadCommentsInModal(postId);
+                    const commentCountEl = document.getElementById('commentCount' + postId);
+                    if (commentCountEl && data.comment_count !== undefined) {
+                        commentCountEl.innerHTML = `<strong style="color: var(--ig-text-primary);">${data.comment_count}</strong> Comments`;
+                    }
+                } else {
+                    alert('Failed to post comment');
+                }
+            })
+            .catch(() => alert('Error posting comment'));
+    }
+
+    function closePostModal(event) {
+        if (event && event.target !== event.currentTarget) return;
+        const modal = document.getElementById('postModal');
+        modal.classList.remove('show');
+    }
+
+    function openReelInOmzo(reelId) {
+        sessionStorage.setItem('exploreScrollPosition', window.scrollY);
+        sessionStorage.setItem('exploreReturnPage', window.location.pathname);
+        window.location.href = `/chat/reels/?reel=${reelId}`;
+    }
+
+    function filterExploreContent(query) {
+        const grid = document.getElementById('exploreGrid');
+        if (!grid) return;
+        const cards = grid.querySelectorAll('.explore-card');
+        const searchText = query.toLowerCase().trim();
+        let visibleCount = 0;
+
         cards.forEach(card => {
-            const dataType = card.getAttribute('data-type');
-            card.classList.remove('search-active');
-            if (dataType === 'scribe' || dataType === 'reel') {
+            if (!searchText) {
+                // If search empty, only show those meant for initial display? 
+                // Actually, just show everything loaded.
+                card.classList.remove('search-active');
                 card.style.display = '';
+                return;
+            }
+            const cardSearchText = card.getAttribute('data-search-text') || '';
+            if (cardSearchText.toLowerCase().includes(searchText)) {
+                card.classList.add('search-active');
+                card.style.display = '';
+                visibleCount++;
             } else {
+                card.classList.remove('search-active');
                 card.style.display = 'none';
             }
         });
-        // Remove no results message if visible
-        const noResultsMsg = document.getElementById('exploreNoResults');
-        if (noResultsMsg) {
-            noResultsMsg.remove();
+
+        // Toggle No Results
+        let noResults = document.getElementById('exploreNoResults');
+        if (searchText && visibleCount === 0) {
+            if (!noResults) {
+                noResults = document.createElement('div');
+                noResults.id = 'exploreNoResults';
+                noResults.className = 'ig-search-no-results';
+                noResults.innerHTML = `
+                    <i data-lucide="search"></i>
+                    <h3 style="color: var(--ig-text-primary); margin: 12px 0 8px 0;">No results found</h3>
+                    <p>Try searching for different keywords</p>
+                `;
+                grid.parentNode.insertBefore(noResults, grid.nextSibling);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        } else if (noResults) {
+            noResults.remove();
         }
-        return;
     }
-    
-    // When searching, show all types that match
-    cards.forEach(card => {
-        const cardSearchText = card.getAttribute('data-search-text') || '';
-        const dataType = card.getAttribute('data-type');
-        const matches = cardSearchText.toLowerCase().includes(searchText);
-        
-        if (matches) {
-            card.classList.add('search-active');
-            card.style.display = '';
-            visibleCount++;
-        } else {
-            card.classList.remove('search-active');
-            card.style.display = 'none';
+
+    // --- Infinite Scroll ---
+
+    // --- Infinite Scroll (Intersection Observer) ---
+
+    // Create a sentinel element for intersection observer
+    function createSentinel() {
+        let sentinel = document.getElementById('explore-sentinel');
+        if (!sentinel) {
+            sentinel = document.createElement('div');
+            sentinel.id = 'explore-sentinel';
+            sentinel.style.height = '10px';
+            sentinel.style.width = '100%';
+            sentinel.style.marginTop = '20px';
+
+            // Append to the container of the grid, or after the grid
+            const grid = document.getElementById('exploreGrid');
+            if (grid && grid.parentNode) {
+                grid.parentNode.insertBefore(sentinel, grid.nextSibling);
+            }
         }
-    });
-    
-    // Show "no results" message if nothing matches
-    let noResultsMsg = document.getElementById('exploreNoResults');
-    if (visibleCount === 0 && !noResultsMsg) {
-        noResultsMsg = document.createElement('div');
-        noResultsMsg.id = 'exploreNoResults';
-        noResultsMsg.className = 'ig-search-no-results';
-        noResultsMsg.innerHTML = `
-            <i data-lucide="search"></i>
-            <h3 style="color: var(--ig-text-primary); margin: 12px 0 8px 0;">No results found</h3>
-            <p>Try searching for different keywords</p>
-        `;
-        grid.parentNode.insertBefore(noResultsMsg, grid.nextSibling);
+        return sentinel;
+    }
+
+    // Initialize Observer with fallback
+    function initIntersectionObserver() {
+        const sentinel = createSentinel();
+
+        // Options: trigger when sentinel is within 200px of viewport bottom
+        const options = {
+            root: null,
+            rootMargin: '200px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && hasMore && !isLoading) {
+                    console.log('Sentinel intersected, loading more...');
+                    loadMoreContent();
+                }
+            });
+        }, options);
+
+        observer.observe(sentinel);
+
+        // Fallback: Manual scroll listener
+        window.addEventListener('scroll', () => {
+            if (isLoading || !hasMore) return;
+            // Trigger if scroll is within 500px of the bottom of the document
+            if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 500) {
+                console.log('Manual scroll trigger');
+                loadMoreContent();
+            }
+        }, { passive: true });
+    }
+
+    // Call init on load
+    document.addEventListener('DOMContentLoaded', function () {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-    } else if (visibleCount > 0 && noResultsMsg) {
-        noResultsMsg.remove();
-    }
-}
+        // Initialize observer after a short delay to ensure DOM is ready
+        setTimeout(initIntersectionObserver, 500);
+    });
 
-// On page load, restore scroll position if returning from Omzo
-document.addEventListener('DOMContentLoaded', function () {
-    if (window.lucide) {
-        window.lucide.createIcons();
+    function loadMoreContent() {
+        if (isLoading || !hasMore) return;
+        isLoading = true;
+
+        // Show indicator
+        showLoadingIndicator();
+
+        fetch(`/chat/api/explore/load-more/?page=${currentPage + 1}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.content.length > 0) {
+                    const grid = document.getElementById('exploreGrid');
+                    const fragment = document.createDocumentFragment();
+                    data.content.forEach(item => {
+                        const card = createExploreCard(item);
+                        if (card) fragment.appendChild(card);
+                    });
+                    grid.appendChild(fragment);
+                    currentPage = data.page;
+                    hasMore = data.has_next;
+
+                    // Move sentinel to bottom if needed (usually it stays at bottom logically)
+                    const sentinel = document.getElementById('explore-sentinel');
+                    if (sentinel && grid.parentNode) {
+                        grid.parentNode.appendChild(sentinel);
+                    }
+
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                } else {
+                    hasMore = false;
+                    // Remove sentinel if no more content
+                    const sentinel = document.getElementById('explore-sentinel');
+                    if (sentinel) sentinel.remove();
+                }
+            })
+            .catch(err => {
+                console.error('Loader error:', err);
+                hasMore = false;
+            })
+            .finally(() => {
+                isLoading = false;
+                hideLoadingIndicator();
+            });
     }
 
-    // Check if we're returning from Omzo
-    const returnPage = sessionStorage.getItem('exploreReturnPage');
-    const scrollPos = sessionStorage.getItem('exploreScrollPosition');
-    
-    if (returnPage === window.location.pathname && scrollPos) {
-        // Restore scroll position after a short delay to ensure DOM is ready
-        setTimeout(() => {
-            window.scrollTo(0, parseInt(scrollPos));
-            // Clear the stored values
-            sessionStorage.removeItem('exploreScrollPosition');
-            sessionStorage.removeItem('exploreReturnPage');
-        }, 100);
+    function createExploreCard(item) {
+        const article = document.createElement('article');
+        article.className = 'explore-card';
+        article.setAttribute('data-type', item.type);
+
+        let content = '';
+        if (item.type === 'scribe') {
+            article.setAttribute('data-search-text', `${item.user.full_name} @${item.user.username} ${item.content}`);
+            article.onclick = () => openScribePost(item.id);
+
+            let mediaHTML = '';
+            let tag = 'Scribe';
+            let isCode = false;
+
+            if (item.image_url) {
+                mediaHTML = `<img src="${item.image_url}" alt="Scribe media" loading="lazy" class="explore-card-media">`;
+            } else if (item.code_bundle) {
+                tag = 'Code Scribe';
+                isCode = true;
+                const escapedBundle = escapeHtml(item.code_bundle);
+                mediaHTML = `<iframe class="explore-card-media" srcdoc="${escapedBundle}" style="border: none; width: 100%; height: 100%; pointer-events: none;" sandbox="allow-scripts" loading="lazy"></iframe>`;
+            } else if (item.code_html) {
+                tag = 'Code Scribe';
+                isCode = true;
+                const rawDoc = `<style>${item.code_css || ''}</style>${item.code_html}<script>${item.code_js || ''}<\/script>`;
+                const escapedDoc = escapeHtml(rawDoc);
+                mediaHTML = `<iframe class="explore-card-media" srcdoc="${escapedDoc}" style="border: none; width: 100%; height: 100%; pointer-events: none;" sandbox="allow-scripts" loading="lazy"></iframe>`;
+            } else {
+                mediaHTML = `<div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;"><i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.3;"></i></div>`;
+            }
+
+            article.setAttribute('data-has-code', isCode ? 'true' : 'false');
+
+            content = `
+                <div class="explore-card-media-container">
+                    ${mediaHTML}
+                    ${isCode ? '<span class="explore-code-badge"><i data-lucide="code" style="width: 10px; height: 10px; display: inline-block;"></i> Code</span>' : ''}
+                    <div class="explore-card-overlay">
+                        <div class="explore-card-tag">${tag}</div>
+                        ${item.content ? `<div class="explore-card-caption">${truncateText(item.content, 15)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+
+        } else if (item.type === 'reel') {
+            article.setAttribute('data-search-text', `${item.user.full_name} @${item.user.username} ${item.caption}`);
+            article.onclick = () => openReelInOmzo(item.id);
+
+            const mediaHTML = item.video_url ?
+                `<video class="explore-card-media" muted autoplay loop playsinline onclick="event.stopPropagation(); openReelInOmzo(${item.id})"><source src="${item.video_url}" type="video/mp4"></video><div class="explore-reel-play-icon" onclick="event.stopPropagation(); openReelInOmzo(${item.id})"><i data-lucide="play"></i></div>` :
+                `<div class="explore-card-media" style="background: var(--ig-surface-hover); display: flex; align-items: center; justify-content: center;"><i data-lucide="video" style="width: 48px; height: 48px; opacity: 0.3;"></i></div>`;
+
+            content = `
+                <div class="explore-card-media-container">
+                    ${mediaHTML}
+                    <div class="explore-card-overlay">
+                        <div class="explore-card-tag">Omzo</div>
+                        ${item.caption ? `<div class="explore-card-caption">${truncateText(item.caption, 15)}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        } else if (item.type === 'person') {
+            article.setAttribute('data-search-text', `${item.full_name} @${item.username}`);
+            article.onclick = () => window.location.href = `/chat/profile/${item.username}/`;
+
+            const avatarHTML = item.profile_picture ?
+                `<img src="${item.profile_picture}" alt="${item.full_name}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin-bottom: 12px;">` :
+                `<div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: var(--ig-text-secondary);"><i data-lucide="user" style="width: 36px; height: 36px;"></i></div>`;
+
+            content = `
+                <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        ${avatarHTML}
+                        <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">${item.full_name || item.username}</div>
+                        <div style="color: var(--ig-text-secondary); font-size: 12px;">@${item.username}</div>
+                    </div>
+                </div>
+            `;
+        } else if (item.type === 'group') {
+            article.setAttribute('data-search-text', item.name);
+            article.onclick = () => window.location.href = `/chat/chat/${item.id}/`;
+
+            content = `
+                <div class="explore-card-media-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <div style="width: 80px; height: 80px; border-radius: 50%; background-color: var(--ig-surface); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center;"><i data-lucide="users" style="width: 36px; height: 36px; color: var(--ig-text-secondary);"></i></div>
+                        <div style="font-weight: 600; color: var(--ig-text-primary); font-size: 14px; margin-bottom: 4px;">${item.name}</div>
+                        <div style="color: var(--ig-text-secondary); font-size: 12px;">Group</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        article.innerHTML = content;
+        return article;
     }
-});
+
+    // --- Helpers ---
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML.replace(/"/g, '&quot;');
+    }
+
+    function truncateText(str, n) {
+        if (!str) return '';
+        const words = str.split(' ');
+        if (words.length > n) {
+            return words.slice(0, n).join(' ') + '...';
+        }
+        return str;
+    }
+
+    function showLoadingIndicator() {
+        let indicator = document.getElementById('loadingIndicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'loadingIndicator';
+            indicator.style.cssText = 'position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); background: var(--ig-surface); border: 1px solid var(--ig-border); border-radius: 8px; padding: 12px 20px; display: flex; align-items: center; gap: 12px; z-index: 100; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);';
+            indicator.innerHTML = '<i data-lucide="loader" style="width: 20px; height: 20px; animation: spin 1s linear infinite;"></i><span style="color: var(--ig-text-primary); font-size: 14px;">Loading more content...</span>';
+            document.body.appendChild(indicator);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        indicator.style.display = 'flex';
+    }
+
+    function hideLoadingIndicator() {
+        const indicator = document.getElementById('loadingIndicator');
+        if (indicator) indicator.style.display = 'none';
+    }
+
+    // --- Initialization ---
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+
+        const returnPage = sessionStorage.getItem('exploreReturnPage');
+        const scrollPos = sessionStorage.getItem('exploreScrollPosition');
+        if (returnPage === window.location.pathname && scrollPos) {
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(scrollPos));
+                sessionStorage.removeItem('exploreScrollPosition');
+                sessionStorage.removeItem('exploreReturnPage');
+            }, 100);
+        }
+    });
 </script>
+
+<style>
+    @keyframes spin {
+        from {
+            transform: rotate(0deg);
+        }
+
+        to {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+
 {% endblock %}
