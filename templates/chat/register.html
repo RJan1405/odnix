@@ -59,6 +59,30 @@
         color: #333;
     }
 
+    .gender-options {
+        display: flex;
+        gap: 1.5rem;
+    }
+
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .radio-label input[type="radio"] {
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .radio-label span {
+        font-size: 1rem;
+        color: #333;
+    }
+
     .form-control {
         width: 100%;
         padding: 0.75rem 1rem;
@@ -245,6 +269,20 @@
             <div class="form-group">
                 <label for="email" class="form-label">Email Address</label>
                 <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Gender</label>
+                <div class="gender-options">
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="male" required>
+                        <span>Male</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="gender" value="female" required>
+                        <span>Female</span>
+                    </label>
+                </div>
             </div>
 
             <div class="form-row">

@@ -1563,7 +1563,17 @@
             <div class="ig-posts-grid">
                 {% for post in saved_posts %}
                 <div class="ig-grid-item" onclick="openPostDetail({{ post.id }})">
-                    {% if post.image_url %}
+                    {% if post.content_type == 'code_scribe' %}
+                    <!-- Code Scribe Display -->
+                    <div style="width: 100%; height: 100%; background: var(--ig-surface); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                        <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" 
+                            data-code-bundle="{{ post.code_bundle|urlencode }}"
+                            data-code-html="{{ post.code_html|default:''|urlencode }}"
+                            data-code-css="{{ post.code_css|default:''|urlencode }}"
+                            data-code-js="{{ post.code_js|default:''|urlencode }}"
+                            style="width: 100%; height: 100%; border: none; display: block; background: white;"></iframe>
+                    </div>
+                    {% elif post.image_url %}
                     <img src="{{ post.image_url }}" alt="" loading="lazy">
                     {% else %}
                     <div class="ig-grid-text-post">

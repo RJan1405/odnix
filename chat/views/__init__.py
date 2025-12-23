@@ -24,6 +24,7 @@ from .social import (
     toggle_account_privacy, get_follow_requests, follow_states,
     get_hashtag_tweets, get_trending_hashtags, get_user_mentions,
     search_users_for_mention, update_theme, get_all_activity,
+    global_search,
     get_profile_followers, get_profile_following,
     toggle_save_post, delete_post, report_post, get_saved_posts, copy_post_link,
     view_post, reels_view, upload_reel, toggle_reel_like, add_reel_comment, get_reel_comments,

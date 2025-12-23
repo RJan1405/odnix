@@ -3489,8 +3489,11 @@
                     <span class="ig-suggestions-title">Suggestions For You</span>
                     <a href="{% url 'discover_groups' %}" class="ig-suggestions-see-all">See All</a>
                 </div>
+                
+                <!-- DEBUG: Count of suggestions -->
+                <div style="display: none;">Debug: {{ suggestion_users|length }} suggestions</div>
 
-                {% for other_user in other_users|slice:":5" %}
+                {% for other_user in suggestion_users %}
                 <div class="ig-suggestion-item">
                     <a href="{% url 'user_profile' other_user.username %}" class="ig-suggestion-user">
                         <img src="{{ other_user.profile_picture_url }}" alt="{{ other_user.full_name }}"
@@ -3503,6 +3506,10 @@
                     </a>
                     <button class="ig-follow-btn" onclick="toggleFollow('{{ other_user.username }}')"
                         data-username="{{ other_user.username }}">Follow</button>
+                </div>
+                {% empty %}
+                <div style="padding: 16px; text-align: center; color: var(--ig-text-secondary);">
+                    <p>No suggestions available - Debug info: suggestion_users is empty</p>
                 </div>
                 {% endfor %}
             </div>
@@ -5163,7 +5170,7 @@
         <div class="ig-modal-body">
             <p class="ig-report-subtitle">Why are you reporting this post?</p>
             <div class="ig-report-options">
-                <button class="ig-report-option" onclick="submitReport('copyright')">
+                <button class="ig-report-option" onclick="selectReportReason('copyright')">
                     <i data-lucide="copyright"></i>
                     <span>Copyright Infringement</span>
                 </button>
@@ -5195,6 +5202,70 @@
                     <i data-lucide="more-horizontal"></i>
                     <span>Other</span>
                 </button>
+            </div>
+            <!-- Copyright Details Section (Hidden by default) -->
+            <div id="copyrightDetailsSection" style="display: none; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                <p style="font-size: 14px; margin-bottom: 12px; color: var(--odnix-text-secondary);">Copyright Details</p>
+                
+                <!-- Copyright Type Selection -->
+                <div style="margin-bottom: 16px;">
+                    <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
+                        <input type="checkbox" id="isAudioCopyright" style="margin-right: 10px; cursor: pointer;">
+                        <span style="font-size: 14px;">Audio is copyrighted</span>
+                    </label>
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="isContentCopyright" style="margin-right: 10px; cursor: pointer;">
+                        <span style="font-size: 14px;">Content/Media is copyrighted</span>
+                    </label>
+                </div>
+                
+                <!-- Copyright Description -->
+                <div style="margin-bottom: 16px;">
+                    <textarea 
+                        id="copyrightDescription" 
+                        placeholder="Optional: Describe the copyright infringement (e.g., creator info, where it's originally from, etc.)"
+                        style="
+                            width: 100%;
+                            padding: 10px 12px;
+                            background: var(--odnix-surface-light);
+                            border: 1px solid var(--odnix-border);
+                            border-radius: 8px;
+                            color: var(--odnix-text);
+                            font-family: inherit;
+                            font-size: 13px;
+                            min-height: 80px;
+                            resize: vertical;
+                        "
+                    ></textarea>
+                </div>
+                
+                <!-- Submit Button for Copyright -->
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="submitCopyrightReport()" style="
+                        flex: 1;
+                        padding: 10px 16px;
+                        background: var(--color-primary);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: background 0.2s;
+                    ">Submit Report</button>
+                    <button onclick="backToReportOptions()" style="
+                        flex: 1;
+                        padding: 10px 16px;
+                        background: var(--odnix-surface-light);
+                        color: var(--odnix-text);
+                        border: 1px solid var(--odnix-border);
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">Back</button>
+                </div>
             </div>
         </div>
     </div>
@@ -6977,6 +7048,12 @@
         currentReportPostId = tweetId;
         closePostMenu();
         document.getElementById('reportPostModal').style.display = 'flex';
+        // Reset copyright section
+        document.getElementById('copyrightDetailsSection').style.display = 'none';
+        document.getElementById('isAudioCopyright').checked = false;
+        document.getElementById('isContentCopyright').checked = false;
+        document.getElementById('copyrightDescription').value = '';
+        document.querySelector('.ig-report-options').style.display = 'flex';
         if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -6985,6 +7062,75 @@
             document.getElementById('reportPostModal').style.display = 'none';
             currentReportPostId = null;
         }
+    }
+
+    function selectReportReason(reason) {
+        if (reason === 'copyright') {
+            // Show copyright details section
+            document.querySelector('.ig-report-options').style.display = 'none';
+            document.getElementById('copyrightDetailsSection').style.display = 'block';
+        } else {
+            submitReport(reason);
+        }
+    }
+
+    function backToReportOptions() {
+        document.getElementById('copyrightDetailsSection').style.display = 'none';
+        document.querySelector('.ig-report-options').style.display = 'flex';
+        // Reset copyright fields
+        document.getElementById('isAudioCopyright').checked = false;
+        document.getElementById('isContentCopyright').checked = false;
+        document.getElementById('copyrightDescription').value = '';
+    }
+
+    function submitCopyrightReport() {
+        if (!currentReportPostId) return;
+
+        // Determine copyright type based on checkboxes
+        let copyrightType = null;
+        const isAudio = document.getElementById('isAudioCopyright').checked;
+        const isContent = document.getElementById('isContentCopyright').checked;
+
+        if (isAudio && !isContent) {
+            copyrightType = 'audio';
+        } else if (isContent && !isAudio) {
+            copyrightType = 'content';
+        } else if (isAudio && isContent) {
+            // If both are checked, set copyright type to 'both'
+            copyrightType = 'both';
+        } else {
+            // At least one must be checked (optional, but recommended)
+            // For now, we'll allow submission without selecting
+        }
+
+        const copyrightDescription = document.getElementById('copyrightDescription').value.trim();
+
+        fetch('{% url "report_post" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                tweet_id: currentReportPostId,
+                reason: 'copyright',
+                copyright_type: copyrightType,
+                copyright_description: copyrightDescription
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    closeReportModal();
+                    showIGToast(data.message, 'success');
+                } else {
+                    showIGToast(data.error || 'Failed to report post', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Report post error:', err);
+                showIGToast('Failed to report post', 'error');
+            });
     }
 
     function submitReport(reason) {

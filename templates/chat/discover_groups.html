@@ -494,7 +494,7 @@
         }
 
         .ig-discover-search {
-            display: none;
+            display: flex;
         }
 
         .ig-discover-title {
@@ -562,7 +562,21 @@
             <div class="ig-discover-search">
                 <i data-lucide="search"></i>
                 <input type="text" id="exploreSearchInput" placeholder="Search people, groups, scribes, omzo..."
-                    onkeyup="filterExploreContent(this.value)">
+                    onkeyup="debounceGlobalSearch(this.value)" onfocus="activateSearch()">
+            </div>
+            <!-- Search Results Container (Hidden by default) -->
+            <div id="searchResultsContainer" class="ig-explore-grid" style="display: none; margin-top: 20px;">
+                <!-- Results injected here -->
+            </div>
+
+            <div id="searchLoader" style="display: none; text-align: center; padding: 20px;">
+                <i data-lucide="loader" style="width: 24px; height: 24px; animation: spin 1s linear infinite;"></i>
+            </div>
+
+            <div id="searchNoResults"
+                style="display: none; text-align: center; padding: 40px; color: var(--ig-text-secondary);">
+                <i data-lucide="search" style="width: 48px; height: 48px; opacity: 0.5;"></i>
+                <p>No results found matching your query.</p>
             </div>
         </header>
 
@@ -595,7 +609,9 @@
                         <i data-lucide="file-text" style="width: 48px; height: 48px; opacity: 0.3;"></i>
                     </div>
                     {% endif %}
-                    {% if scribe.code_bundle or scribe.code_html %}<span class="explore-code-badge"><i data-lucide="code" style="width: 10px; height: 10px; display: inline-block;"></i> Code</span>{% endif %}
+                    {% if scribe.code_bundle or scribe.code_html %}<span class="explore-code-badge"><i
+                            data-lucide="code" style="width: 10px; height: 10px; display: inline-block;"></i>
+                        Code</span>{% endif %}
                     <div class="explore-card-overlay">
                         <div class="explore-card-tag">{% if scribe.code_bundle or scribe.code_html %}Code Scribe{% else
                             %}Scribe{% endif %}</div>
@@ -1241,11 +1257,182 @@
         if (returnPage === window.location.pathname && scrollPos) {
             setTimeout(() => {
                 window.scrollTo(0, parseInt(scrollPos));
-                sessionStorage.removeItem('exploreScrollPosition');
-                sessionStorage.removeItem('exploreReturnPage');
-            }, 100);
+            }, 0);
         }
     });
+
+    // --- Global Search Logic ---
+    let searchDebounceTimer;
+    let searchPage = 1;
+    let searchHasMore = true;
+    let isSearchLoading = false;
+    let currentQuery = '';
+
+    // Auto-trigger search if input has value on load (e.g. back button navigation)
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('exploreSearchInput');
+        if (input && input.value.trim()) {
+            activateSearch();
+            currentQuery = input.value.trim();
+            performGlobalSearch(currentQuery, 1);
+        }
+    });
+
+    function activateSearch() {
+        document.getElementById('exploreGrid').style.display = 'none';
+        const exploreSentinel = document.getElementById('explore-sentinel');
+        if (exploreSentinel) exploreSentinel.style.display = 'none';
+        document.getElementById('searchResultsContainer').style.display = 'grid';
+
+        const query = document.getElementById('exploreSearchInput').value.trim();
+        if (!query) {
+            // Only clear if empty. If it has value, we might be returning to it.
+            // But we don't want to clear valid results if they are already there?
+            // Actually, if we just focused, we might want to keep results if they exist.
+            // checking innerHTML length is a proxy.
+            if (document.getElementById('searchResultsContainer').children.length === 0) {
+                document.getElementById('searchNoResults').style.display = 'none';
+            }
+        }
+    }
+
+    // Switch to oninput for better mobile support
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('exploreSearchInput');
+        if (input) {
+            input.oninput = function () { debounceGlobalSearch(this.value); };
+
+            // Allow clicking icon to search
+            const icon = input.previousElementSibling;
+            if (icon) {
+                icon.style.cursor = 'pointer';
+                icon.onclick = function () {
+                    if (input.value.trim()) {
+                        activateSearch();
+                        performGlobalSearch(input.value.trim(), 1);
+                    } else {
+                        input.focus();
+                    }
+                };
+            }
+        }
+    });
+
+    function debounceGlobalSearch(query) {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => {
+            currentQuery = query.trim();
+            if (currentQuery) {
+                // Ensure Explore Grid is hidden when searching
+                document.getElementById('exploreGrid').style.display = 'none';
+                const s = document.getElementById('explore-sentinel');
+                if (s) s.style.display = 'none';
+                document.getElementById('searchResultsContainer').style.display = 'grid';
+
+                performGlobalSearch(currentQuery, 1);
+            } else {
+                document.getElementById('searchResultsContainer').innerHTML = '';
+                document.getElementById('searchNoResults').style.display = 'none';
+                document.getElementById('exploreGrid').style.display = 'grid';
+                const s = document.getElementById('explore-sentinel');
+                if (s) s.style.display = 'flex';
+                document.getElementById('searchResultsContainer').style.display = 'none';
+            }
+        }, 500);
+    }
+
+    function performGlobalSearch(query, page) {
+        if (page === 1) {
+            document.getElementById('searchResultsContainer').innerHTML = '';
+            document.getElementById('searchNoResults').style.display = 'none';
+            document.getElementById('searchLoader').style.display = 'block';
+            searchHasMore = true;
+        }
+
+        if (!searchHasMore && page > 1) return;
+        isSearchLoading = true;
+        searchPage = page;
+
+        fetch(`/chat/api/global-search/?q=${encodeURIComponent(query)}&page=${page}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('searchLoader').style.display = 'none';
+
+                if (data.success) {
+                    const results = data.results;
+                    searchHasMore = data.has_more;
+                    const container = document.getElementById('searchResultsContainer');
+
+                    if (page === 1 && results.length === 0) {
+                        document.getElementById('searchNoResults').style.display = 'block';
+                    } else {
+                        const fragment = document.createDocumentFragment();
+                        results.forEach(item => {
+                            const card = createSearchResultCard(item);
+                            if (card) fragment.appendChild(card);
+                        });
+                        container.appendChild(fragment);
+
+                        if (searchHasMore) {
+                            const loadMoreDiv = document.createElement('div');
+                            loadMoreDiv.id = 'search-load-more';
+                            loadMoreDiv.style.gridColumn = '1 / -1';
+                            loadMoreDiv.style.textAlign = 'center';
+                            loadMoreDiv.style.padding = '20px';
+                            // Use currentQuery global instead of embedding string
+                            loadMoreDiv.innerHTML = `<button onclick="performGlobalSearch(currentQuery, ${page + 1})" style="background:var(--ig-primary);color:#fff;border:none;padding:10px 20px;border-radius:20px;cursor:pointer;">Load More Results</button>`;
+
+                            const oldLoad = document.getElementById('search-load-more');
+                            if (oldLoad) oldLoad.remove();
+
+                            container.appendChild(loadMoreDiv);
+                        } else {
+                            const oldLoad = document.getElementById('search-load-more');
+                            if (oldLoad) oldLoad.remove();
+                        }
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Search error:", err);
+                document.getElementById('searchLoader').style.display = 'none';
+            })
+            .finally(() => {
+                isSearchLoading = false;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
+    }
+
+    function createSearchResultCard(item) {
+        const article = document.createElement('article');
+        article.className = 'explore-card';
+        let clickAction = '', icon = '', imageHtml = '', tag = '';
+
+        if (item.type === 'person') {
+            clickAction = `window.location.href='/profile/${item.data.username}/'`;
+            icon = 'user'; tag = 'User';
+            imageHtml = item.image_url ? `<img src="${item.image_url}" class="explore-card-media">` : `<div class="explore-card-media" style="background:#f0f2f5;display:flex;align-items:center;justify-content:center;"><i data-lucide="user" style="width:48px;height:48px;opacity:0.3;"></i></div>`;
+        } else if (item.type === 'group') {
+            clickAction = `window.location.href='/chat/${item.data.id}/'`;
+            icon = 'users'; tag = 'Group';
+            imageHtml = `<div class="explore-card-media" style="background:#e0f2f1;display:flex;align-items:center;justify-content:center;"><i data-lucide="users" style="width:48px;height:48px;opacity:0.3;color:#26a69a;"></i></div>`;
+        } else if (item.type === 'scribe' || item.type === 'post') {
+            clickAction = `openScribePost(${item.id})`;
+            icon = 'file-text'; tag = item.type === 'scribe' ? 'Code Scribe' : 'Post';
+            if (item.image_url) { imageHtml = `<img src="${item.image_url}" class="explore-card-media">`; }
+            else if (item.data.has_code) { imageHtml = `<div class="explore-card-media" style="background:#263238;display:flex;align-items:center;justify-content:center;"><i data-lucide="code" style="width:48px;height:48px;color:#fff;opacity:0.8;"></i></div>`; }
+            else { imageHtml = `<div class="explore-card-media" style="background:#f0f2f5;display:flex;align-items:center;justify-content:center;"><div style="padding:20px;font-size:12px;overflow:hidden;">${item.data.content || 'Text Post'}</div></div>`; }
+        } else if (item.type === 'reel') {
+            clickAction = `openReelInOmzo(${item.id})`;
+            icon = 'video'; tag = 'Omzo';
+            if (item.image_url) { imageHtml = `<video src="${item.image_url}" class="explore-card-media" muted></video>`; }
+            else { imageHtml = `<div class="explore-card-media" style="background:#000;display:flex;align-items:center;justify-content:center;"><i data-lucide="video" style="width:48px;height:48px;color:#fff;"></i></div>`; }
+        }
+
+        article.setAttribute('onclick', clickAction);
+        article.innerHTML = `<div class="explore-card-media-container">${imageHtml}<div class="explore-card-overlay" style="opacity:1; background:linear-gradient(0deg, rgba(0,0,0,0.8), transparent 40%); justify-content:flex-end;"><div class="explore-card-tag">${tag}</div><div style="color:white;font-weight:600;font-size:14px;">${item.title}</div><div style="color:rgba(255,255,255,0.7);font-size:12px;">${item.subtitle}</div></div></div>`;
+        return article;
+    }
 </script>
 
 <style>

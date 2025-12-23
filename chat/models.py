@@ -26,6 +26,11 @@ class CustomUser(AbstractUser):
         ('nord', 'Nord'),
     ]
 
+    GENDER_CHOICES = [
+        ('male', 'Male'),
+        ('female', 'Female'),
+    ]
+
     name = models.CharField(max_length=50)
     lastname = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
@@ -37,6 +42,8 @@ class CustomUser(AbstractUser):
     is_private = models.BooleanField(default=False)  # Private account feature
     theme = models.CharField(
         max_length=20, choices=THEME_CHOICES, default='light')  # Theme preference
+    gender = models.CharField(
+        max_length=10, choices=GENDER_CHOICES, default='male')  # Gender preference
 
     def __str__(self):
         return f"{self.name} {self.lastname} (@{self.username})"
@@ -499,6 +506,12 @@ class SavedPost(models.Model):
 
 class PostReport(models.Model):
     """Model for reported posts"""
+    COPYRIGHT_TYPE_CHOICES = [
+        ('audio', 'Audio Copyright'),
+        ('content', 'Content Copyright'),
+        ('both', 'Both Audio and Content Copyright'),
+    ]
+
     REPORT_REASONS = [
         ('copyright', 'Copyright Infringement'),
         ('spam', 'Spam'),
@@ -516,6 +529,16 @@ class PostReport(models.Model):
         Tweet, on_delete=models.CASCADE, related_name='reports')
     reason = models.CharField(max_length=20, choices=REPORT_REASONS)
     description = models.TextField(blank=True, null=True)
+    # Copyright-specific fields
+    copyright_description = models.TextField(
+        blank=True, null=True, help_text="Description of copyright infringement (optional)")
+    copyright_type = models.CharField(
+        max_length=10,
+        choices=COPYRIGHT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Whether the copyright is for audio or content"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed = models.BooleanField(default=False)
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -526,6 +549,13 @@ class PostReport(models.Model):
 
     def __str__(self):
         return f"{self.reporter.username} reported {self.tweet.user.username}'s post for {self.reason}"
+
+    @property
+    def copyright_info(self):
+        """Return copyright type info for notifications"""
+        if self.reason == 'copyright' and self.copyright_type:
+            return self.get_copyright_type_display()
+        return None
 
 
 class Follow(models.Model):
@@ -811,6 +841,8 @@ class Reel(models.Model):
     caption = models.TextField(max_length=500, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     views_count = models.PositiveIntegerField(default=0)
+    is_muted = models.BooleanField(
+        default=False, help_text="If True, audio will be disabled for all users")
 
     class Meta:
         ordering = ['-created_at']
@@ -856,6 +888,12 @@ class ReelComment(models.Model):
 
 class ReelReport(models.Model):
     """Model for reported reels"""
+    COPYRIGHT_TYPE_CHOICES = [
+        ('audio', 'Audio Copyright'),
+        ('content', 'Content Copyright'),
+        ('both', 'Both Audio and Content Copyright'),
+    ]
+
     REPORT_REASONS = [
         ('spam', 'Spam'),
         ('inappropriate', 'Inappropriate Content'),
@@ -873,6 +911,18 @@ class ReelReport(models.Model):
         Reel, on_delete=models.CASCADE, related_name='reports')
     reason = models.CharField(max_length=20, choices=REPORT_REASONS)
     description = models.TextField(blank=True, null=True)
+    # Copyright-specific fields
+    copyright_description = models.TextField(
+        blank=True, null=True, help_text="Description of copyright infringement (optional)")
+    copyright_type = models.CharField(
+        max_length=10,
+        choices=COPYRIGHT_TYPE_CHOICES,
+        blank=True,
+        null=True,
+        help_text="Whether the copyright is for audio or content"
+    )
+    disable_audio = models.BooleanField(
+        default=False, help_text="If checked, audio will be disabled for this reel")
     created_at = models.DateTimeField(auto_now_add=True)
     reviewed = models.BooleanField(default=False)
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -883,3 +933,10 @@ class ReelReport(models.Model):
 
     def __str__(self):
         return f"{self.reporter.username} reported reel {self.reel.id} for {self.reason}"
+
+    @property
+    def copyright_info(self):
+        """Return copyright type info for notifications"""
+        if self.reason == 'copyright' and self.copyright_type:
+            return self.get_copyright_type_display()
+        return None

@@ -141,6 +141,7 @@ urlpatterns = [
     path('api/trending-hashtags/', views.get_trending_hashtags,
          name='get_trending_hashtags'),
     path('api/mentions/', views.get_user_mentions, name='get_user_mentions'),
+    path('api/global-search/', views.global_search, name='global_search'),
     path('api/search-users/', views.search_users_for_mention,
          name='search_users_for_mention'),
 

@@ -263,6 +263,11 @@ def profile_view(request, username=None):
                 'comment_count': comment_count,
                 'image_url': tweet.image_url,
                 'has_media': tweet.has_media,
+                'content_type': tweet.content_type,
+                'code_bundle': tweet.code_bundle,
+                'code_html': tweet.code_html,
+                'code_css': tweet.code_css,
+                'code_js': tweet.code_js,
                 'saved_at': saved.created_at,
             })
 
@@ -722,6 +727,8 @@ def report_post(request):
         tweet_id = data.get('tweet_id')
         reason = data.get('reason')
         description = data.get('description', '').strip()
+        copyright_description = data.get('copyright_description', '').strip()
+        copyright_type = data.get('copyright_type', '').strip()
 
         if not tweet_id or not reason:
             return JsonResponse({'success': False, 'error': 'Tweet ID and reason are required'})
@@ -746,11 +753,19 @@ def report_post(request):
         if existing_report:
             return JsonResponse({'success': False, 'error': 'You have already reported this post'})
 
+        # Validate copyright_type if reason is copyright
+        if reason == 'copyright':
+            valid_copyright_types = ['audio', 'content', 'both']
+            if copyright_type and copyright_type not in valid_copyright_types:
+                return JsonResponse({'success': False, 'error': 'Invalid copyright type'})
+
         PostReport.objects.create(
             reporter=request.user,
             tweet=tweet,
             reason=reason,
-            description=description
+            description=description,
+            copyright_description=copyright_description if reason == 'copyright' else None,
+            copyright_type=copyright_type if reason == 'copyright' else None
         )
 
         return JsonResponse({
@@ -1556,6 +1571,146 @@ def search_users_for_mention(request):
 
 
 @login_required
+def global_search(request):
+    """Global search across Users, Groups, Tweets, Reels, and Scribes"""
+    try:
+        query = request.GET.get('q', '').strip()
+        page = int(request.GET.get('page', 1))
+        per_page = 15
+        offset = (page - 1) * per_page
+
+        if len(query) < 1:
+            return JsonResponse({'success': True, 'results': [], 'has_more': False})
+
+        # Search QuerySets
+        results = []
+
+        # 1. Users
+        # 1. Users
+        users_qs = CustomUser.objects.filter(
+            db_models.Q(username__icontains=query) |
+            db_models.Q(name__icontains=query) |
+            db_models.Q(lastname__icontains=query)
+        )
+
+        # 2. Groups
+        groups_qs = Chat.objects.filter(
+            chat_type='group',
+            name__icontains=query
+        )
+
+        # 3. Scribes/Tweets
+        tweets_qs = Tweet.objects.filter(
+            db_models.Q(content__icontains=query) |
+            db_models.Q(code_html__icontains=query) |
+            db_models.Q(code_css__icontains=query) |
+            db_models.Q(code_js__icontains=query)
+        ).select_related('user')
+
+        # 4. Reels
+        reels_qs = Reel.objects.filter(
+            caption__icontains=query
+        ).select_related('user')
+
+        # Combine results (naively for now, interleaving could be better but simple list extension is request)
+        # We will fetch a batch of each and combine, or search all.
+        # Given pagination complexity across mixed models, we'll fetch a slice of each and merge,
+        # or prioritze categories.
+        # Let's simple combine lists and paginate in memory for this MVP as data volume is distinct.
+        # Optimized: perform limit on each query to avoid huge memory usage, then merge.
+
+        # Fetch top N matches from each category
+        # Using a limit slightly higher than per_page to ensure we have mixed content
+        limit = per_page + offset
+
+        users = list(users_qs[:limit])
+        groups = list(groups_qs[:limit])
+        tweets = list(tweets_qs[:limit])
+        reels = list(reels_qs[:limit])
+
+        # Normalize to standard dict format
+        combined = []
+
+        for u in users:
+            combined.append({
+                'type': 'person',
+                'id': u.id,
+                'title': u.full_name or u.username,
+                'subtitle': f"@{u.username}",
+                'image_url': u.profile_picture_url,
+                'data': {'username': u.username},
+                # Sort weight? Users match usually high relevance
+                'score': 100
+            })
+
+        for g in groups:
+            combined.append({
+                'type': 'group',
+                'id': g.id,
+                'title': g.name,
+                'subtitle': f"{g.participant_count} members",
+                # Placeholder for group icon
+                'image_url': None,
+                'data': {'id': g.id},
+                'score': 90
+            })
+
+        for t in tweets:
+            # Determine if scribe or post
+            is_scribe = t.content_type == 'code_scribe' or t.code_bundle or t.code_html
+            combined.append({
+                'type': 'scribe' if is_scribe else 'post',
+                'id': t.id,
+                'title': t.user.full_name or t.user.username,
+                'subtitle': t.content[:50] if t.content else 'Media content',
+                'image_url': t.image_url if t.image_url else None,
+                'data': {
+                    'content': t.content,
+                    'has_code': is_scribe,
+                    'time_ago': t.timestamp.strftime('%b %d')
+                },
+                'score': 80
+            })
+
+        for r in reels:
+            combined.append({
+                'type': 'reel',
+                'id': r.id,
+                'title': r.user.full_name or r.user.username,
+                'subtitle': r.caption[:50] if r.caption else 'Reel',
+                # Not a thumbnail, but browser might handle
+                'image_url': r.video_file.url if r.video_file else None,
+                'data': {'id': r.id},
+                'score': 70
+            })
+
+        # Sort by vague relevance/type or just mix?
+        # Let's shuffle since "score" is static per type
+        # Ideally we'd sort by some match quality, but DB 'icontains' is simple.
+        # For stable pagination, we MUST sort deterministically or cache.
+        # Simplified: Just slice the combined list.
+        # WARNING: In-memory pagination of combined lists is tricky across requests without state.
+        # Hack: Return all reasonable matches up to a hard limit (e.g. 100) and let client paginate?
+        # Or just paginate the combined result:
+        combined.sort(key=lambda x: str(x['id']))  # Stable sort
+        # Then reverse so newer IDs (roughly) are first? no, IDs are mixed types.
+        # Let's just return the slice requested.
+
+        has_more = len(combined) > (offset + per_page)
+        paginated_results = combined[offset:offset + per_page]
+
+        return JsonResponse({
+            'success': True,
+            'results': paginated_results,
+            'has_more': has_more
+        })
+
+    except Exception as e:
+        logger.error(f"Error in global search: {str(e)}")
+        return JsonResponse({'success': False, 'error': 'Search failed'})
+
+
+@login_required
 @require_POST
 def update_theme(request):
     """Update user theme preference"""
@@ -1697,6 +1852,11 @@ def get_all_activity(request):
         ).select_related('reporter', 'tweet').order_by('-created_at')[:20]
 
         for report in post_reports:
+            reason_display = report.get_reason_display()
+            # Add copyright type info if applicable
+            if report.reason == 'copyright' and report.copyright_type:
+                reason_display = f"{reason_display} ({report.get_copyright_type_display()})"
+
             activity_items.append({
                 'type': 'post_report',
                 'timestamp': report.created_at,
@@ -1710,7 +1870,7 @@ def get_all_activity(request):
                     'id': report.tweet.id,
                     'content': report.tweet.content[:50] + '...' if len(report.tweet.content) > 50 else report.tweet.content,
                 },
-                'reason': report.get_reason_display(),
+                'reason': reason_display,
             })
 
         # 7. Reel Reports - Notify the user that they have been reported
@@ -1719,6 +1879,11 @@ def get_all_activity(request):
         ).select_related('reporter', 'reel').order_by('-created_at')[:20]
 
         for report in reel_reports:
+            reason_display = report.get_reason_display()
+            # Add copyright type info if applicable
+            if report.reason == 'copyright' and report.copyright_type:
+                reason_display = f"{reason_display} ({report.get_copyright_type_display()})"
+
             activity_items.append({
                 'type': 'reel_report',
                 'timestamp': report.created_at,
@@ -1732,7 +1897,7 @@ def get_all_activity(request):
                     'id': report.reel.id,
                     'caption': report.reel.caption[:50] + '...' if len(report.reel.caption) > 50 else report.reel.caption,
                 },
-                'reason': report.get_reason_display(),
+                'reason': reason_display,
             })
 
         # 8. My Reports - Content the current user reported (show for reporter)
@@ -2259,6 +2424,9 @@ def report_reel(request):
         reel_id = data.get('reel_id')
         reason = data.get('reason')
         description = data.get('description', '').strip()
+        copyright_description = data.get('copyright_description', '').strip()
+        copyright_type = data.get('copyright_type', '').strip()
+        disable_audio = data.get('disable_audio', False)
 
         if not reel_id or not reason:
             return JsonResponse({'success': False, 'error': 'Reel ID and reason are required'})
@@ -2283,12 +2451,27 @@ def report_reel(request):
         if existing_report:
             return JsonResponse({'success': False, 'error': 'You have already reported this reel'})
 
-        ReelReport.objects.create(
+        # Validate copyright_type if reason is copyright
+        if reason == 'copyright':
+            valid_copyright_types = ['audio', 'content', 'both']
+            if copyright_type and copyright_type not in valid_copyright_types:
+                return JsonResponse({'success': False, 'error': 'Invalid copyright type'})
+
+        # Create the report
+        report = ReelReport.objects.create(
             reporter=request.user,
             reel=reel,
             reason=reason,
-            description=description
+            description=description,
+            copyright_description=copyright_description if reason == 'copyright' else None,
+            copyright_type=copyright_type if reason == 'copyright' else None,
+            disable_audio=disable_audio
         )
+
+        # If disable_audio is checked, mute the reel
+        if disable_audio:
+            reel.is_muted = True
+            reel.save()
 
         return JsonResponse({
             'success': True,

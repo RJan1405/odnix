@@ -6,6 +6,7 @@ from chat.security import validate_media_file
 import os
 from django.core.files.uploadedfile import UploadedFile
 
+
 class CustomUserCreationForm(forms.ModelForm):
     """Enhanced user registration form"""
     password = forms.CharField(
@@ -22,10 +23,11 @@ class CustomUserCreationForm(forms.ModelForm):
             'placeholder': 'Confirm password'
         })
     )
-    
+
     class Meta:
         model = CustomUser
-        fields = ('username', 'name', 'lastname', 'email', 'profile_picture')
+        fields = ('username', 'name', 'lastname',
+                  'email', 'gender', 'profile_picture')
         widgets = {
             'username': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -43,41 +45,43 @@ class CustomUserCreationForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Your email address'
             }),
+            'gender': forms.RadioSelect(choices=CustomUser.GENDER_CHOICES),
             'profile_picture': forms.ClearableFileInput(attrs={
                 'class': 'file-input',
                 'accept': 'image/*',
                 'style': 'display: none;'
             }),
         }
-    
+
     def clean_confirm_password(self):
         password = self.cleaned_data.get('password')
         confirm_password = self.cleaned_data.get('confirm_password')
-        
+
         if password and confirm_password and password != confirm_password:
             raise ValidationError("Passwords don't match")
-        
+
         return confirm_password
-    
+
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if CustomUser.objects.filter(username=username).exists():
             raise ValidationError("Username already exists")
         return username
-    
+
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if CustomUser.objects.filter(email=email).exists():
             raise ValidationError("Email already exists")
         return email
-    
+
     def clean_profile_picture(self):
         profile_picture = self.cleaned_data.get('profile_picture')
         if profile_picture:
             # Check file size (max 5MB)
             if profile_picture.size > 5 * 1024 * 1024:
-                raise ValidationError("Profile picture file too large. Maximum size is 5MB.")
-            
+                raise ValidationError(
+                    "Profile picture file too large. Maximum size is 5MB.")
+
             # Security: Validate Magic Bytes
             if isinstance(profile_picture, UploadedFile):
                 try:
@@ -91,16 +95,18 @@ class CustomUserCreationForm(forms.ModelForm):
             ext = os.path.splitext(profile_picture.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
             if ext not in valid_extensions:
-                raise ValidationError("Invalid image format. Use JPG, PNG, GIF, or WEBP.")
-        
+                raise ValidationError(
+                    "Invalid image format. Use JPG, PNG, GIF, or WEBP.")
+
         return profile_picture
-    
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data['password'])
         if commit:
             user.save()
         return user
+
 
 class LoginForm(forms.Form):
     """Simple login form"""
@@ -118,9 +124,10 @@ class LoginForm(forms.Form):
         })
     )
 
+
 class TweetForm(forms.ModelForm):
     """FIXED - Tweet form with image support"""
-    
+
     class Meta:
         model = Tweet
         fields = ['content', 'image']
@@ -140,20 +147,21 @@ class TweetForm(forms.ModelForm):
                 'style': 'display: none;'
             })
         }
-    
+
     def clean_content(self):
         content = self.cleaned_data.get('content', '').strip()
         if content and len(content) > 280:
             raise ValidationError("Tweet must be 280 characters or less")
         return content
-    
+
     def clean_image(self):
         image = self.cleaned_data.get('image')
         if image:
             # Check file size (max 5MB)
             if image.size > 5 * 1024 * 1024:
-                raise ValidationError("Image file too large. Maximum size is 5MB.")
-            
+                raise ValidationError(
+                    "Image file too large. Maximum size is 5MB.")
+
             # Security: Validate Magic Bytes
             if isinstance(image, UploadedFile):
                 try:
@@ -167,23 +175,26 @@ class TweetForm(forms.ModelForm):
             ext = os.path.splitext(image.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
             if ext not in valid_extensions:
-                raise ValidationError("Invalid image format. Use JPG, PNG, GIF, or WEBP.")
-        
+                raise ValidationError(
+                    "Invalid image format. Use JPG, PNG, GIF, or WEBP.")
+
         return image
-    
+
     def clean(self):
         cleaned_data = super().clean()
         content = cleaned_data.get('content', '').strip()
         image = cleaned_data.get('image')
-        
+
         if not content and not image:
-            raise ValidationError("Tweet must have either text content or an image.")
-        
+            raise ValidationError(
+                "Tweet must have either text content or an image.")
+
         return cleaned_data
+
 
 class ProfileUpdateForm(forms.ModelForm):
     """Form for updating user profile"""
-    
+
     profile_picture = forms.ImageField(
         required=False,
         widget=forms.FileInput(attrs={
@@ -192,10 +203,11 @@ class ProfileUpdateForm(forms.ModelForm):
             'id': 'id_profile_picture'
         })
     )
-    
+
     class Meta:
         model = CustomUser
-        fields = ('name', 'lastname', 'username', 'profile_picture', 'is_private')
+        fields = ('name', 'lastname', 'username',
+                  'profile_picture', 'is_private')
         widgets = {
             'name': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -213,26 +225,28 @@ class ProfileUpdateForm(forms.ModelForm):
                 'class': 'form-check-input'
             }),
         }
-    
+
     def clean_username(self):
         username = self.cleaned_data.get('username')
         if username != self.instance.username:
             if CustomUser.objects.filter(username=username).exists():
-                raise ValidationError("Username already taken. Please choose another.")
+                raise ValidationError(
+                    "Username already taken. Please choose another.")
         return username
-    
+
     def clean_profile_picture(self):
         profile_picture = self.cleaned_data.get('profile_picture')
         if profile_picture:
             # Check file size (max 5MB)
             try:
                 if profile_picture.size > 5 * 1024 * 1024:
-                    raise ValidationError("Profile picture file too large. Maximum size is 5MB.")
-                
+                    raise ValidationError(
+                        "Profile picture file too large. Maximum size is 5MB.")
+
                 # Security: Validate Magic Bytes
                 if isinstance(profile_picture, UploadedFile):
                     validate_media_file(profile_picture)
-                    
+
             except FileNotFoundError:
                 # Missing existing file, harmless
                 pass
@@ -240,11 +254,12 @@ class ProfileUpdateForm(forms.ModelForm):
                 raise e
             except Exception:
                 pass
-            
+
             # Check file extension
             ext = os.path.splitext(profile_picture.name)[1].lower()
             valid_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp']
             if ext not in valid_extensions:
-                raise ValidationError("Invalid image format. Use JPG, PNG, GIF, or WEBP.")
-        
+                raise ValidationError(
+                    "Invalid image format. Use JPG, PNG, GIF, or WEBP.")
+
         return profile_picture

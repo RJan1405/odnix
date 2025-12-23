@@ -49,6 +49,29 @@ def dashboard(request):
     following_users = Follow.objects.filter(
         follower=request.user).values_list('following', flat=True)
 
+    # Get suggestions (users not followed)
+    # Priority: Min 3 Female, 2 Male
+    candidates = CustomUser.objects.exclude(
+        id=request.user.id
+    ).exclude(
+        id__in=following_users
+    )
+
+    females = list(candidates.filter(gender='female').order_by('?')[:3])
+    males = list(candidates.filter(gender='male').order_by('?')[:2])
+    suggestion_users = females + males
+
+    # If we don't have 5 yet, fill with anyone
+    if len(suggestion_users) < 5:
+        existing_ids = [u.id for u in suggestion_users]
+        needed = 5 - len(suggestion_users)
+        fillers = list(candidates.exclude(id__in=existing_ids).order_by('?')[:needed])
+        suggestion_users.extend(fillers)
+
+    # Shuffle result
+    import random
+    random.shuffle(suggestion_users)
+
     # FIXED: Get active stories from followed users - SUPPORT MULTIPLE STORIES PER USER
     active_stories = Story.objects.filter(
         user__in=following_users,
@@ -209,6 +232,7 @@ def dashboard(request):
         'group_chats': group_chats,
         'chats': all_chats,  # Combined chats for the panel
         'other_users': other_users,
+        'suggestion_users': suggestion_users,
         'pending_requests': pending_requests,
         'current_user': request.user,
         'stories_by_user': stories_by_user,  # Keep as dict for template iteration

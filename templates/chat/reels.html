@@ -833,8 +833,8 @@
     <div class="omzo-container" id="omzoContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline autoplay muted src="{{ reel.url }}"
-                onclick="toggleReelPlay(this)"></video>
+            <video class="reel-video" loop playsinline autoplay {% if reel.is_muted %}muted{% endif %} src="{{ reel.url }}"
+                onclick="toggleReelPlay(this)" data-is-muted="{{ reel.is_muted|lower }}"></video>
 
             <div class="reel-actions">
                 <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false"
@@ -981,8 +981,79 @@
             <div class="report-modal-body">
                 <div style="font-size:13px;opacity:.8;margin-bottom:10px;">Select a reason:</div>
                 <div class="report-reasons">
-                    <label class="report-reason-item"><input type="radio" name="reportReason" value="copyright">
-                        <span>Copyright Infringement</span></label>
+                    <!-- Copyright Option with Details Section Below -->
+                    <div>
+                        <label class="report-reason-item"><input type="radio" name="reportReason" id="reportReasonCopyright" value="copyright">
+                            <span>Copyright Infringement</span></label>
+                        
+                        <!-- Copyright Details Section (Hidden by default) -->
+                        <div id="copyrightDetailsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-left: 3px solid rgba(255, 165, 0, 0.6); border-radius: 6px; margin-left: 0;">
+                            <p style="font-size: 13px; margin-bottom: 10px; opacity: 0.9; margin: 0 0 10px 0;">Copyright Details:</p>
+                            
+                            <!-- Copyright Type Selection -->
+                            <div style="margin-bottom: 12px;">
+                                <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
+                                    <input type="checkbox" id="isAudioCopyrightReel" style="margin-right: 10px; cursor: pointer;">
+                                    <span style="font-size: 13px;">Audio is copyrighted</span>
+                                </label>
+                                <label style="display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" id="isContentCopyrightReel" style="margin-right: 10px; cursor: pointer;">
+                                    <span style="font-size: 13px;">Content/Media is copyrighted</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Copyright Description -->
+                            <div style="margin-bottom: 12px;">
+                                <textarea 
+                                    id="copyrightDescriptionReel" 
+                                    placeholder="Optional: Describe the copyright infringement"
+                                    style="
+                                        width: 100%;
+                                        padding: 8px 10px;
+                                        background: rgba(255, 255, 255, 0.08);
+                                        border: 1px solid rgba(255, 255, 255, 0.15);
+                                        border-radius: 6px;
+                                        color: white;
+                                        font-family: inherit;
+                                        font-size: 12px;
+                                        min-height: 70px;
+                                        resize: vertical;
+                                    "
+                                ></textarea>
+                            </div>
+                            
+                            <!-- Disable Audio Option -->
+                            <div style="padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                                <label style="display: flex; align-items: center; cursor: pointer; margin-top: 8px;">
+                                    <input type="checkbox" id="disableAudioCheckbox" style="margin-right: 10px; cursor: pointer;">
+                                    <span style="font-size: 13px;">Disable audio for this reel</span>
+                                </label>
+                                <p style="font-size: 11px; opacity: 0.7; margin: 6px 0 0 24px;">Audio will be muted for all users</p>
+                                
+                                <!-- Admin Navigation Button -->
+                                <button id="adminNavBtn" onclick="openReelAdmin()" style="
+                                    margin-top: 10px;
+                                    padding: 8px 12px;
+                                    background: rgba(255, 165, 0, 0.2);
+                                    border: 1px solid rgba(255, 165, 0, 0.5);
+                                    border-radius: 4px;
+                                    color: #FFA500;
+                                    font-size: 12px;
+                                    cursor: pointer;
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 6px;
+                                    transition: all 0.3s ease;
+                                " 
+                                onmouseover="this.style.background='rgba(255, 165, 0, 0.3)'; this.style.borderColor='rgba(255, 165, 0, 0.8)';"
+                                onmouseout="this.style.background='rgba(255, 165, 0, 0.2)'; this.style.borderColor='rgba(255, 165, 0, 0.5)';">
+                                    <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
+                                    <span>Open in Admin</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <label class="report-reason-item"><input type="radio" name="reportReason" value="spam">
                         <span>Spam</span></label>
                     <label class="report-reason-item"><input type="radio" name="reportReason" value="inappropriate">
@@ -1022,8 +1093,15 @@
 
     // Safe autoplay
     function autoPlay(video) {
-        // Try to respect preference
-        video.muted = !soundUnlocked;
+        // Check if reel is globally muted (disabled by admin)
+        const isGloballyMuted = video.dataset.isMuted === 'true';
+        
+        // If globally muted, always mute. Otherwise, try to respect preference
+        if (isGloballyMuted) {
+            video.muted = true;
+        } else {
+            video.muted = !soundUnlocked;
+        }
 
         var playPromise = video.play();
         if (playPromise !== undefined) {
@@ -1034,7 +1112,8 @@
                     video.muted = true;
                     video.play().then(() => {
                         // Inform user ONLY if they expected sound (soundUnlocked is true)
-                        if (soundUnlocked) {
+                        // AND the reel is not globally muted
+                        if (soundUnlocked && !isGloballyMuted) {
                             showReelToast('Tap to Unmute', 'Browser blocked auto-sound', 'info', false);
                         }
                     });
@@ -1101,6 +1180,13 @@
     function toggleReelMute(btn, e) {
         e.stopPropagation();
         const video = btn.closest('.reel-item').querySelector('video');
+        const isGloballyMuted = video.dataset.isMuted === 'true';
+
+        // If reel is globally muted (by admin), don't allow unmuting
+        if (isGloballyMuted) {
+            showReelToast('Audio Disabled', 'This reel has audio disabled.', 'info');
+            return;
+        }
 
         video.muted = !video.muted;
 
@@ -1489,12 +1575,38 @@
         // Clear previous selection
         document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
         document.getElementById('reportDescription').value = '';
+        document.getElementById('copyrightDetailsSection').style.display = 'none';
+        
+        // Add event listeners to radio buttons
+        document.querySelectorAll('input[name="reportReason"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'copyright') {
+                    selectReelReportReason('copyright');
+                } else {
+                    selectReelReportReason('other');
+                }
+            });
+        });
+    }
+
+    function openReelAdmin() {
+        if (!currentReelId) return;
+        const adminUrl = `/admin/chat/reel/${currentReelId}/change/`;
+        window.open(adminUrl, '_blank');
     }
 
     function closeReportModal(event) {
         if (event && event.target !== event.currentTarget) return;
         const modal = document.getElementById('reportModal');
         modal.classList.remove('show');
+        // Reset copyright section and fields
+        document.getElementById('copyrightDetailsSection').style.display = 'none';
+        document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
+        document.getElementById('reportDescription').value = '';
+        document.getElementById('isAudioCopyrightReel').checked = false;
+        document.getElementById('isContentCopyrightReel').checked = false;
+        document.getElementById('copyrightDescriptionReel').value = '';
+        document.getElementById('disableAudioCheckbox').checked = false;
     }
 
     function submitReelReport() {
@@ -1508,27 +1620,94 @@
             return;
         }
 
-        fetch('/chat/api/reels/report/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({ reel_id: currentReelId, reason: reason, description: description })
-        })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
-                    closeReportModal();
-                } else {
-                    showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
-                }
+        // Handle copyright reports
+        if (reason === 'copyright') {
+            const isAudio = document.getElementById('isAudioCopyrightReel').checked;
+            const isContent = document.getElementById('isContentCopyrightReel').checked;
+            let copyrightType = null;
+
+            if (isAudio && !isContent) {
+                copyrightType = 'audio';
+            } else if (isContent && !isAudio) {
+                copyrightType = 'content';
+            } else if (isAudio && isContent) {
+                // If both are checked, set copyright type to 'both'
+                copyrightType = 'both';
+            }
+
+            const copyrightDescription = document.getElementById('copyrightDescriptionReel').value.trim();
+            const disableAudio = document.getElementById('disableAudioCheckbox').checked;
+
+            fetch('/chat/api/reels/report/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ 
+                    reel_id: currentReelId, 
+                    reason: reason, 
+                    description: description,
+                    copyright_type: copyrightType,
+                    copyright_description: copyrightDescription,
+                    disable_audio: disableAudio
+                })
             })
-            .catch(err => {
-                console.error(err);
-                showReelToast('Error', 'Failed to submit report.', 'error');
-            });
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
+                        closeReportModal();
+                    } else {
+                        showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showReelToast('Error', 'Failed to submit report.', 'error');
+                });
+        } else {
+            // Non-copyright reports
+            fetch('/chat/api/reels/report/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ reel_id: currentReelId, reason: reason, description: description })
+            })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showReelToast('Reported', 'Thanks. We will review this reel shortly.', 'success');
+                        closeReportModal();
+                    } else {
+                        showReelToast('Unable to Report', data.error || 'Please try again later.', 'error');
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    showReelToast('Error', 'Failed to submit report.', 'error');
+                });
+        }
+    }
+
+    function selectReelReportReason(reason) {
+        const copyrightSection = document.getElementById('copyrightDetailsSection');
+        if (!copyrightSection) {
+            console.error('Copyright section not found!');
+            return;
+        }
+        
+        if (reason === 'copyright') {
+            copyrightSection.style.display = 'block';
+        } else {
+            copyrightSection.style.display = 'none';
+            // Reset copyright fields
+            document.getElementById('isAudioCopyrightReel').checked = false;
+            document.getElementById('isContentCopyrightReel').checked = false;
+            document.getElementById('copyrightDescriptionReel').value = '';
+        }
     }
 
     // ===== Initialize Omzo =====

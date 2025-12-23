@@ -93,6 +93,29 @@
             border-color: var(--ig-error);
         }
         
+        .ig-auth-gender {
+            display: flex;
+            gap: 1.5rem;
+            margin: 12px 0;
+            padding: 0 12px;
+        }
+        
+        .ig-radio-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            font-size: 14px;
+            color: #262626;
+        }
+        
+        .ig-radio-label input[type="radio"] {
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+        }
+        
         .ig-auth-btn {
             width: 100%;
             padding: 7px 16px;
@@ -402,6 +425,16 @@
                     <div class="ig-auth-row">
                         <input type="text" name="name" class="ig-auth-input {% if form.name.errors %}error{% endif %}" placeholder="First name" value="{{ form.name.value|default:'' }}" required>
                         <input type="text" name="lastname" class="ig-auth-input {% if form.lastname.errors %}error{% endif %}" placeholder="Last name" value="{{ form.lastname.value|default:'' }}" required>
+                    </div>
+                    <div class="ig-auth-gender">
+                        <label class="ig-radio-label">
+                            <input type="radio" name="gender" value="male" required>
+                            <span>Male</span>
+                        </label>
+                        <label class="ig-radio-label">
+                            <input type="radio" name="gender" value="female" required>
+                            <span>Female</span>
+                        </label>
                     </div>
                     <input type="password" name="password1" class="ig-auth-input {% if form.password1.errors %}error{% endif %}" placeholder="Password" required>
                     <input type="password" name="password2" class="ig-auth-input {% if form.password2.errors %}error{% endif %}" placeholder="Confirm password" required>

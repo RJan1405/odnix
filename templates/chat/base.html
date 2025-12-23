@@ -323,15 +323,14 @@
                         <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=667eea&color=fff{% endif %}"
                             style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                         <div style="flex: 1;">
-                            <p style="margin: 0; font-weight: 600; font-size: 14px; color: var(--ig-text, white);">{{
-                                user.username|default:'You' }}</p>
+                            <p style="margin: 0; font-weight: 600; font-size: 14px; color:var(--ig-text-secondary, #141414ff);">{{user.username|default:'You' }}</p>
                             <p style="margin: 2px 0 0; font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">
                                 Sharing a new reel</p>
                         </div>
                     </div>
 
                     <textarea id="globalReelCaption" placeholder="Write a caption..."
-                        style="width: 100%; min-height: 80px; background: var(--ig-bg, #121212); border: 1px solid var(--ig-border, rgba(255,255,255,0.1)); border-radius: 12px; padding: 12px; color: var(--ig-text, white); font-size: 14px; resize: none; outline: none; font-family: inherit;"
+                        style="width: 100%; min-height: 80px; background: var(--ig-bg, #121212); border: 1px solid var(--ig-border, rgba(255,255,255,0.1)); border-radius: 12px; padding: 12px; color:var(--ig-text-secondary, #141414ff); font-size: 14px; resize: none; outline: none; font-family: inherit;"
                         maxlength="500"></textarea>
                     <div style="display: flex; justify-content: space-between; margin-top: 8px;">
                         <span style="font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">Max 2 minutes</span>

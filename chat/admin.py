@@ -12,15 +12,15 @@ from .models import (
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    list_display = ['username', 'full_name', 'email',
+    list_display = ['username', 'full_name', 'email', 'gender',
                     'is_online', 'last_seen', 'is_email_verified']
-    list_filter = ['is_online', 'is_email_verified',
+    list_filter = ['is_online', 'is_email_verified', 'gender',
                    'last_seen', 'date_joined']
     search_fields = ['username', 'name', 'lastname', 'email']
 
     fieldsets = UserAdmin.fieldsets + (
         ('Personal Info', {
-            'fields': ('name', 'lastname', 'profile_picture', 'is_online', 'last_seen', 'is_email_verified')
+            'fields': ('name', 'lastname', 'gender', 'profile_picture', 'is_online', 'last_seen', 'is_email_verified')
         }),
     )
 
@@ -237,12 +237,33 @@ class SavedPostAdmin(admin.ModelAdmin):
 
 @admin.register(PostReport)
 class PostReportAdmin(admin.ModelAdmin):
-    list_display = ['reporter', 'tweet', 'reason', 'created_at', 'reviewed']
-    list_filter = ['reason', 'reviewed', 'created_at']
-    search_fields = ['reporter__username', 'tweet__content', 'description']
+    list_display = ['reporter', 'tweet', 'reason',
+                    'copyright_type_display', 'created_at', 'reviewed']
+    list_filter = ['reason', 'copyright_type', 'reviewed', 'created_at']
+    search_fields = ['reporter__username', 'tweet__content',
+                     'description', 'copyright_description']
     raw_id_fields = ['reporter', 'tweet']
     readonly_fields = ['created_at', 'reviewed_at']
     actions = ['mark_as_reviewed']
+
+    fieldsets = (
+        ('Report Information', {
+            'fields': ('reporter', 'tweet', 'reason', 'description')
+        }),
+        ('Copyright Details (if applicable)', {
+            'fields': ('copyright_type', 'copyright_description'),
+            'classes': ('collapse',)
+        }),
+        ('Review Status', {
+            'fields': ('reviewed', 'created_at', 'reviewed_at')
+        }),
+    )
+
+    def copyright_type_display(self, obj):
+        if obj.copyright_type:
+            return obj.get_copyright_type_display()
+        return '-'
+    copyright_type_display.short_description = 'Copyright Type'
 
     def mark_as_reviewed(self, request, queryset):
         from django.utils import timezone
@@ -298,12 +319,43 @@ class ReelCommentAdmin(admin.ModelAdmin):
 
 @admin.register(ReelReport)
 class ReelReportAdmin(admin.ModelAdmin):
-    list_display = ['reporter', 'reel', 'reason', 'created_at', 'reviewed']
-    list_filter = ['reason', 'reviewed', 'created_at']
-    search_fields = ['reporter__username', 'reel__caption', 'description']
+    list_display = ['reporter', 'reel', 'reason',
+                    'copyright_type_display', 'disable_audio', 'created_at', 'reviewed']
+    list_filter = ['reason', 'copyright_type',
+                   'disable_audio', 'reviewed', 'created_at']
+    search_fields = ['reporter__username', 'reel__caption',
+                     'description', 'copyright_description']
     raw_id_fields = ['reporter', 'reel']
-    readonly_fields = ['created_at', 'reviewed_at']
+    readonly_fields = ['created_at', 'reviewed_at', 'reel_link']
     actions = ['mark_as_reviewed']
+
+    fieldsets = (
+        ('Report Information', {
+            'fields': ('reporter', 'reel', 'reason', 'description')
+        }),
+        ('Copyright Details (if applicable)', {
+            'fields': ('copyright_type', 'copyright_description', 'disable_audio', 'reel_link'),
+            'classes': ('collapse',)
+        }),
+        ('Review Status', {
+            'fields': ('reviewed', 'created_at', 'reviewed_at')
+        }),
+    )
+
+    def reel_link(self, obj):
+        if obj.reel:
+            from django.urls import reverse
+            from django.utils.html import format_html
+            url = reverse('admin:chat_reel_change', args=[obj.reel.id])
+            return format_html('<a href="{}" target="_blank" style="display: inline-block; padding: 8px 12px; background: #417690; color: white; text-decoration: none; border-radius: 4px; font-weight: bold;">Open Reel in Admin</a>', url)
+        return '-'
+    reel_link.short_description = 'Quick Actions'
+
+    def copyright_type_display(self, obj):
+        if obj.copyright_type:
+            return obj.get_copyright_type_display()
+        return '-'
+    copyright_type_display.short_description = 'Copyright Type'
 
     def mark_as_reviewed(self, request, queryset):
         from django.utils import timezone
