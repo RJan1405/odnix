@@ -1846,7 +1846,50 @@ def get_all_activity(request):
                 'content': reply.content[:80] + '...' if len(reply.content) > 80 else reply.content,
             })
 
-        # 6. Post Reports - Notify the user that they have been reported
+        # 6. Reel (Omzo) likes - people who liked MY reels
+        reel_likes = ReelLike.objects.filter(
+            reel__user=request.user
+        ).exclude(user=request.user).select_related('user', 'reel').order_by('-created_at')[:20]
+
+        for like in reel_likes:
+            activity_items.append({
+                'type': 'reel_like',
+                'timestamp': like.created_at,
+                'user': {
+                    'id': like.user.id,
+                    'username': like.user.username,
+                    'full_name': like.user.full_name,
+                    'profile_picture_url': like.user.profile_picture_url,
+                },
+                'reel': {
+                    'id': like.reel.id,
+                    'caption': like.reel.caption[:50] + '...' if like.reel.caption and len(like.reel.caption) > 50 else (like.reel.caption or 'Omzo'),
+                }
+            })
+
+        # 7. Reel (Omzo) comments - people who commented on MY reels
+        reel_comments = ReelComment.objects.filter(
+            reel__user=request.user
+        ).exclude(user=request.user).select_related('user', 'reel').order_by('-created_at')[:20]
+
+        for comment in reel_comments:
+            activity_items.append({
+                'type': 'reel_comment',
+                'timestamp': comment.created_at,
+                'user': {
+                    'id': comment.user.id,
+                    'username': comment.user.username,
+                    'full_name': comment.user.full_name,
+                    'profile_picture_url': comment.user.profile_picture_url,
+                },
+                'reel': {
+                    'id': comment.reel.id,
+                    'caption': comment.reel.caption[:50] + '...' if comment.reel.caption and len(comment.reel.caption) > 50 else (comment.reel.caption or 'Omzo'),
+                },
+                'comment_content': comment.content[:80] + '...' if len(comment.content) > 80 else comment.content,
+            })
+
+        # 8. Post Reports - Notify the user that they have been reported
         post_reports = PostReport.objects.filter(
             tweet__user=request.user
         ).select_related('reporter', 'tweet').order_by('-created_at')[:20]
@@ -1873,7 +1916,7 @@ def get_all_activity(request):
                 'reason': reason_display,
             })
 
-        # 7. Reel Reports - Notify the user that they have been reported
+        # 9. Reel Reports - Notify the user that they have been reported
         reel_reports = ReelReport.objects.filter(
             reel__user=request.user
         ).select_related('reporter', 'reel').order_by('-created_at')[:20]
@@ -1900,7 +1943,7 @@ def get_all_activity(request):
                 'reason': reason_display,
             })
 
-        # 8. My Reports - Content the current user reported (show for reporter)
+        # 10. My Reports - Content the current user reported (show for reporter)
         my_post_reports = PostReport.objects.filter(
             reporter=request.user
         ).select_related('tweet', 'tweet__user').order_by('-created_at')[:20]

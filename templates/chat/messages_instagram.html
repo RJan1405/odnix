@@ -1,0 +1,143 @@
+{% extends 'chat/base.html' %}
+{% load static %}
+
+{% block navbar %}{% endblock %}
+
+{% block extra_head %}
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<style>
+    /* Minimal styles to mirror chat layout */
+    .ig-direct { display:flex; height:100vh; max-width:100%; overflow:hidden; }
+    .ig-direct-sidebar { width:340px; max-width:340px; border-right:1px solid var(--ig-border); background:var(--ig-surface); display:flex; flex-direction:column; }
+    .ig-direct-header { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--ig-border); }
+    .ig-direct-back { background:none; border:none; cursor:pointer; padding:8px; border-radius:50%; color:var(--ig-text-primary); }
+    .ig-direct-back:hover { background:var(--ig-surface-hover); }
+    .ig-direct-header-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; }
+    .ig-direct-header-info { flex:1; display:flex; flex-direction:column; }
+    .ig-direct-title { margin:0; font-weight:700; font-size:18px; color:var(--ig-text-primary); line-height:1.2; }
+    .ig-direct-sub { margin:0; font-size:12px; color:var(--ig-text-secondary); }
+    .ig-direct-new { background:none; border:none; cursor:pointer; padding:8px; border-radius:50%; color:var(--ig-text-primary); }
+    .ig-direct-new:hover { background:var(--ig-surface-hover); }
+    .ig-direct-list { overflow:auto; padding:6px; display:flex; flex-direction:column; gap:4px; }
+    .ig-direct-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; text-decoration:none; color:inherit; transition:background .15s; }
+    .ig-direct-item:hover { background:var(--ig-surface-hover); }
+    .ig-direct-item.active { background:rgba(102,126,234,.12); }
+    .ig-direct-item-avatar { width:44px; height:44px; border-radius:22%; object-fit:cover; }
+    .ig-direct-item-avatar.placeholder { display:flex; align-items:center; justify-content:center; background:var(--odnix-gradient); color:#fff; font-weight:700; }
+    .ig-direct-item-avatar.group { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#5b6eae 0%,#8b5fc7 50%,#c471ed 100%); color:#fff; border-radius:22%; width:44px; height:44px; }
+    .ig-direct-item-info { display:flex; flex-direction:column; min-width:0; }
+    .ig-direct-item-name { font-weight:600; color:var(--ig-text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .ig-direct-item-preview { font-size:12px; color:var(--ig-text-secondary); }
+    .ig-chat { flex:1; display:flex; flex-direction:column; background:var(--ig-bg); }
+    .ig-chat-empty { flex:1; display:flex; align-items:center; justify-content:center; }
+    .ig-chat-empty-card { text-align:center; padding:32px; border:1px solid var(--ig-border); border-radius:16px; background:var(--ig-surface); color:var(--ig-text-secondary); }
+    .ig-chat-empty-card h3 { margin:0 0 8px; color:var(--ig-text-primary); }
+    /* Search + categories */
+    .ig-direct-controls { padding:10px 12px; border-bottom:1px solid var(--ig-border); }
+    .ig-search-bar { display:flex; align-items:center; gap:8px; background:var(--ig-bg); border:1px solid var(--ig-border); border-radius:12px; padding:10px 12px; }
+    .ig-search-bar input { flex:1; background:transparent; border:none; outline:none; color:var(--ig-text-primary); }
+    .ig-categories { display:flex; gap:8px; margin-top:10px; }
+    .ig-cat-btn { display:flex; align-items:center; gap:6px; padding:8px 12px; background:var(--ig-bg); border:1px solid var(--ig-border); border-radius:999px; font-size:13px; color:var(--ig-text-secondary); cursor:pointer; }
+    .ig-cat-btn.active { background:rgba(102,126,234,.12); color:var(--ig-text-primary); border-color:transparent; }
+    @media (max-width: 900px) { .ig-direct-sidebar { width:100%; max-width:100%; } .ig-chat { display:none; } }
+</style>
+{% endblock %}
+
+{% block title %}Messages - Odnix{% endblock %}
+
+{% block content %}
+<div class="ig-direct">
+    <!-- Left Sidebar - Conversations List -->
+    <div class="ig-direct-sidebar">
+        <header class="ig-direct-header">
+            <a href="{% url 'dashboard' %}" class="ig-direct-back" title="Back">
+                <i data-lucide="arrow-left"></i>
+            </a>
+            <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}" class="ig-direct-header-avatar"
+                 onerror="this.style.display='none';">
+            <div class="ig-direct-header-info">
+                <h2 class="ig-direct-title">Messages</h2>
+                <div class="ig-direct-sub">@{{ request.user.username }}</div>
+            </div>
+            <a class="ig-direct-new" href="{% url 'discover_groups' %}" title="New Chat">
+                <i data-lucide="plus"></i>
+            </a>
+        </header>
+        <div class="ig-direct-controls">
+            <div class="ig-search-bar">
+                <i data-lucide="search"></i>
+                <input id="directSearchInput" type="text" placeholder="Search messages" onkeyup="filterDirectChats(event)">
+            </div>
+            <div class="ig-categories">
+                <button class="ig-cat-btn active" onclick="filterDirectCategory('all', this)"><i data-lucide="inbox"></i> All</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('private', this)"><i data-lucide="user"></i> Private</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('group', this)"><i data-lucide="users"></i> Groups</button>
+            </div>
+        </div>
+        <div class="ig-direct-list">
+            {% for user_chat in request.user.chats.all %}
+            <a href="{% url 'chat_detail' user_chat.id %}" class="ig-direct-item" data-type="{{ user_chat.chat_type }}" data-name="{% if user_chat.chat_type == 'group' %}{{ user_chat.name|lower }}{% else %}{% for participant in user_chat.participants.all %}{% if participant != request.user %}{{ participant.full_name|lower }}{% endif %}{% endfor %}{% endif %}">
+                {% if user_chat.chat_type == 'group' %}
+                <div class="ig-direct-item-avatar group">
+                    <i data-lucide="users"></i>
+                </div>
+                <div class="ig-direct-item-info">
+                    <div class="ig-direct-item-name">{{ user_chat.name }}</div>
+                    <div class="ig-direct-item-preview">{{ user_chat.participant_count }} members</div>
+                </div>
+                {% else %}
+                {% for participant in user_chat.participants.all %}
+                {% if participant != request.user %}
+                <img src="{{ participant.profile_picture_url }}" alt="" class="ig-direct-item-avatar"
+                     onerror="this.outerHTML='\u003cdiv class=\'ig-direct-item-avatar placeholder\'\u003e{{ participant.initials }}\u003c/div\u003e'">
+                <div class="ig-direct-item-info">
+                    <div class="ig-direct-item-name">{{ participant.full_name }}</div>
+                    <div class="ig-direct-item-preview">@{{ participant.username }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+            </a>
+            {% empty %}
+            <div class="ig-direct-item" style="justify-content:center; color:var(--ig-text-secondary);">
+                No conversations yet
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right Pane - Empty placeholder until a chat is chosen -->
+    <div class="ig-chat">
+        <div class="ig-chat-empty">
+            <div class="ig-chat-empty-card">
+                <h3>Select a conversation</h3>
+                <p>Choose a chat from the left to start messaging.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+    function filterDirectChats(event) {
+        const term = (event?.target?.value || '').toLowerCase().trim();
+        document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item => {
+            const name = (item.getAttribute('data-name') || '').toLowerCase();
+            item.style.display = (!term || name.includes(term)) ? 'flex' : 'none';
+        });
+    }
+    function filterDirectCategory(category, btn){
+        document.querySelectorAll('.ig-categories .ig-cat-btn').forEach(b=>b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item=>{
+            const type = item.getAttribute('data-type');
+            const show = (category === 'all' || type === category);
+            item.style.display = show ? 'flex' : 'none';
+        });
+        const input = document.getElementById('directSearchInput');
+        if (input && input.value.trim()) filterDirectChats({target: input});
+    }
+</script>
+{% endblock %}

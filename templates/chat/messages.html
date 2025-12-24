@@ -1,0 +1,136 @@
+{% extends 'chat/base.html' %}
+
+{% block title %}Messages - Odnix{% endblock %}
+
+{% block content %}
+<div style="max-width: 975px; margin: 90px auto 20px; padding: 0 16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            {% if current_user %}
+            <img src="{{ current_user.profile_picture_url }}" alt="{{ current_user.full_name }}" style="width:44px;height:44px;border-radius:22%;object-fit:cover;" onerror="this.style.display='none'">
+            <div>
+                <h1 style="margin:0;font-size:20px;font-weight:700;color:var(--ig-text-primary);">Messages</h1>
+                <div style="font-size:12px;color:var(--ig-text-secondary);">@{{ current_user.username }}</div>
+            </div>
+            {% endif %}
+        </div>
+        <a href="{% url 'discover_groups' %}" class="btn btn--secondary" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;">
+            <i data-lucide="users"></i>
+            New Chat
+        </a>
+    </div>
+
+    <!-- Search -->
+    <div class="dm-search-container" style="margin-bottom:12px;">
+        <div class="dm-search-bar">
+            <i data-lucide="search" class="dm-search-icon"></i>
+            <input type="text" placeholder="Search messages" class="dm-search-input" id="dmSearchInput"
+                   onkeyup="filterDMChats(event)">
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="dm-categories" style="margin-bottom:8px;">
+        <button class="dm-category-btn active" onclick="filterDMCategory('all', this)">
+            <i data-lucide="inbox"></i>
+            <span>All</span>
+        </button>
+        <button class="dm-category-btn" onclick="filterDMCategory('private', this)">
+            <i data-lucide="user"></i>
+            <span>Private</span>
+        </button>
+        <button class="dm-category-btn" onclick="filterDMCategory('groups', this)">
+            <i data-lucide="users"></i>
+            <span>Groups</span>
+        </button>
+    </div>
+
+    <!-- Chat List -->
+    <div class="dm-chat-list" id="dmChatList" style="background:var(--ig-surface); border:1px solid var(--ig-border); border-radius:14px; overflow:hidden;">
+        {% for chat in private_chats %}
+            {% for participant in chat.participants.all %}
+                {% if participant != current_user and participant != user %}
+                <a href="{% url 'chat_detail' chat.id %}" class="dm-chat-item" data-type="private" data-name="{{ participant.full_name|lower }}">
+                    <div class="dm-avatar-wrapper">
+                        <img src="{{ participant.profile_picture_url }}" alt="{{ participant.full_name }}" class="dm-chat-avatar"
+                             onerror="this.outerHTML='\u003cdiv class=\'dm-avatar-placeholder\'\u003e{{ participant.initials }}\u003c/div\u003e'">
+                        <span class="dm-online-indicator {% if participant.is_online %}online{% endif %}"></span>
+                    </div>
+                    <div class="dm-chat-content">
+                        <div class="dm-chat-top">
+                            <span class="dm-chat-name">{{ participant.full_name }}</span>
+                        </div>
+                        <div class="dm-chat-bottom">
+                            <span class="dm-chat-preview">@{{ participant.username }}</span>
+                        </div>
+                    </div>
+                    <i data-lucide="chevron-right" class="dm-chat-arrow"></i>
+                </a>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {% for chat in group_chats %}
+        <a href="{% url 'chat_detail' chat.id %}" class="dm-chat-item" data-type="groups" data-name="{{ chat.name|lower }}">
+            <div class="dm-avatar-wrapper">
+                <div class="dm-group-avatar-themed">
+                    <i data-lucide="users-round"></i>
+                </div>
+            </div>
+            <div class="dm-chat-content">
+                <div class="dm-chat-top">
+                    <span class="dm-chat-name">{{ chat.name }}</span>
+                </div>
+                <div class="dm-chat-bottom">
+                    <span class="dm-chat-preview">{{ chat.participant_count }} members</span>
+                </div>
+            </div>
+            <i data-lucide="chevron-right" class="dm-chat-arrow"></i>
+        </a>
+        {% endfor %}
+
+        {% if not private_chats and not group_chats %}
+        <div class="dm-empty-state">
+            <div class="dm-empty-icon">
+                <i data-lucide="message-circle"></i>
+            </div>
+            <h3 class="dm-empty-title">Your Messages</h3>
+            <p class="dm-empty-text">Start a conversation to connect with friends and groups</p>
+            <a href="{% url 'discover_groups' %}" class="dm-start-chat-btn" style="text-decoration:none;">
+                <i data-lucide="plus"></i>
+                Start a Chat
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Reuse navbar helpers if present; otherwise define local fallbacks.
+    if (typeof filterDMChats !== 'function') {
+        window.filterDMChats = function (event) {
+            const searchTerm = (event?.target?.value || '').toLowerCase().trim();
+            document.querySelectorAll('.dm-chat-item').forEach(item => {
+                const name = (item.getAttribute('data-name') || '').toLowerCase();
+                item.classList.toggle('hidden', !!searchTerm && !name.includes(searchTerm));
+            });
+        };
+    }
+    if (typeof filterDMCategory !== 'function') {
+        window.filterDMCategory = function (category, btn) {
+            document.querySelectorAll('.dm-category-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.dm-chat-item').forEach(item => {
+                const type = item.getAttribute('data-type');
+                item.classList.toggle('hidden', !(category === 'all' || type === category));
+            });
+            const input = document.getElementById('dmSearchInput');
+            if (input && input.value.trim()) filterDMChats({ target: input });
+        };
+    }
+    // Initialize icons if available
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

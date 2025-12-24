@@ -65,7 +65,8 @@ def dashboard(request):
     if len(suggestion_users) < 5:
         existing_ids = [u.id for u in suggestion_users]
         needed = 5 - len(suggestion_users)
-        fillers = list(candidates.exclude(id__in=existing_ids).order_by('?')[:needed])
+        fillers = list(candidates.exclude(
+            id__in=existing_ids).order_by('?')[:needed])
         suggestion_users.extend(fillers)
 
     # Shuffle result
@@ -299,6 +300,43 @@ def chat_view(request, chat_id):
 
     # Use Instagram-style template
     return render(request, 'chat/chat_detail_instagram.html', context)
+
+
+@login_required
+def messages_page(request):
+    """Dedicated messages page to pick a chat (replaces sidebar/panel)."""
+    # User chats split by type
+    user_chats = Chat.objects.filter(participants=request.user).select_related(
+        'admin').order_by('-updated_at')
+    private_chats = user_chats.filter(chat_type='private')
+    group_chats = user_chats.filter(chat_type='group')
+
+    # Other users for search/help
+    other_users = CustomUser.objects.exclude(
+        id=request.user.id).distinct().order_by('name', 'lastname')
+
+    # Counts for navbar badges
+    story_inbox_count = (
+        StoryReply.objects.filter(
+            story__user=request.user, is_read=False).count()
+        + StoryLike.objects.filter(story__user=request.user).exclude(user=request.user).count()
+    )
+    unread_message_count = Chat.objects.filter(
+        participants=request.user,
+        messages__is_read=False
+    ).exclude(messages__sender=request.user).distinct().count()
+
+    context = {
+        'current_user': request.user,
+        'private_chats': private_chats,
+        'group_chats': group_chats,
+        'other_users': other_users,
+        'story_inbox_count': story_inbox_count,
+        'unread_message_count': unread_message_count,
+    }
+
+    # Render a chat-style messages selector (two-pane layout with empty chat area)
+    return render(request, 'chat/messages_instagram.html', context)
 
 
 @login_required

@@ -209,10 +209,16 @@
                 console.log('DEBUG: notifyWS received message', evt.data);
                 try {
                     const msg = JSON.parse(evt.data);
-                    if (msg.type === 'call.notify') {
-                        console.log('DEBUG: call.notify payload', msg.payload);
+                    if (msg.type === 'incoming.call') {
+                        console.log('DEBUG: incoming.call payload', msg);
 
                         // Check if we are already handling this call locally (on chat page)
+                        // If we are on the chat page for this specific chat, call.js handles it via direct WS
+                        if (window.OdnixCallConfig && window.OdnixCallConfig.chatId == msg.chat_id) {
+                            console.log('DEBUG: On chat page for this call, suppressing global banner');
+                            return;
+                        }
+
                         const localIncoming = document.getElementById('incomingCallModal');
                         const localCall = document.getElementById('callModal');
                         if ((localIncoming && localIncoming.style.display !== 'none') ||
@@ -221,14 +227,13 @@
                             return;
                         }
 
-                        const payload = msg.payload || {};
                         const banner = ensureGlobalBanner();
                         const modeEl = document.getElementById('globalCallMode');
-                        if (modeEl) modeEl.textContent = payload.audioOnly ? 'Audio Call' : 'Video Call';
+                        if (modeEl) modeEl.textContent = msg.audioOnly ? 'Audio Call' : 'Video Call';
                         banner.style.display = 'block';
                         const accept = document.getElementById('globalAcceptCall');
                         const decline = document.getElementById('globalDeclineCall');
-                        const chatId = payload.chat_id;
+                        const chatId = msg.chat_id;
                         accept.onclick = function () {
                             banner.style.display = 'none';
                             // Navigate to chat detail; offer is re-sent periodically by caller

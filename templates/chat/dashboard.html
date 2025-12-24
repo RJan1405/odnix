@@ -151,7 +151,7 @@
                 <span class="bottom-nav-label">Profile</span>
             </a>
 
-            <button type="button" class="bottom-nav-tab" data-tab="chats" id="chatsTabBtn">
+            <a href="{% url 'messages' %}" class="bottom-nav-tab" data-tab="chats">
                 <div class="nav-icon-wrapper">
                     <i data-lucide="message-circle" class="nav-icon"></i>
                     {% if private_chats.count|add:group_chats.count > 0 %}
@@ -159,7 +159,7 @@
                     {% endif %}
                 </div>
                 <span class="bottom-nav-label">Chats</span>
-            </button>
+            </a>
 
             <!-- Home Tab - Current/Active - Scrolls to top -->
             <button type="button" class="bottom-nav-tab active" data-tab="home" id="homeTabBtn">
@@ -386,12 +386,12 @@
                     <span class="bottom-nav-label">Profile</span>
                 </a>
 
-                <button type="button" class="bottom-nav-tab" data-tab="chats" id="chatsTabBtnInSearch">
+                <a href="{% url 'messages' %}" class="bottom-nav-tab" data-tab="chats">
                     <div class="nav-icon-wrapper">
                         <i data-lucide="message-circle" class="nav-icon"></i>
                     </div>
                     <span class="bottom-nav-label">Chats</span>
-                </button>
+                </a>
 
                 <button type="button" class="bottom-nav-tab" data-tab="home" onclick="closeMobileModal()">
                     <div class="nav-icon-wrapper">

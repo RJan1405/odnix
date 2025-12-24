@@ -10,7 +10,7 @@ from .chat import (
     pin_chat, unpin_chat, toggle_star_message, get_starred_messages,
     is_message_starred, mark_messages_read, get_message_read_status,
     get_chat_read_status, get_user_online_status, user_heartbeat,
-    get_chat_participant_status, get_group_details, update_group_settings,
+    get_chat_participant_status, get_group_details, update_group_settings, messages_page,
     remove_group_member, leave_group, regenerate_invite_code,
     p2p_send_signal, p2p_get_signals, get_chat_participants_for_p2p,
     get_chats_api, load_more_explore_content

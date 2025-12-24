@@ -23,6 +23,8 @@ urlpatterns = [
     path('profile/update/', views.update_profile, name='update_profile'),
     path('profile/<str:username>/', views.profile_view, name='user_profile'),
     path('chat/<int:chat_id>/', views.chat_view, name='chat_detail'),
+    # Dedicated messages page (chat list)
+    path('messages/', views.messages_page, name='messages'),
     path('delete-message-for-me/<int:message_id>/',
          views.delete_message_for_me, name='delete_message_for_me'),
     path('delete-message-for-everyone/<int:message_id>/',

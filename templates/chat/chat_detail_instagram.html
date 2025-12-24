@@ -589,8 +589,66 @@
         margin-left: auto;
     }
 
+    .ig-direct-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--ig-border);
+    }
+
+    .ig-direct-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .ig-direct-header-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ig-direct-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--ig-text-primary);
+        line-height: 1.2;
+    }
+
+    .ig-direct-sub {
+        margin: 0;
+        font-size: 12px;
+        color: var(--ig-text-secondary);
+    }
+
+    .ig-direct-new {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        color: var(--ig-text-primary);
+    }
+
+    .ig-direct-new:hover {
+        background: var(--ig-surface-hover);
+    }
+
     .ig-direct-back {
         color: var(--ig-text-primary);
+    }
+
+    .ig-cat-btn {
+        transition: all 0.2s;
+    }
+
+    .ig-cat-btn.active {
+        background: rgba(102, 126, 234, .12) !important;
+        color: var(--ig-text-primary) !important;
+        border-color: transparent !important;
     }
 
     .ig-chat-back {
@@ -1389,19 +1447,38 @@
     <!-- Left Sidebar - Conversations List (Desktop) -->
     <div class="ig-direct-sidebar">
         <header class="ig-direct-header">
-            <a href="{% url 'dashboard' %}" class="ig-direct-back" title="Back to Feed">
+            <a href="{% url 'dashboard' %}" class="ig-direct-back" title="Back">
                 <i data-lucide="arrow-left"></i>
             </a>
-            <h2 class="ig-direct-title">{{ request.user.username }}</h2>
-            <button class="ig-direct-new" onclick="openNewMessageModal()" title="New Message">
-                <i data-lucide="edit"></i>
+            <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}" class="ig-direct-header-avatar"
+                 onerror="this.style.display='none';">
+            <div class="ig-direct-header-info">
+                <h2 class="ig-direct-title">Messages</h2>
+                <div class="ig-direct-sub">@{{ request.user.username }}</div>
+            </div>
+            <button class="ig-direct-new" onclick="openNewMessageModal()" title="New Chat">
+                <i data-lucide="plus"></i>
             </button>
         </header>
+
+        <div class="ig-direct-controls" style="padding:10px 12px; border-bottom:1px solid var(--ig-border);">
+            <div class="ig-search-bar" style="display:flex;align-items:center;gap:8px;background:var(--ig-bg);border:1px solid var(--ig-border);border-radius:12px;padding:10px 12px;">
+                <i data-lucide="search"></i>
+                <input id="directSearchInput" type="text" placeholder="Search messages" onkeyup="filterDirectChats(event)" style="flex:1;background:transparent;border:none;outline:none;color:var(--ig-text-primary);">
+            </div>
+            <div class="ig-categories" style="display:flex;gap:8px;margin-top:10px;">
+                <button class="ig-cat-btn active" onclick="filterDirectCategory('all', this)" style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--ig-bg);border:1px solid var(--ig-border);border-radius:999px;font-size:13px;color:var(--ig-text-secondary);cursor:pointer;"><i data-lucide="inbox"></i> All</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('private', this)" style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--ig-bg);border:1px solid var(--ig-border);border-radius:999px;font-size:13px;color:var(--ig-text-secondary);cursor:pointer;"><i data-lucide="user"></i> Private</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('group', this)" style="display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--ig-bg);border:1px solid var(--ig-border);border-radius:999px;font-size:13px;color:var(--ig-text-secondary);cursor:pointer;"><i data-lucide="users"></i> Groups</button>
+            </div>
+        </div>
 
         <div class="ig-direct-list">
             {% for user_chat in request.user.chats.all %}
             <a href="{% url 'chat_detail' user_chat.id %}"
-                class="ig-direct-item {% if user_chat.id == chat.id %}active{% endif %}">
+                class="ig-direct-item {% if user_chat.id == chat.id %}active{% endif %}"
+                data-type="{{ user_chat.chat_type }}"
+                data-name="{% if user_chat.chat_type == 'group' %}{{ user_chat.name|lower }}{% else %}{% for participant in user_chat.participants.all %}{% if participant != request.user %}{{ participant.full_name|lower }}{% endif %}{% endfor %}{% endif %}">
                 {% if user_chat.chat_type == 'group' %}
                 <div class="ig-direct-item-avatar group">
                     <i data-lucide="users"></i>

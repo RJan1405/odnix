@@ -2062,7 +2062,7 @@
         border: none;
         cursor: pointer;
         padding: 8px;
-        color: var(--odnix-text-secondary);
+        color:#000000;
     }
 
     .ig-create-next {
@@ -3241,12 +3241,12 @@
             <button onclick="openCreateMenu()" title="Create">
                 <i data-lucide="plus-square" class="ig-nav-icon"></i>
             </button>
-            <button onclick="openChatsPanel()" class="dm-nav-btn" title="Messages">
+            <a href="{% url 'messages' %}" class="dm-nav-btn" title="Messages">
                 <i data-lucide="message-circle" class="ig-nav-icon dm-icon"></i>
                 {% if unread_message_count > 0 %}
                 <span class="ig-nav-badge dm-badge">{{ unread_message_count }}</span>
                 {% endif %}
-            </button>
+            </a>
             <a href="{% url 'discover_groups' %}" title="Explore">
                 <i data-lucide="compass"
                     class="ig-nav-icon {% if request.resolver_match.url_name == 'discover_groups' %}active{% endif %}"></i>
@@ -3288,12 +3288,12 @@
     <button class="ig-bottom-nav-item" onclick="openCreateMenu()" title="Create">
         <i data-lucide="plus-square"></i>
     </button>
-    <button class="ig-bottom-nav-item dm-bottom-btn" onclick="openChatsPanel()" title="Messages">
+    <a href="{% url 'messages' %}" class="ig-bottom-nav-item dm-bottom-btn" title="Messages">
         <i data-lucide="message-circle"></i>
         {% if unread_message_count > 0 %}
         <span class="dm-mobile-badge">{{ unread_message_count }}</span>
         {% endif %}
-    </button>
+    </a>
     <a href="{% url 'profile' %}"
         class="ig-bottom-nav-item {% if request.resolver_match.url_name == 'profile' or request.resolver_match.url_name == 'user_profile' %}active{% endif %}"
         title="Profile">
@@ -7513,6 +7513,24 @@
                             activityText = `<strong>${username}</strong> replied to your story`;
                             if (item.content) {
                                 activityText += `: "${item.content}"`;
+                            }
+                            break;
+                        case 'reel_like':
+                            iconClass = 'like';
+                            iconName = 'heart';
+                            dataType = 'likes';
+                            activityText = `<strong>${username}</strong> liked your omzo`;
+                            if (item.reel && item.reel.caption) {
+                                activityText += `: "${item.reel.caption}"`;
+                            }
+                            break;
+                        case 'reel_comment':
+                            iconClass = 'comment';
+                            iconName = 'message-circle';
+                            dataType = 'comments';
+                            activityText = `<strong>${username}</strong> commented on your omzo`;
+                            if (item.comment_content) {
+                                activityText += `: "${item.comment_content}"`;
                             }
                             break;
                         case 'post_report':

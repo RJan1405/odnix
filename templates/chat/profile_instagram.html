@@ -1449,59 +1449,115 @@
             {% endif %}
         </div>
 
-        <!-- Scribes Grid -->
+        <!-- Scribes Feed (match homepage style) -->
         {% if can_view_profile %}
+        <style>
+            /* Align profile feed width with homepage center column */
+            #profilePostsFeed {
+                display: flex;
+                flex-direction: column;
+                gap: 28px;
+                width: 100%;
+                max-width: 520px;
+                margin: 0 auto;
+            }
+            @media (max-width: 768px) {
+                #profilePostsFeed {
+                    max-width: 100%;
+                    gap: 20px;
+                }
+            }
+            /* Ensure individual cards don’t stretch wider on desktop */
+            #profilePostsFeed .ig-post {
+                width: 100%;
+                max-width: 520px;
+                margin: 0 auto;
+            }
+        </style>
         <div class="ig-profile-content" id="postsTab">
             {% if tweets %}
-            <div class="scribe-feed">
+            <section class="ig-posts" id="profilePostsFeed">
                 {% for tweet in tweets %}
-                <article class="scribe-card" data-id="{{ tweet.id }}">
-                    <div class="scribe-avatar">
-                        <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
-                        <div class="scribe-avatar-fallback">{{ tweet.user.initials }}</div>
+                <article class="ig-post" data-tweet-id="{{ tweet.id }}">
+                    <!-- Post Header -->
+                    <header class="ig-post-header">
+                        <a href="{% url 'user_profile' tweet.user.username %}" class="ig-post-user">
+                            <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}" class="ig-post-avatar"
+                                onerror="this.outerHTML='<div class=\'ig-post-avatar-placeholder\'>{{ tweet.user.initials }}</div>'">
+                            <div class="ig-post-user-info">
+                                <span class="ig-post-username">{{ tweet.user.username }}</span>
+                            </div>
+                        </a>
+                        <button class="ig-post-more" onclick="openPostDetail({{ tweet.id }})">
+                            <i data-lucide="more-horizontal"></i>
+                        </button>
+                    </header>
+
+                    <!-- Post Media -->
+                    {% if tweet.content_type == 'code_scribe' %}
+                    <div class="ig-post-media">
+                        <iframe class="ig-code-scribe-view" title="Code Scribe"
+                            style="width: 100%; min-height: 260px; border: none; background: var(--ig-bg);"
+                            data-code-bundle="{{ tweet.code_bundle|urlencode }}"
+                            data-code-html="{{ tweet.code_html|default:''|urlencode }}"
+                            data-code-css="{{ tweet.code_css|default:''|urlencode }}"
+                            data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
                     </div>
-                    <div class="scribe-main">
-                        <div class="scribe-header-top">
-                            <span class="scribe-name">{{ tweet.user.full_name }}</span>
-                            <span class="scribe-username">@{{ tweet.user.username }}</span>
-                            <span class="scribe-dot">•</span>
-                            <span class="scribe-time">{{ tweet.timestamp|timesince }} ago</span>
-                        </div>
+                    {% elif tweet.image_url %}
+                    <div class="ig-post-media" onclick="openImageModal('{{ tweet.image_url }}')">
+                        <img src="{{ tweet.image_url }}" alt="Post image">
+                    </div>
+                    {% endif %}
 
-                        <div class="scribe-body" onclick="openPostDetail({{ tweet.id }})">
-                            {% if tweet.content %}
-                            <p class="scribe-text">{{ tweet.content|linkify_hashtags_mentions }}</p>
-                            {% endif %}
-
-                            {% if tweet.content_type == 'code_scribe' %}
-                            <div class="scribe-code">
-                                <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" style="width: 100%; height: 100%; border: none; display: block; background: var(--ig-bg);"
-                                    data-code-bundle="{{ tweet.code_bundle|urlencode }}"
-                                    data-code-html="{{ tweet.code_html|default:''|urlencode }}"
-                                    data-code-css="{{ tweet.code_css|default:''|urlencode }}"
-                                    data-code-js="{{ tweet.code_js|default:''|urlencode }}"></iframe>
-                            </div>
-                            {% elif tweet.image_url %}
-                            <div class="scribe-media">
-                                <img src="{{ tweet.image_url }}" alt="Scribe media" loading="lazy">
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="scribe-footer">
-                            <div class="scribe-metric">
-                                <i data-lucide="message-circle"></i>
-                                <span>{{ tweet.comment_count }}</span>
-                            </div>
-                            <div class="scribe-metric">
+                    <!-- Post Actions -->
+                    <div class="ig-post-actions">
+                        <div class="ig-post-actions-left">
+                            <button class="ig-post-action-btn {% if tweet.is_liked %}liked{% endif %}"
+                                onclick="toggleLike({{ tweet.id }})" data-tweet-id="{{ tweet.id }}">
                                 <i data-lucide="heart"></i>
-                                <span>{{ tweet.like_count }}</span>
-                            </div>
+                            </button>
+                            <button class="ig-post-action-btn" onclick="toggleComments({{ tweet.id }})">
+                                <i data-lucide="message-circle"></i>
+                            </button>
                         </div>
+                    </div>
+
+                    <!-- Post Details -->
+                    <div class="ig-post-details">
+                        <div class="ig-post-likes">
+                            <span class="like-count" data-tweet-id="{{ tweet.id }}">{{ tweet.like_count }}</span> likes
+                        </div>
+
+                        {% if tweet.content %}
+                        <div class="ig-post-caption">
+                            <span class="username">{{ tweet.user.username }}</span>
+                            <span>{{ tweet.content|linkify_hashtags_mentions }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if tweet.comment_count > 0 %}
+                        <div class="ig-post-view-comments" onclick="openPostDetail({{ tweet.id }})">
+                            View all {{ tweet.comment_count }} comments
+                        </div>
+                        {% endif %}
+
+                        <time class="ig-post-time">{{ tweet.timestamp|timesince }} ago</time>
+                    </div>
+
+                    <!-- Comment Input -->
+                    <div class="ig-post-comment-input">
+                        <input type="text" placeholder="Add a comment..." id="comment-input-{{ tweet.id }}"
+                            maxlength="500" onkeypress="handleCommentKeypress(event, {{ tweet.id }})">
+                        <button onclick="addComment({{ tweet.id }})">Post</button>
+                    </div>
+
+                    <!-- Comments Section (Hidden by default) -->
+                    <div id="comments-{{ tweet.id }}" class="ig-comments-section" style="display: none;">
+                        <div class="ig-comments-list" id="comments-list-{{ tweet.id }}"></div>
                     </div>
                 </article>
                 {% endfor %}
-            </div>
+            </section>
             {% else %}
             <!-- No Scribes -->
             <div class="ig-no-posts">
@@ -4139,6 +4195,111 @@
                 doc.close();
             }
         });
+    }
+
+    // ===== Profile Feed: Like & Comments (match homepage) =====
+    function showIGToast(message, type = 'info') {
+        const container = document.getElementById('ig-toast-container') || document.body;
+        const toast = document.createElement('div');
+        toast.className = 'ig-notification';
+        toast.style.cssText = 'position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: ' + (type === 'error' ? '#ed4956' : type === 'success' ? '#00a884' : 'var(--ig-text-primary)') + '; color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;';
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 3000);
+    }
+
+    function handleCommentKeypress(event, tweetId) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            addComment(tweetId);
+        }
+    }
+
+    function toggleLike(tweetId) {
+        const btn = document.querySelector(`.ig-post-action-btn[data-tweet-id="${tweetId}"]`);
+        const countEl = document.querySelector(`.like-count[data-tweet-id="${tweetId}"]`);
+
+        const wasLiked = btn && btn.classList.contains('liked');
+        if (btn) btn.classList.toggle('liked');
+        if (countEl) {
+            const currentCount = parseInt(countEl.textContent) || 0;
+            countEl.textContent = wasLiked ? currentCount - 1 : currentCount + 1;
+        }
+        if (!wasLiked && btn) { btn.style.transform = 'scale(1.2)'; setTimeout(() => btn.style.transform = 'scale(1)', 200); }
+
+        fetch('{% url "toggle_like" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ tweet_id: tweetId })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) throw new Error(data.error || 'Failed to like');
+            if (btn) btn.classList.toggle('liked', data.is_liked === true);
+            if (countEl) countEl.textContent = data.like_count;
+        })
+        .catch(err => {
+            if (btn) btn.classList.toggle('liked');
+            if (countEl) {
+                const currentCount = parseInt(countEl.textContent) || 0;
+                countEl.textContent = wasLiked ? currentCount + 1 : currentCount - 1;
+            }
+            showIGToast(err.message || 'Failed to like post', 'error');
+        });
+    }
+
+    function addComment(tweetId) {
+        const input = document.getElementById(`comment-input-${tweetId}`);
+        const content = (input?.value || '').trim();
+        if (!content) return;
+
+        fetch('{% url "add_comment" %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
+            body: JSON.stringify({ tweet_id: tweetId, content })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                input.value = '';
+                toggleComments(tweetId);
+            } else {
+                showIGToast(data.error || 'Failed to add comment', 'error');
+            }
+        })
+        .catch(() => showIGToast('Failed to add comment', 'error'));
+    }
+
+    function toggleComments(tweetId) {
+        const section = document.getElementById(`comments-${tweetId}`);
+        if (!section) return;
+        const isHidden = section.style.display === 'none' || !section.style.display;
+        section.style.display = isHidden ? 'block' : 'none';
+        if (isHidden) loadComments(tweetId);
+    }
+
+    function loadComments(tweetId) {
+        fetch(`/chat/api/tweet/${tweetId}/comments/`)
+            .then(r => r.json())
+            .then(data => {
+                const list = document.getElementById(`comments-list-${tweetId}`);
+                if (!list) return;
+                if (data.comments && data.comments.length) {
+                    list.innerHTML = data.comments.map(c => `
+                        <div class="ig-comment" style="display:flex;gap:12px;padding:12px 16px;">
+                            <img src="${c.user_profile_picture || ''}" alt="" style="width:32px;height:32px;border-radius:22%;object-fit:cover;" onerror="this.outerHTML='\\
+<div style=\\'width:32px;height:32px;border-radius:22%;background:var(--odnix-gradient);display:flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:600;\\'>${c.user_initials || 'U'}<\\/div>'">
+                            <div style="flex:1;">
+                                <span style="font-weight:600;font-size:14px;color:var(--ig-text-primary);">${c.user_username || 'User'}</span>
+                                <span style="font-size:14px;margin-left:4px;color:var(--ig-text-primary);">${c.content}</span>
+                                <div style="font-size:12px;color:var(--ig-text-secondary);margin-top:4px;">${c.timestamp || ''}</div>
+                            </div>
+                        </div>`).join('');
+                } else {
+                    list.innerHTML = '<p style="text-align:center;color:var(--ig-text-secondary);padding:16px;">No comments yet</p>';
+                }
+            })
+            .catch(() => {});
     }
 </script>
 {% endblock %}
