@@ -1,20 +1,20 @@
 // Odnix P2P Audio/Video Calls via WebRTC + WebSocket signaling with Server Fallback
 (function () {
     console.log('[CallJS] Initializing...');
-
+    
     // Configuration validation
     if (!window.OdnixCallConfig) {
         console.error('[CallJS] Error: window.OdnixCallConfig is missing! Call functionality will not work.');
         return;
     }
-
+    
     const { chatId, userId, wsScheme, host, iceServers } = window.OdnixCallConfig;
-
+    
     if (!chatId) {
         console.error('[CallJS] Error: chatId is missing from config!');
         return;
     }
-
+    
     console.log(`[CallJS] Initialized for chat ${chatId}, user ${userId}`);
 
     // ========== State Management ==========
@@ -126,7 +126,7 @@
     function ensureUI() {
         let modal = document.getElementById('callModal');
         if (modal) return;
-
+        
         // Call modal
         modal = document.createElement('div');
         modal.id = 'callModal';
@@ -247,7 +247,7 @@
                 updateDebugStatus(`WebSocket closed (code: ${event.code})`);
                 handshakeStep = 0;
                 resolveHandshakeWaiters(new Error('WS closed'));
-
+                
                 // Enable server relay fallback
                 if (callActive && !useServerRelay) {
                     updateDebugStatus('Call active, switching to server relay');
@@ -263,7 +263,7 @@
             ws.onmessage = async (evt) => {
                 try {
                     let msg;
-
+                    
                     // Handshake messages are plain JSON
                     if (handshakeStep < 2) {
                         msg = JSON.parse(evt.data);
@@ -353,10 +353,10 @@
     // ========== Server Relay Fallback ==========
     function enableServerRelay() {
         if (useServerRelay) return; // Already enabled
-
+        
         updateDebugStatus('Enabling server relay fallback');
         useServerRelay = true;
-
+        
         if (!signalPollInterval) {
             startSignalPolling();
         }
@@ -364,7 +364,7 @@
 
     async function sendViaServerRelay(type, payload) {
         const signalType = type.startsWith('webrtc.') ? type : `webrtc.${type}`;
-
+        
         try {
             const response = await fetch('/api/p2p/send-signal/', {
                 method: 'POST',
@@ -378,7 +378,7 @@
                     signal_data: { type: signalType, ...payload }
                 })
             });
-
+            
             const data = await response.json();
             if (data.success) {
                 updateDebugStatus(`Signal sent via server: ${signalType}`);
@@ -393,34 +393,23 @@
 
     function startSignalPolling() {
         if (signalPollInterval) return;
-
+        
         updateDebugStatus('Starting signal polling');
-
-        let lastFetchedId = 0;
-
         signalPollInterval = setInterval(async () => {
             try {
                 const response = await fetch(`/api/p2p/${chatId}/signals/`);
                 const data = await response.json();
-
-                console.log('[Polling] Response:', data.success, 'Signals:', data.signals?.length || 0);
-
+                
                 if (data.success && data.signals && data.signals.length > 0) {
                     for (const signalInfo of data.signals) {
-                        // Skip already processed signals
-                        if (signalInfo.id && signalInfo.id <= lastFetchedId) continue;
-                        if (signalInfo.id) lastFetchedId = signalInfo.id;
-
                         const signal = signalInfo.signal;
                         const signalType = signal.type || '';
-
-                        console.log('[Polling] Processing signal:', signalType);
-
+                        
                         // Only process call signals (not file transfer)
                         const isCallSignal = !signal.fileInfo;
-
+                        
                         if (!isCallSignal) continue;
-
+                        
                         if ((signalType === 'webrtc.offer' || signalType === 'offer') && signal.sdp) {
                             await onOffer({
                                 sdp: signal.sdp,
@@ -436,14 +425,11 @@
                             await onRemoteIce({
                                 candidate: signal.candidate
                             });
-                        } else if (signalType === 'webrtc.end' || signalType === 'end') {
-                            updateDebugStatus('Call ended by remote');
-                            hangup();
                         }
                     }
                 }
             } catch (e) {
-                console.error('[Polling] Error:', e);
+                console.error('Polling error:', e);
             }
         }, 1500);
     }
@@ -457,24 +443,22 @@
 
     // ========== Signaling Send Function ==========
     function send(type, payload) {
-        updateDebugStatus(`Sending ${type}...`);
-
-        // ALWAYS send via server relay (DB storage) for reliability
-        sendViaServerRelay(type, payload);
-
-        // ALSO try WebSocket for real-time delivery
-        if (ws && ws.readyState === WebSocket.OPEN && handshakeStep === 2) {
+        // Try WebSocket first if available
+        if (!useServerRelay && ws && ws.readyState === WebSocket.OPEN && handshakeStep === 2) {
             try {
                 const msg = { type, ...payload };
                 const encrypted = proto.encrypt(msg);
                 ws.send(encrypted);
-                updateDebugStatus(`✓ Sent ${type} via WebSocket`);
+                updateDebugStatus(`Sent ${type} via WebSocket`);
+                return;
             } catch (e) {
-                updateDebugStatus(`WebSocket send failed: ${e.message}`);
+                updateDebugStatus(`WebSocket send failed for ${type}, using server relay`);
+                enableServerRelay();
             }
-        } else {
-            updateDebugStatus(`${type} sent via server relay only (WS not ready)`);
         }
+        
+        // Fallback to server relay
+        sendViaServerRelay(type, payload);
     }
 
     // ========== WebRTC Peer Connection ==========
@@ -497,7 +481,7 @@
         // ICE connection state monitoring
         pc.oniceconnectionstatechange = () => {
             updateCallStatus(`ICE: ${pc.iceConnectionState}`);
-
+            
             if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
                 updateDebugStatus('✓ P2P connection established!');
                 connectionAttempts = 0;
@@ -518,7 +502,7 @@
         // Connection state monitoring
         pc.onconnectionstatechange = () => {
             updateCallStatus(`Connection: ${pc.connectionState}`);
-
+            
             if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
                 handleConnectionFailure();
             }
@@ -550,17 +534,17 @@
 
     async function handleConnectionFailure() {
         if (!pc || !callActive) return;
-
+        
         connectionAttempts++;
         updateDebugStatus(`Connection failure (attempt ${connectionAttempts}/${MAX_RECONNECT_ATTEMPTS})`);
-
+        
         if (connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
             updateDebugStatus('Max reconnection attempts reached');
             alert('Connection failed. Please try calling again.');
             teardown('Connection failed');
             return;
         }
-
+        
         // Try ICE restart
         try {
             if (isCaller) {
@@ -576,13 +560,13 @@
 
     // ========== Media Handling ==========
     async function getMedia({ audioOnly }) {
-        const constraints = audioOnly
+        const constraints = audioOnly 
             ? { audio: { echoCancellation: true, noiseSuppression: true }, video: false }
-            : {
-                audio: { echoCancellation: true, noiseSuppression: true },
-                video: { width: { ideal: 1280 }, height: { ideal: 720 } }
+            : { 
+                audio: { echoCancellation: true, noiseSuppression: true }, 
+                video: { width: { ideal: 1280 }, height: { ideal: 720 } } 
             };
-
+        
         try {
             localStream = await navigator.mediaDevices.getUserMedia(constraints);
             const localVideo = document.getElementById('localVideo');
@@ -626,10 +610,10 @@
         try {
             audioOnlyMode = audioOnly;
             ensureUI();
-
+            
             document.getElementById('callModeLabel').textContent = audioOnly ? '(Audio)' : '(Video)';
             document.getElementById('callModal').style.display = 'flex';
-
+            
             isCaller = true;
             callActive = true;
             connectionAttempts = 0;
@@ -639,26 +623,26 @@
 
             // Get media
             await getMedia({ audioOnly });
-
+            
             // Open WebSocket (with automatic server relay fallback)
             openWS();
-
+            
             // If WebSocket fails quickly, enable server relay
             setTimeout(() => {
                 if (handshakeStep !== 2) {
                     enableServerRelay();
                 }
             }, 3000);
-
+            
             // Setup peer connection
             await setupPeer();
 
             // Create and send offer
             const offer = await pc.createOffer();
             await pc.setLocalDescription(offer);
-
+            
             send('webrtc.offer', { sdp: offer.sdp, type: offer.type, audioOnly });
-
+            
             startTone('ringback');
 
             // Resend offer periodically
@@ -674,10 +658,10 @@
                     clearInterval(offerResendInterval);
                     return;
                 }
-                send('webrtc.offer', {
-                    sdp: pc.localDescription.sdp,
-                    type: pc.localDescription.type,
-                    audioOnly
+                send('webrtc.offer', { 
+                    sdp: pc.localDescription.sdp, 
+                    type: pc.localDescription.type, 
+                    audioOnly 
                 });
             }, 2000);
 
@@ -691,25 +675,25 @@
     async function onOffer({ sdp, type, audioOnly }) {
         // Ignore if we're the caller
         if (isCaller) return;
-
+        
         // Ignore if call already active
         if (callActive) return;
-
+        
         // Cooldown check
         if (Date.now() < suppressOffersUntil) return;
-
+        
         // Dedupe check
         const fp = String(sdp || '') + '|' + String(type || '');
         if (inboundPromptVisible || fp === lastOfferFingerprint) return;
         lastOfferFingerprint = fp;
-
+        
         audioOnlyMode = !!audioOnly;
         pendingOffer = { sdp, type };
         inboundPromptVisible = true;
 
         ensureUI();
         openWS();
-
+        
         // If WebSocket fails, ensure polling is active
         setTimeout(() => {
             if (handshakeStep !== 2) {
@@ -719,7 +703,7 @@
 
         const incoming = document.getElementById('incomingCallModal');
         const incomingModeLabel = document.getElementById('incomingModeLabel');
-
+        
         if (incoming && incomingModeLabel) {
             incomingModeLabel.textContent = audioOnlyMode ? 'Audio Call' : 'Video Call';
             incoming.style.display = 'flex';
@@ -738,21 +722,21 @@
                 try {
                     await getMedia({ audioOnly: audioOnlyMode });
                     await setupPeer();
-
+                    
                     document.getElementById('callModeLabel').textContent = audioOnlyMode ? '(Audio)' : '(Video)';
                     document.getElementById('callModal').style.display = 'flex';
-
+                    
                     callActive = true;
                     inboundPromptVisible = false;
 
                     await pc.setRemoteDescription(new RTCSessionDescription(pendingOffer));
                     await flushIceQueue();
-
+                    
                     const answer = await pc.createAnswer();
                     await pc.setLocalDescription(answer);
-
+                    
                     send('webrtc.answer', { sdp: answer.sdp, type: answer.type });
-
+                    
                     pendingOffer = null;
                 } catch (e) {
                     console.error('Error accepting call:', e);
@@ -768,7 +752,7 @@
 
                 inboundPromptVisible = false;
                 pendingOffer = null;
-
+                
                 send('webrtc.end', {});
                 suppressOffersUntil = Date.now() + 20000;
             };
@@ -777,17 +761,17 @@
 
     async function onAnswer({ sdp, type }) {
         if (!pc) return;
-
+        
         try {
             await pc.setRemoteDescription(new RTCSessionDescription({ sdp, type }));
             await flushIceQueue();
             stopTone();
-
+            
             if (offerResendInterval) {
                 clearInterval(offerResendInterval);
                 offerResendInterval = null;
             }
-
+            
             updateDebugStatus('Answer processed, awaiting connection');
         } catch (e) {
             console.error('Error processing answer:', e);
@@ -797,13 +781,13 @@
 
     async function onRemoteIce({ candidate }) {
         if (!candidate) return;
-
+        
         if (!pc || !pc.remoteDescription) {
             remoteIceQueue.push(candidate);
             updateDebugStatus('Queued ICE candidate (no remote description yet)');
             return;
         }
-
+        
         try {
             await pc.addIceCandidate(new RTCIceCandidate(candidate));
             updateDebugStatus('Added ICE candidate');
@@ -814,9 +798,9 @@
 
     async function flushIceQueue() {
         if (!pc) return;
-
+        
         updateDebugStatus(`Flushing ${remoteIceQueue.length} queued ICE candidates`);
-
+        
         while (remoteIceQueue.length > 0) {
             const cand = remoteIceQueue.shift();
             try {
@@ -834,18 +818,18 @@
 
     function teardown(reason) {
         updateDebugStatus('Teardown: ' + reason);
-
+        
         const modal = document.getElementById('callModal');
         if (modal) modal.style.display = 'none';
-
+        
         stopTone();
         stopSignalPolling();
-
+        
         if (offerResendInterval) {
             clearInterval(offerResendInterval);
             offerResendInterval = null;
         }
-
+        
         if (pc) {
             pc.ontrack = null;
             pc.onicecandidate = null;
@@ -854,18 +838,18 @@
             try { pc.close(); } catch (_) { }
             pc = null;
         }
-
+        
         if (localStream) {
             localStream.getTracks().forEach(t => t.stop());
             localStream = null;
         }
-
+        
         const rv = document.getElementById('remoteVideo');
         if (rv) rv.srcObject = null;
-
+        
         const lv = document.getElementById('localVideo');
         if (lv) lv.srcObject = null;
-
+        
         callActive = false;
         inboundPromptVisible = false;
         pendingOffer = null;
@@ -884,17 +868,14 @@
     };
 
     // ========== Auto-Initialize ==========
-    // Start polling immediately for reliability, then open WebSocket
-    startSignalPolling();
-
     try {
         console.log(`[CallJS] Connecting to WebSocket for chat ${chatId}`);
         openWS();
-
+        
         // Always start polling as fallback
         console.log(`[CallJS] Starting signal polling for chat ${chatId}`);
         startSignalPolling();
-
+        
         updateDebugStatus(`Initialized for chat ${chatId}`, 'green');
     } catch (e) {
         console.error('[CallJS] Initialization failed:', e);

@@ -7877,3 +7877,397 @@ Error serving media file: Media file not found
 Error serving media file: Media file not found
 Error serving media file: Media file not found
 Error serving media file: Media file not found
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 389, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 389, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 389, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 404, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 404, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 409, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 410, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 410, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 410, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error handling set_client_dh_params: No module named 'Cryptodome'
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 410, in receive
+    from Cryptodome.Util import number
+ModuleNotFoundError: No module named 'Cryptodome'
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+[CallConsumer] Error decrypting message: Data must be aligned to block boundary in ECB mode
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 459, in receive
+    decrypted = self.proto.unwrap_message(text_data)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 200, in unwrap_message
+    decrypted_data = self.aes_ige_decrypt(encrypted_data, aes_key, aes_iv)
+  File "D:\VulnTech3\odnix\chat\odnix_security.py", line 111, in aes_ige_decrypt
+    decrypted_block = cipher.decrypt(input_block)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\Crypto\Cipher\_mode_ecb.py", line 196, in decrypt
+    raise ValueError("Data must be aligned to block boundary in ECB mode")
+ValueError: Data must be aligned to block boundary in ECB mode
+Error serving media file: Media file not found

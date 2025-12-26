@@ -37,6 +37,9 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20251219">
     <!-- Instagram-style CSS (new) -->
     <link rel="stylesheet" href="{% static 'css/instagram-style.css' %}?v=20251219">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <!-- OdnixProto Security Client -->
+    <script src="{% static 'js/odnix_client.js' %}"></script>
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -163,8 +166,9 @@
     <!-- Global incoming call banner and WebSocket -->
     <script>
         (function () {
-            const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
-            if (!isAuthenticated) return;
+            const isAuthenticated = {{ user.is_authenticated| yesno: "true,false"
+        }};
+        if (!isAuthenticated) return;
         const wsScheme = (window.location.protocol === 'https:' ? 'wss' : 'ws');
         const notifyUrl = `${wsScheme}://${window.location.host}/ws/notify/`;
         let notifyWS = null;
@@ -213,10 +217,12 @@
                         console.log('DEBUG: incoming.call payload', msg);
 
                         // Check if we are already handling this call locally (on chat page)
-                        // If we are on the chat page for this specific chat, call.js handles it via direct WS
+                        // If we are on the chat page for this specific chat, call.js should handle it
+                        // But we still show the notification to ensure User B knows about the call
                         if (window.OdnixCallConfig && window.OdnixCallConfig.chatId == msg.chat_id) {
-                            console.log('DEBUG: On chat page for this call, suppressing global banner');
-                            return;
+                            console.log('DEBUG: On chat page for this call - call.js should handle it via WebSocket/polling');
+                            // Don't suppress - still show notification as backup
+                            // The call.js polling will pick up the signal from DB
                         }
 
                         const localIncoming = document.getElementById('incomingCallModal');
@@ -236,7 +242,7 @@
                         const chatId = msg.chat_id;
                         accept.onclick = function () {
                             banner.style.display = 'none';
-                            // Navigate to chat detail; offer is re-sent periodically by caller
+                            // Navigate to chat detail; signals are stored in DB and will be polled
                             window.location.href = `/chat/${chatId}/`;
                         };
                         decline.onclick = function () {
@@ -328,7 +334,9 @@
                         <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}https://ui-avatars.com/api/?name={{ user.username|default:'U' }}&background=667eea&color=fff{% endif %}"
                             style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;">
                         <div style="flex: 1;">
-                            <p style="margin: 0; font-weight: 600; font-size: 14px; color:var(--ig-text-secondary, #141414ff);">{{user.username|default:'You' }}</p>
+                            <p
+                                style="margin: 0; font-weight: 600; font-size: 14px; color:var(--ig-text-secondary, #141414ff);">
+                                {{user.username|default:'You' }}</p>
                             <p style="margin: 2px 0 0; font-size: 12px; color: var(--ig-text-secondary, #a8a8a8);">
                                 Sharing a new reel</p>
                         </div>

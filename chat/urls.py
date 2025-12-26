@@ -189,6 +189,9 @@ urlpatterns = [
          views.p2p_get_signals, name='p2p_get_signals'),
     path('api/p2p/<int:chat_id>/participants/',
          views.get_chat_participants_for_p2p, name='p2p_participants'),
+    
+    # Call Notifications (HTTP fallback)
+    path('api/call/notify/', views.send_call_notification, name='send_call_notification'),
 
     # Reels
     path('reels/', views.reels_view, name='reels'),

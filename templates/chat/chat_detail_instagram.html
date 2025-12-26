@@ -3871,9 +3871,28 @@
         const senderAvatar = signalWrapper.sender_avatar;
 
         try {
+            // Check if this is a WebRTC call signal (not a file transfer signal)
+            // Call signals have: webrtc.offer/answer/ice OR offer/answer/ice without fileInfo
+            const isCallSignal = (
+                (data.type && ['webrtc.offer', 'webrtc.answer', 'webrtc.ice'].includes(data.type)) ||
+                ((data.type === 'offer' || data.type === 'answer' || data.type === 'ice') && 
+                 !data.fileInfo && (data.sdp || data.candidate))
+            );
+            
+            if (isCallSignal) {
+                console.log('Ignoring WebRTC call signal in P2P file handler:', data.type);
+                return;
+            }
+
             if (!p2pConnection) {
                 // Incoming connection - we're the receiver
                 if (data.type === 'offer') {
+                    // Check if fileInfo exists - if not, it's a call signal, ignore it
+                    if (!data.fileInfo || !data.fileInfo.size) {
+                        console.log('Received offer without fileInfo (call signal), ignoring in P2P handler');
+                        return;
+                    }
+
                     // Show incoming file notification with better UI
                     const fileSize = formatBytes(data.fileInfo.size);
                     const fileName = data.fileInfo.name;

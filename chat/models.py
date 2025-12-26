@@ -9,6 +9,9 @@ import uuid
 import string
 import secrets
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CustomUser(AbstractUser):
@@ -803,14 +806,28 @@ class TypingStatus(models.Model):
 
 
 class P2PSignal(models.Model):
-    """Store P2P WebRTC signaling data for file transfers"""
+    """
+    Store P2P WebRTC signaling data for both file transfers and video/audio calls
+
+    This model serves as a fallback mechanism when WebSocket connections fail:
+    1. Signals are always stored in DB first (dual-path strategy)
+    2. WebSocket provides real-time P2P signaling (preferred)
+    3. HTTP polling retrieves signals from DB if WebSocket fails (fallback)
+
+    Signal types:
+    - webrtc.offer: Initial call offer with SDP
+    - webrtc.answer: Answer to call offer with SDP
+    - webrtc.ice: ICE candidates for connection negotiation
+    - webrtc.end: Call termination signal
+    """
     chat = models.ForeignKey(
         'Chat', on_delete=models.CASCADE, related_name='p2p_signals')
     sender = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_p2p_signals')
     target_user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='received_p2p_signals')
-    signal_data = models.JSONField()  # Contains type, offer/answer/candidate, fileInfo
+    # Contains type, sdp/candidate, audioOnly, etc.
+    signal_data = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     is_consumed = models.BooleanField(default=False)
 
@@ -818,6 +835,7 @@ class P2PSignal(models.Model):
         ordering = ['created_at']
         indexes = [
             models.Index(fields=['chat', 'target_user', 'is_consumed']),
+            models.Index(fields=['created_at']),
         ]
 
     def __str__(self):
@@ -827,10 +845,32 @@ class P2PSignal(models.Model):
 
     @classmethod
     def cleanup_old_signals(cls):
-        """Remove signals older than 5 minutes"""
+        """
+        Remove old signals to prevent database bloat
+        - Consumed signals older than 1 minute
+        - Unconsumed signals older than 5 minutes (stale)
+        """
         from datetime import timedelta
-        cutoff = timezone.now() - timedelta(minutes=5)
-        cls.objects.filter(created_at__lt=cutoff).delete()
+
+        # Remove consumed signals older than 1 minute
+        consumed_cutoff = timezone.now() - timedelta(minutes=1)
+        deleted_consumed = cls.objects.filter(
+            is_consumed=True,
+            created_at__lt=consumed_cutoff
+        ).delete()[0]
+
+        # Remove unconsumed signals older than 5 minutes (stale/abandoned)
+        unconsumed_cutoff = timezone.now() - timedelta(minutes=5)
+        deleted_stale = cls.objects.filter(
+            is_consumed=False,
+            created_at__lt=unconsumed_cutoff
+        ).delete()[0]
+
+        if deleted_consumed > 0 or deleted_stale > 0:
+            logger.info(
+                f"[P2PSignal] Cleaned up {deleted_consumed} consumed and {deleted_stale} stale signals")
+
+        return deleted_consumed + deleted_stale
 
 
 class Reel(models.Model):

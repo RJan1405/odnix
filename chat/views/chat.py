@@ -2007,7 +2007,7 @@ def p2p_send_signal(request):
         # Contains type, offer/answer/candidate, fileInfo
         signal_data = data.get('signal_data')
 
-        if not all([target_user_id, chat_id, signal_data]):
+        if not all([chat_id, signal_data]):
             return JsonResponse({'success': False, 'error': 'Missing required fields'})
 
         # Verify user is in the chat
@@ -2015,27 +2015,41 @@ def p2p_send_signal(request):
         if not chat.participants.filter(id=request.user.id).exists():
             return JsonResponse({'success': False, 'error': 'Not a participant of this chat'}, status=403)
 
-        # Verify target user is in the chat
-        target_user = chat.participants.filter(id=target_user_id).first()
-        if not target_user:
-            return JsonResponse({'success': False, 'error': 'Target user not in chat'}, status=403)
-
         # Import P2PSignal model
         from chat.models import P2PSignal
 
         # Clean up old signals first
         P2PSignal.cleanup_old_signals()
 
-        # Store signal in database
-        P2PSignal.objects.create(
-            chat=chat,
-            sender=request.user,
-            target_user=target_user,
-            signal_data=signal_data
-        )
+        # If target_user_id is None, send to all other participants (for calls)
+        if target_user_id is None:
+            others = chat.participants.exclude(id=request.user.id)
+            signal_count = 0
+            for target_user in others:
+                P2PSignal.objects.create(
+                    chat=chat,
+                    sender=request.user,
+                    target_user=target_user,
+                    signal_data=signal_data
+                )
+                signal_count += 1
+            logger.info(
+                f"[P2P_SEND] Signal stored: {signal_data.get('type', 'unknown')} from user {request.user.id} ({request.user.full_name}) to {signal_count} users in chat {chat_id}")
+        else:
+            # Verify target user is in the chat
+            target_user = chat.participants.filter(id=target_user_id).first()
+            if not target_user:
+                return JsonResponse({'success': False, 'error': 'Target user not in chat'}, status=403)
 
-        logger.info(
-            f"P2P signal stored: {signal_data.get('type', 'unknown')} from user {request.user.id} to user {target_user_id}")
+            # Store signal in database
+            P2PSignal.objects.create(
+                chat=chat,
+                sender=request.user,
+                target_user=target_user,
+                signal_data=signal_data
+            )
+            logger.info(
+                f"[P2P_SEND] Signal stored: {signal_data.get('type', 'unknown')} from user {request.user.id} ({request.user.full_name}) to user {target_user_id} in chat {chat_id}")
 
         return JsonResponse({'success': True})
 
@@ -2058,6 +2072,10 @@ def p2p_get_signals(request, chat_id):
         from chat.models import P2PSignal
 
         # Get unconsumed signals for this user in this chat
+        # For call signals (webrtc.*), only get recent ones (last 30 seconds) to avoid stale signals
+        from datetime import timedelta
+        recent_cutoff = timezone.now() - timedelta(seconds=30)
+
         signals = P2PSignal.objects.filter(
             chat=chat,
             target_user=request.user,
@@ -2066,9 +2084,19 @@ def p2p_get_signals(request, chat_id):
 
         signals_data = []
         signal_ids = []
+        call_signal_ids = []  # Track call signals separately
 
         for signal in signals:
+            signal_type = signal.signal_data.get(
+                'type', '') if isinstance(signal.signal_data, dict) else ''
+            is_call_signal = signal_type.startswith('webrtc.')
+
+            # For call signals, only include recent ones
+            if is_call_signal and signal.created_at < recent_cutoff:
+                continue
+
             signals_data.append({
+                'id': signal.id,  # Add signal ID for deduplication
                 'sender_id': signal.sender.id,
                 'sender_name': signal.sender.full_name,
                 'sender_avatar': signal.sender.profile_picture_url,
@@ -2076,13 +2104,29 @@ def p2p_get_signals(request, chat_id):
                 'timestamp': signal.created_at.isoformat()
             })
             signal_ids.append(signal.id)
+            if is_call_signal:
+                call_signal_ids.append(signal.id)
 
-        # Mark signals as consumed
+        # Mark signals as consumed (but keep call signals available for a bit longer)
         if signal_ids:
-            P2PSignal.objects.filter(
-                id__in=signal_ids).update(is_consumed=True)
+            # Mark non-call signals as consumed immediately
+            non_call_ids = [
+                sid for sid in signal_ids if sid not in call_signal_ids]
+            if non_call_ids:
+                P2PSignal.objects.filter(
+                    id__in=non_call_ids).update(is_consumed=True)
+
+            # For call signals, mark as consumed but keep them for a short window
+            # This allows User B to receive them even if they arrive late
+            if call_signal_ids:
+                # Mark as consumed but don't delete yet - they'll be cleaned up by cleanup_old_signals
+                P2PSignal.objects.filter(
+                    id__in=call_signal_ids).update(is_consumed=True)
+                logger.info(
+                    f"[P2P_GET] Retrieved {len(call_signal_ids)} call signals for user {request.user.id} ({request.user.full_name}) in chat {chat_id}")
+
             logger.info(
-                f"P2P signals consumed by user {request.user.id}: {len(signal_ids)} signals")
+                f"[P2P_GET] Total signals consumed by user {request.user.id}: {len(signal_ids)} ({len(call_signal_ids)} call signals)")
 
         return JsonResponse({
             'success': True,
@@ -2092,6 +2136,53 @@ def p2p_get_signals(request, chat_id):
     except Exception as e:
         logger.error(f"Error in p2p_get_signals: {str(e)}")
         return JsonResponse({'success': False, 'error': 'Failed to get signals'})
+
+
+@login_required
+@require_POST
+def send_call_notification(request):
+    """Send call notification to other participants via HTTP (fallback if WebSocket fails)"""
+    try:
+        data = json.loads(request.body)
+        chat_id = data.get('chat_id')
+        audio_only = data.get('audio_only', False)
+
+        if not chat_id:
+            return JsonResponse({'success': False, 'error': 'Missing chat_id'})
+
+        chat = get_object_or_404(Chat, id=chat_id)
+        if not chat.participants.filter(id=request.user.id).exists():
+            return JsonResponse({'success': False, 'error': 'Not a participant'}, status=403)
+
+        # Get caller details
+        caller_name = request.user.full_name
+        caller_avatar = request.user.profile_picture_url
+
+        # Get other participants
+        others = chat.participants.exclude(id=request.user.id)
+
+        # Send notification via channel layer (NotifyConsumer)
+        channel_layer = get_channel_layer()
+        for other_user in others:
+            async_to_sync(channel_layer.group_send)(
+                f'user_notify_{other_user.id}',
+                {
+                    'type': 'notify.call',
+                    'from_user_id': request.user.id,
+                    'chat_id': chat_id,
+                    'audio_only': audio_only,
+                    'from_full_name': caller_name,
+                    'from_avatar': caller_avatar,
+                }
+            )
+
+        logger.info(
+            f"Call notification sent via HTTP for chat {chat_id} to {others.count()} users")
+        return JsonResponse({'success': True, 'notified': others.count()})
+
+    except Exception as e:
+        logger.error(f"Error sending call notification: {e}", exc_info=True)
+        return JsonResponse({'success': False, 'error': str(e)})
 
 
 @login_required

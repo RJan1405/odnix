@@ -172,6 +172,11 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
     },
+    # Ensure everything goes to console so you can see call/WS logs in the runserver terminal
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
     'loggers': {
         'django': {
             'handlers': ['file', 'console'],
