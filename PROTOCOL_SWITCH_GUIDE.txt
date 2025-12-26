@@ -1,0 +1,64 @@
+ODNIX PROTOCOL VERSION SWITCHING GUIDE
+======================================
+
+Active Status: V2 (Binary) is currently enabled for Call Signaling.
+
+--------------------------------------------------------------------------------
+OPTION 1: SWITCH TO V1 (Legacy JSON Wrapper)
+--------------------------------------------------------------------------------
+Use this if you need easier debugging or if V2 is unstable.
+
+STEP A: Backend Verification
+   No changes needed on backend. The v1 endpoint `/ws/call/` is still active in `routing.py`.
+
+STEP B: Frontend Reversion (static/js/call.js)
+   1. Open `static/js/call.js`.
+   2. Locate the "Encryption & Security" section (Line ~40).
+   3. CHANGE:
+      FROM: const proto = new OdnixBinaryClient();
+      TO:   const proto = new OdnixProtoClient();
+
+   4. Locate the `openWS()` function (Line ~215).
+   5. REVERT the URL construction:
+      FROM: const url = `${wsScheme}://${host}/ws/odnix/`;
+      TO:   const url = `${wsScheme}://${host}/ws/call/${chatId}/`;
+
+   6. REVERT the `send()` function (Line ~490):
+      FROM: proto.sendMessage('signal', msg);
+      TO:   const encrypted = proto.encrypt(msg); ws.send(encrypted);
+
+STEP C: Template Reversion (templates/chat/chat_detail_instagram.html)
+   1. Remove line reference to `odnix_binary_client.js`.
+   2. Ensure `odnix_client.js` is included (it usually is by default or embedded).
+
+--------------------------------------------------------------------------------
+OPTION 2: SWITCH TO V2 (Binary MTProto Design)
+--------------------------------------------------------------------------------
+Use this for maximum security and censorship resistance.
+
+STEP A: Backend Verification
+   Ensure `chat/consumers.py` has `OdnixGatewayConsumer` class defined.
+   Ensure `chat/routing.py` has `re_path(r'ws/odnix/$', ...)` enabled.
+
+STEP B: Template Update (templates/chat/chat_detail_instagram.html)
+   1. Add this BEFORE `call.js`:
+      <script src="{% static 'js/odnix_binary_client.js' %}?v={% now 'U' %}"></script>
+
+STEP C: Frontend Activation (static/js/call.js)
+   1. Instantiate Binary Client:
+      const proto = new OdnixBinaryClient();
+   
+   2. Connect to Gateway in `openWS()`:
+      const url = `${wsScheme}://${host}/ws/odnix/`;
+      proto.connect(url);
+      ws = proto.socket; // Alias for compatibility
+
+   3. Send via Binary Method in `send()`:
+      proto.sendMessage('signal', msg);
+
+--------------------------------------------------------------------------------
+QUICK CHECKLIST FOR DEPLOYMENT
+--------------------------------------------------------------------------------
+[ ] Check `routing.py` for `/ws/odnix/`
+[ ] Check `call.js` for `OdnixBinaryClient` usage
+[ ] Check Server Logs for `[OdnixGateway]` messages

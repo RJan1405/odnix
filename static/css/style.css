@@ -156,7 +156,8 @@ body {
   border: 1px solid #c3e6cb;
 }
 
-.alert-error, .alert-danger {
+.alert-error,
+.alert-danger {
   background-color: #f8d7da;
   color: #721c24;
   border: 1px solid #f5c6cb;
@@ -183,7 +184,8 @@ body {
   content: "✓";
 }
 
-.alert-error::before, .alert-danger::before {
+.alert-error::before,
+.alert-danger::before {
   content: "✕";
 }
 
@@ -273,7 +275,10 @@ body {
   border-radius: 1rem;
 }
 
-.user-avatar, .chat-avatar, .profile-avatar, .tweet-avatar {
+.user-avatar,
+.chat-avatar,
+.profile-avatar,
+.tweet-avatar {
   background: linear-gradient(135deg, var(--color-primary), #764ba2);
   color: white;
   border-radius: 50%;
@@ -334,7 +339,8 @@ body {
 }
 
 /* Chat List */
-.chat-list, .tweets-list {
+.chat-list,
+.tweets-list {
   background: var(--color-surface);
   border-radius: 1rem;
   overflow: hidden;
@@ -410,12 +416,118 @@ body {
   display: flex;
   flex-direction: column;
   max-width: 75%;
-  animation: slideIn 0.3s ease;
+  animation: messageFadeIn 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background 0.3s, box-shadow 0.3s, transform 0.25s;
+  will-change: opacity, transform;
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes messageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.message.message-sending {
+  opacity: 0.7;
+  filter: blur(0.5px);
+  background: #e0e7ff;
+  animation: messageFadeIn 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.message.message-failed {
+  opacity: 1;
+  background: #fff0f0;
+  border-left: 4px solid #ef4444;
+  animation: shake 0.3s 1;
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-4px);
+  }
+
+  40% {
+    transform: translateX(4px);
+  }
+
+  60% {
+    transform: translateX(-2px);
+  }
+
+  80% {
+    transform: translateX(2px);
+  }
+
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* Modal and sidebar transitions */
+.modal-overlay,
+.media-viewer-modal,
+.group-settings-container,
+.sidebar-enhanced-chat,
+.sidebar-overlay {
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-overlay[style*="display: flex"],
+.media-viewer-modal[style*="display: flex"],
+.group-settings-container[style*="display: flex"],
+.sidebar-enhanced-chat.show,
+.sidebar-overlay.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.modal-overlay,
+.media-viewer-modal,
+.group-settings-container,
+.sidebar-enhanced-chat,
+.sidebar-overlay {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.sidebar-enhanced-chat.show {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modal-container,
+.group-settings-container {
+  transition: box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-container {
+  animation: modalPopIn 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@keyframes modalPopIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .message--own {
@@ -538,18 +650,18 @@ body {
   display: none;
 }
 
-.message-menu > div {
+.message-menu>div {
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: background-color 0.2s;
   border-bottom: 1px solid var(--color-border);
 }
 
-.message-menu > div:last-child {
+.message-menu>div:last-child {
   border-bottom: none;
 }
 
-.message-menu > div:hover {
+.message-menu>div:hover {
   background: var(--color-background);
 }
 
@@ -992,15 +1104,15 @@ body {
     flex-direction: column;
     gap: 0.75rem;
   }
-  
+
   .profile-actions .btn {
     width: 100%;
   }
-  
+
   .private-account-message {
     padding: 2rem 1rem;
   }
-  
+
   .private-account-message h3 {
     font-size: 1.25rem;
   }
@@ -1154,7 +1266,7 @@ body {
   .desktop-only {
     display: none;
   }
-  
+
   .mobile-only {
     display: block;
   }
@@ -1168,13 +1280,11 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 0.4) 30%,
-    rgba(0, 0, 0, 0.8) 70%,
-    rgba(0, 0, 0, 0.95) 100%
-  );
+  background: linear-gradient(180deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.4) 30%,
+      rgba(0, 0, 0, 0.8) 70%,
+      rgba(0, 0, 0, 0.95) 100%);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   padding: 24px;
@@ -1451,6 +1561,7 @@ body {
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
   }
+
   to {
     opacity: 1;
     backdrop-filter: blur(8px);
@@ -1480,6 +1591,7 @@ body {
     transform: translateY(60px) scale(0.9);
     opacity: 0;
   }
+
   to {
     transform: translateY(0) scale(1);
     opacity: 1;
@@ -1735,8 +1847,15 @@ body {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-6px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-6px);
+  }
 }
 
 .story-modal-empty p {
@@ -1767,8 +1886,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Enhanced Animations */
@@ -1777,10 +1901,12 @@ body {
     transform: scale(1);
     filter: brightness(1);
   }
+
   50% {
     transform: scale(1.05);
     filter: brightness(1.1);
   }
+
   100% {
     transform: scale(1);
     filter: brightness(1);
@@ -1788,9 +1914,22 @@ body {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-4px); }
-  60% { transform: translateY(-2px); }
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-4px);
+  }
+
+  60% {
+    transform: translateY(-2px);
+  }
 }
 
 .story-like-btn.liked .lucide {
@@ -1810,9 +1949,11 @@ body {
   0% {
     box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
   }

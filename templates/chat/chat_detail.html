@@ -5971,6 +5971,60 @@ Chat - Odnix
             this.lastTypingTime = 0;
             this.onlineStatusInterval = null;
             this.heartbeatInterval = null;
+            // Offline queue
+            this.outboxKey = `odnix_chat_outbox_${this.chatId}`;
+            this.outbox = this.loadOutbox();
+        // Load unsent messages from localStorage
+        loadOutbox() {
+            try {
+                const raw = localStorage.getItem(this.outboxKey);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        // Save outbox to localStorage
+        saveOutbox() {
+            try {
+                localStorage.setItem(this.outboxKey, JSON.stringify(this.outbox));
+            } catch (e) {}
+        }
+
+        // Add a message to the outbox
+        queueMessage(msg) {
+            this.outbox.push(msg);
+            this.saveOutbox();
+        }
+
+        // Remove a message from the outbox by localId
+        dequeueMessage(localId) {
+            this.outbox = this.outbox.filter(m => m.localId !== localId);
+            this.saveOutbox();
+        }
+
+        // Try to send all queued messages
+        async syncOutbox() {
+            if (!this.wsConnected || this.handshakeStep !== 2 || !this.outbox.length) return;
+            // Copy to avoid mutation during iteration
+            const queue = [...this.outbox];
+            for (const msg of queue) {
+                try {
+                    // Only support text for now
+                    const payload = {
+                        type: 'chat_message',
+                        message: msg.content,
+                        reply_to: msg.reply_to || null
+                    };
+                    const encryptedPackage = this.proto.encrypt(payload);
+                    this.ws.send(encryptedPackage);
+                    this.dequeueMessage(msg.localId);
+                } catch (e) {
+                    // If send fails, keep in queue
+                    break;
+                }
+            }
+        }
 
             // Polling speeds (kept for fallbacks if needed, but primarily using WS)
             this.onlinePollingSpeed = 5000;
@@ -6063,6 +6117,8 @@ Chat - Odnix
                     fingerprint: 0
                 }));
                 this.handshakeStep = 1;
+                // Try to sync outbox after handshake completes
+                setTimeout(() => this.syncOutbox(), 2000);
             };
 
             this.ws.onmessage = async (e) => {
@@ -6501,155 +6557,168 @@ Chat - Odnix
         this.messageInput.style.height = Math.min(this.messageInput.scrollHeight, 120) + 'px';
     }
 
+
         async sendMessage() {
-        const content = this.messageInput.value.trim();
-        if (!content && !this.selectedMedia) return;
+            const content = this.messageInput.value.trim();
+            if (!content && !this.selectedMedia) return;
 
-        // Disable send button and show loading state
-        this.sendBtn.disabled = true;
-        const sendIcon = this.sendBtn.querySelector('.send-icon-send');
-        const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
-        if (sendIcon && loadingIcon) {
-            sendIcon.style.display = 'none';
-            loadingIcon.style.display = 'inline-block';
-        }
+            // Disable send button and show loading state
+            this.sendBtn.disabled = true;
+            const sendIcon = this.sendBtn.querySelector('.send-icon-send');
+            const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
+            if (sendIcon && loadingIcon) {
+                sendIcon.style.display = 'none';
+                loadingIcon.style.display = 'inline-block';
+            }
 
-        // MTProto WebSocket Path for Text Messages
-        if (!this.selectedMedia && this.wsConnected && this.handshakeStep === 2) {
-            try {
+            // If offline or WS not connected, queue message
+            if (!this.selectedMedia && (!this.wsConnected || this.handshakeStep !== 2 || !navigator.onLine)) {
                 const replyBox = document.getElementById('reply-preview');
                 const replyToId = replyBox ? replyBox.dataset.replyTo : null;
-
-                const payload = {
-                    type: 'chat_message',
-                    message: content,
-                    reply_to: replyToId
+                // Generate a localId for tracking
+                const localId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+                const msg = {
+                    localId,
+                    content,
+                    reply_to: replyToId,
+                    timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
                 };
-
-                // Encrypt and Send
-                const encryptedPackage = this.proto.encrypt(payload);
-                this.ws.send(encryptedPackage);
-
-                // Optimistic UI Update
+                this.queueMessage(msg);
+                // Show in UI as pending
+                const tempMessage = this.addMessageToUI({
+                    content,
+                    sender_name: 'You',
+                    timestamp: msg.timestamp,
+                    message_type: 'text',
+                    is_own: true,
+                    temporary: true,
+                    localId
+                });
+                tempMessage.classList.add('message-sending', 'message-offline');
                 this.messageInput.value = '';
                 this.autoResizeTextarea();
-
                 if (replyBox) {
                     replyBox.style.display = 'none';
                     replyBox.dataset.replyTo = '';
                 }
-
-                // Temporary message logic removed as we expect fast WS echo, 
-                // or we can add a 'sending' state if needed.
-                // For now, let's just rely on the server broadcast coming back.
-
-            } catch (error) {
-                console.error('MTProto Send Error:', error);
-                this.showNotification('Failed to send encrypted message', 'error');
-            } finally {
                 this.sendBtn.disabled = false;
                 if (sendIcon && loadingIcon) {
                     sendIcon.style.display = 'inline-block';
                     loadingIcon.style.display = 'none';
                 }
                 if (!this.isMobile) this.messageInput.focus();
+                this.showNotification('Message queued (offline)', 'info');
+                return;
             }
-            return;
-        }
-
-        try {
-            // Prepare form data for media upload (REST Fallback)
-            const formData = new FormData();
-            formData.append('chat_id', this.chatId);
-            formData.append('csrfmiddlewaretoken', this.getCSRFToken());
-            if (content) formData.append('content', content);
-            if (this.selectedMedia) formData.append('media', this.selectedMedia);
-            if (this.oneTimeEnabled) formData.append('one_time', 'true');
-
-            // Add temporary message to UI
-            const tempMessage = this.addMessageToUI({
-                content: content || '📎 Media',
-                sender_name: 'You',
-                timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                message_type: 'text',
-                is_own: true,
-                temporary: true,
-                one_time: this.oneTimeEnabled,
-                consumed: false
-            });
-            tempMessage.classList.add('message-sending');
-
-            // Clear input and media
-            this.messageInput.value = '';
-            this.selectedMedia = null;
-            this.closeMediaPreview();
-            this.autoResizeTextarea();
-
-            // Reset one-time toggle
-            if (this.oneTimeEnabled) {
-                this.toggleOneTime();
+            // If online and connected, try to sync outbox first
+            if (!this.selectedMedia) {
+                await this.syncOutbox();
             }
 
-            // Handle reply
-            const replyBox = document.getElementById('reply-preview');
-            const replyToId = replyBox ? replyBox.dataset.replyTo : null;
-            if (replyToId) {
-                formData.append('reply_to', replyToId);
-            }
+            try {
+                // Prepare form data for media upload (REST Fallback)
+                const formData = new FormData();
+                formData.append('chat_id', this.chatId);
+                formData.append('csrfmiddlewaretoken', this.getCSRFToken());
+                if (content) formData.append('content', content);
+                if (this.selectedMedia) formData.append('media', this.selectedMedia);
+                if (this.oneTimeEnabled) formData.append('one_time', 'true');
 
-            const response = await fetch('/api/send-message/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': this.getCSRFToken()
-                },
-                body: formData
-            });
+                // Add temporary message to UI
+                const tempMessage = this.addMessageToUI({
+                    content: content || '📎 Media',
+                    sender_name: 'You',
+                    timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                    message_type: 'text',
+                    is_own: true,
+                    temporary: true,
+                    one_time: this.oneTimeEnabled,
+                    consumed: false
+                });
+                tempMessage.classList.add('message-sending');
 
-            const data = await response.json();
-            tempMessage.remove();
+                // Clear input and media
+                this.messageInput.value = '';
+                this.selectedMedia = null;
+                this.closeMediaPreview();
+                this.autoResizeTextarea();
 
-            if (data.success) {
-                // Clear reply preview after successful send
-                if (replyBox) {
-                    replyBox.style.display = 'none';
-                    replyBox.dataset.replyTo = '';
-                }
-
-                this.addMessageToUI(data.message);
-                this.lastMessageTime = new Date().toISOString();
-
-                // Reset one-time toggle after sending
+                // Reset one-time toggle
                 if (this.oneTimeEnabled) {
                     this.toggleOneTime();
                 }
-            } else {
-                this.showNotification('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
+
+                // Handle reply
+                const replyBox = document.getElementById('reply-preview');
+                const replyToId = replyBox ? replyBox.dataset.replyTo : null;
+                if (replyToId) {
+                    formData.append('reply_to', replyToId);
+                }
+
+                const response = await fetch('/api/send-message/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': this.getCSRFToken()
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                tempMessage.remove();
+
+                if (data.success) {
+                    // Clear reply preview after successful send
+                    if (replyBox) {
+                        replyBox.style.display = 'none';
+                        replyBox.dataset.replyTo = '';
+                    }
+
+                    this.addMessageToUI(data.message);
+                    this.lastMessageTime = new Date().toISOString();
+
+                    // Reset one-time toggle after sending
+                    if (this.oneTimeEnabled) {
+                        this.toggleOneTime();
+                    }
+                } else {
+                    this.showNotification('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                this.showNotification('Network error. Please check your connection and try again.', 'error');
+                // Remove temporary message if it still exists
+                const tempMessage = this.messagesContainer.querySelector('.message-sending');
+                if (tempMessage) tempMessage.remove();
+            } finally {
+                this.sendBtn.disabled = false;
+                const sendIcon = this.sendBtn.querySelector('.send-icon-send');
+                const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
+                if (sendIcon && loadingIcon) {
+                    sendIcon.style.display = 'inline-block';
+                    loadingIcon.style.display = 'none';
+                } else {
+                    console.error('Send icons not found when restoring');
+                }
+                if (!this.isMobile) {
+                    this.messageInput.focus();
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            this.showNotification('Network error. Please check your connection and try again.', 'error');
-            // Remove temporary message if it still exists
-            const tempMessage = this.messagesContainer.querySelector('.message-sending');
-            if (tempMessage) tempMessage.remove();
-        } finally {
-            this.sendBtn.disabled = false;
-            const sendIcon = this.sendBtn.querySelector('.send-icon-send');
-            const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
-            if (sendIcon && loadingIcon) {
-                sendIcon.style.display = 'inline-block';
-                loadingIcon.style.display = 'none';
-            } else {
-                console.error('Send icons not found when restoring');
-            }
-            if (!this.isMobile) {
-                this.messageInput.focus();
-            }
-        }
+            // Listen for online/offline events to trigger sync
+            // (in constructor, after other event listeners)
+            window.addEventListener('online', () => {
+                this.syncOutbox();
+            });
+            // Also try to sync after WS connects
+            // (already handled in ws.onopen)
     }
 
     addMessageToUI(messageData) {
         const messageDiv = document.createElement('div');
-        const messageClass = `message ${messageData.is_own ? 'message--own' : ''} ${messageData.message_type === 'system' ? 'message--system' : ''} message-fade-in`;
+        let extraClass = '';
+        if (messageData.temporary) extraClass += ' message-sending';
+        if (messageData.failed) extraClass += ' message-failed';
+        if (messageData.localId) messageDiv.dataset.localId = messageData.localId;
+        const messageClass = `message${extraClass} ${messageData.is_own ? 'message--own' : ''} ${messageData.message_type === 'system' ? 'message--system' : ''} message-fade-in`;
         messageDiv.className = messageClass;
 
         if (!messageData.temporary && messageData.id) {
@@ -6657,8 +6726,6 @@ Chat - Odnix
         }
 
         let contentHtml = '';
-
-        // Add reply indicator if message has reply_to (clickable to scroll to original)
         if (messageData.reply_to && messageData.reply_to.id) {
             const replyToId = messageData.reply_to.id;
             const replyToSender = messageData.reply_to.sender_name || 'Unknown';
@@ -6672,17 +6739,14 @@ Chat - Odnix
             `;
         }
         if (messageData.one_time && messageData.consumed && !messageData.is_own) {
-            // One-time message already viewed by recipient
             contentHtml = `<div class="one-time-viewed"><i data-lucide="eye" class="one-time-icon"></i><span>One-time message viewed</span></div>`;
         } else if (messageData.one_time && !messageData.consumed && !messageData.is_own) {
-            // One-time message from others - show "Tap to view"
             if (messageData.temporary) {
                 contentHtml = `<div class="one-time-message-temp"><i data-lucide="eye-off" class="one-time-icon"></i><span>One-time message sending...</span></div>`;
             } else {
                 contentHtml = `<div class="one-time-message" onclick="consumeOneTimeMessage(${messageData.id})"><i data-lucide="eye-off" class="one-time-icon"></i><span>Tap to view one-time message</span></div>`;
             }
         } else if (messageData.one_time && messageData.is_own) {
-            // Sender's view - show if opened or not
             if (messageData.consumed) {
                 contentHtml = `<div class="one-time-opened"><i data-lucide="eye" class="one-time-icon"></i><span>Opened</span></div>`;
             } else {
@@ -6696,30 +6760,32 @@ Chat - Odnix
             contentHtml = `<div class="message-text">${this.escapeHtml(messageData.content).replace(/\n/g, '<br>')}</div>`;
         }
 
-        // Only show sender name for other people's messages in group chats
         const senderName = (messageData.is_own || messageData.message_type === 'system') ? '' :
             (messageData.sender_name ? `<div class="sender-name">${this.escapeHtml(messageData.sender_name)}</div>` : '');
 
         const systemIcon = messageData.message_type === 'system' ? '<span class="system-message-icon">ℹ️</span>' : '';
 
-        // Build the 3-dot menu for non-system messages
         let menuHtml = '';
-        if (messageData.message_type !== 'system' && messageData.id) {
-            const editOption = messageData.is_own ?
+        if (messageData.message_type !== 'system' && (messageData.id || messageData.temporary)) {
+            const editOption = messageData.is_own && messageData.id ?
                 `<div class="menu-action" onclick="editMessage('${messageData.id}'); closeAllMenus();" title="Edit">✏️</div>` : '';
-            const pinOption = `<div class="menu-action pin-action" onclick="togglePinMessage('${messageData.id}'); closeAllMenus();" title="Pin" data-pinned="false">📌</div>`;
-            const starOption = `<div class="menu-action star-btn" onclick="toggleStarMessage('${messageData.id}'); closeAllMenus();" title="Star" data-message-id="${messageData.id}">⭐</div>`;
-
+            const pinOption = messageData.id ? `<div class="menu-action pin-action" onclick="togglePinMessage('${messageData.id}'); closeAllMenus();" title="Pin" data-pinned="false">📌</div>` : '';
+            const starOption = messageData.id ? `<div class="menu-action star-btn" onclick="toggleStarMessage('${messageData.id}'); closeAllMenus();" title="Star" data-message-id="${messageData.id}">⭐</div>` : '';
+            let resendOption = '';
+            if (messageData.failed && messageData.localId) {
+                resendOption = `<div class="menu-action" onclick="window.chatApp.resendFailedMessage('${messageData.localId}')" title="Resend">🔄 Resend</div>`;
+            }
             menuHtml = `
                 <div class="message-menu-container">
                     <button class="message-menu-btn" onclick="toggleMessageMenu(this)"><span></span></button>
                     <div class="message-menu">
-                        <div class="menu-action" onclick="replyToMessage('${messageData.id}'); closeAllMenus();" title="Reply">↩️</div>
-                        <div class="menu-action" onclick="openReactionPicker('${messageData.id}'); closeAllMenus();" title="React">❤️</div>
+                        <div class="menu-action" onclick="replyToMessage('${messageData.id || ''}'); closeAllMenus();" title="Reply">↩️</div>
+                        <div class="menu-action" onclick="openReactionPicker('${messageData.id || ''}'); closeAllMenus();" title="React">❤️</div>
                         ${starOption}
                         ${editOption}
                         ${pinOption}
-                        <div class="menu-action" onclick="showDeleteModal('${messageData.id}', ${messageData.is_own}); closeAllMenus();" title="Delete">🗑️</div>
+                        ${resendOption}
+                        <div class="menu-action" onclick="showDeleteModal('${messageData.id || ''}', ${messageData.is_own}); closeAllMenus();" title="Delete">🗑️</div>
                     </div>
                 </div>
             `;
@@ -6729,13 +6795,21 @@ Chat - Odnix
         const readReceipt = messageData.is_own && messageData.id ?
             `<span class="read-receipt" data-message-id="${messageData.id}" title="Sent">✓</span>` : '';
 
+        // Spinner or error for temporary/failed
+        let statusHtml = '';
+        if (messageData.temporary) {
+            statusHtml = '<span class="message-status-spinner" title="Sending..."></span>';
+        } else if (messageData.failed) {
+            statusHtml = '<span class="message-status-failed" title="Failed to send">⚠️</span>';
+        }
+
         messageDiv.innerHTML = `
             <div class="message-bubble">
                 ${menuHtml}
                 ${messageData.message_type === 'system' ? systemIcon + this.escapeHtml(messageData.content) : `
                     ${senderName}
                     <div class="message-content">${contentHtml}</div>
-                    <div class="message-time">${this.escapeHtml(messageData.timestamp)}${readReceipt}</div>
+                    <div class="message-time">${this.escapeHtml(messageData.timestamp)}${readReceipt}${statusHtml}</div>
                 `}
             </div>
         `;
@@ -6743,12 +6817,65 @@ Chat - Odnix
         this.messagesContainer.appendChild(messageDiv);
         this.autoScrollToBottom();
 
-        // Reinitialize Lucide icons for the new elements
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-
         return messageDiv;
+    }
+
+    // Enhance: match server-confirmed messages to temporary ones and update UI
+    matchAndReplaceOptimisticMessage(serverMsg) {
+        if (!serverMsg.is_own || !serverMsg.content) return;
+        // Find optimistic message by content and timestamp (within 2min window)
+        const tempMessages = this.messagesContainer.querySelectorAll('.message.message-sending');
+        for (const el of tempMessages) {
+            const text = el.querySelector('.message-text')?.innerText?.trim();
+            if (text === serverMsg.content.trim()) {
+                // Replace temp with server message
+                const newMsg = this.addMessageToUI(serverMsg);
+                el.remove();
+                return;
+            }
+        }
+        // If not found, just add
+        this.addMessageToUI(serverMsg);
+    }
+
+    // Enhance: mark failed optimistic messages
+    markMessageFailed(localId) {
+        const el = this.messagesContainer.querySelector(`[data-local-id="${localId}"]`);
+        if (el) {
+            el.classList.remove('message-sending');
+            el.classList.add('message-failed');
+            const spinner = el.querySelector('.message-status-spinner');
+            if (spinner) spinner.outerHTML = '<span class="message-status-failed" title="Failed to send">⚠️</span>';
+        }
+    }
+
+    // Enhance: resend failed message
+    async resendFailedMessage(localId) {
+        const el = this.messagesContainer.querySelector(`[data-local-id="${localId}"]`);
+        if (!el) return;
+        const text = el.querySelector('.message-text')?.innerText?.trim();
+        if (!text) return;
+        // Remove failed state
+        el.classList.remove('message-failed');
+        el.classList.add('message-sending');
+        // Try to send again
+        try {
+            if (this.wsConnected && this.handshakeStep === 2) {
+                const payload = { type: 'chat_message', message: text };
+                const encryptedPackage = this.proto.encrypt(payload);
+                this.ws.send(encryptedPackage);
+                // Remove from outbox if present
+                this.dequeueMessage(localId);
+            } else {
+                // Still offline, keep in outbox
+                this.showNotification('Still offline. Message will resend when online.', 'warning');
+            }
+        } catch (e) {
+            this.markMessageFailed(localId);
+        }
     }
 
     startPolling() {

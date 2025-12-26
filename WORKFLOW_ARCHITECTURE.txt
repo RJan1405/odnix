@@ -1,0 +1,161 @@
+ODNIX PROJECT ARCHITECTURE (TELEGRAM-ALIGNED MODEL)
+
+Date: 2025-12-26
+Status: Alignment in Progress (Migration to MTProto-style Logic)
+
+============================================================
+1. CORE PHILOSOPHY: "STATE SYNCHRONIZATION"
+============================================================
+
+Unlike typical web chat apps (which just "push" messages), Odnix is architected as a **Distributed State Synchronization System**.
+- The Server is the "Truth".
+- Each Client (Device) is a local replica trying to catch up to the Server's state.
+- **Goal:** Perfect history across multiple devices (Desktop, Mobile, Tablet) with zero message loss.
+
+============================================================
+2. SYSTEM TOPOLOGY (THE 3 LAYERS)
+============================================================
+
+------------------------------------------------------------
+Layer A: The Client (TDLib Equivalent) -> `static/js/`
+------------------------------------------------------------
+The browser is not just a view; it is a heavy "Thick Client" (The `App Manager`).
+1.  **Local Database:** Stores `Auth_Key`, `Session_ID`, and current `pts` (state cursor).
+2.  **Encryption Engine (`OdnixProtoClient`):** Handles all MTProto wrapping (AES-IGE/SHA-256).
+3.  **Update Manager:**
+    - Listens for "Update" packets.
+    - If a gap is detected (e.g., Client has `pts: 100`, Server sends `pts: 105`), it triggers a `getDifference` RPC call to fetch 101-104.
+
+------------------------------------------------------------
+Layer B: The Access Gateway (Django Channels) -> `asgi.py`
+------------------------------------------------------------
+This acts as the "MTProto Proxy" or Front-End Server.
+- **Responsibility:** Purely handling connections and encryption.
+- **Functions:**
+  - Accepts WebSocket connections.
+  - Performs the Diffie-Hellman Handshake (`Req_PQ` flow).
+  - Decrypts incoming payloads using the session's `Auth_Key`.
+  - Forwards "Clean" RPC requests to the Logic Layer.
+
+------------------------------------------------------------
+Layer C: The Logic & Storage (Django Views/Models)
+------------------------------------------------------------
+The "Data Center" handling business rules.
+1.  **RPC Processor:** Receives commands like `messages.sendMessage` or `contacts.getContacts`.
+2.  **Updates Engine:**
+    - When an event occurs (e.g., User A sends message), it creates an **Update Object**.
+    - It assigns a unique, incremental `pts` ID to this event for User A and User B.
+    - It writes this into the `UpdatesLog` table.
+3.  **Database:**
+    - `Messages`: The immutable history.
+    - `Users/Chats`: Entities.
+    - `UpdatesLog`: The "Transaction Log" for sync.
+
+============================================================
+3. THE "UPDATES" MECHANISM (CRITICAL)
+============================================================
+
+This is the beating heart of Telegram/Odnix. We do not just "broadcast".
+
+**Concept: PTS (Persistent Time Stamp)**
+- Every user mailbox has a counter: `pts`.
+- **Global Rule:** State must always increase monotonically.
+
+**Example Flow:**
+1.  Server Current State: `pts = 50`.
+2.  **Event:** Alice sends a message.
+3.  **Action:** Server increments Alice's state to `51`.
+4.  **Action:** Server stores "UpdateNewMessage(id: 99, content: 'Hi')" tied to `pts: 51`.
+5.  **Push:** Server sends `(pts: 51, count: 1, update: UpdateNewMessage...)` to Alice's active sessions.
+6.  **Client Check:** Alice's phone sees `pts: 51`. Its local state is `50`. `50+1 == 51`, so it accepts and renders.
+7.  **Desync Handling:** If Alice's phone was offline and wakes up with local `pts: 40`, but Server sends `pts: 51`, the Client rejects the push and calls `updates.getDifference(from_pts=40)`. The server returns updates 41-51.
+
+============================================================
+4. PROTOCOL DESIGN (ODNIXPROTO)
+============================================================
+
+All traffic (Chat, Calls, System) flows through this uniform pipe.
+
+**Packet Structure (The "Envelope"):**
+```
+[ Auth_Key_ID (64-bit) ]      -> Identifies the Session/User
+[ Message_Key (128-bit) ]     -> Integrity Hash (SHA256 fragment)
+[ AES_Encrypted_Data ]        -> The "Payload"
+```
+
+**Inside the Payload:**
+```
+[ Salt (64-bit) ]             -> Server Salt (prevents replay attacks)
+[ Session_ID (64-bit) ]       -> Browser Tab ID
+[ Msg_ID (64-bit) ]           -> Time-dependent unique ID
+[ Seq_No (32-bit) ]           -> Strictly ordering request/response
+[ Object_Data (RPC/Update) ]  -> The Actual Content (JSON/TL)
+```
+
+============================================================
+5. VIDEO/AUDIO CALL ARCHITECTURE
+============================================================
+
+Odnix Calls mirror Telegram's E2E architecture.
+
+1.  **Mode:** Peer-to-Peer (WebRTC) + Reflector Fallback.
+2.  **Signaling Path:** The signaling (Offers/ICE) travels via the normal OdnixProto "Update" mechanism.
+3.  **Setup (The Key Exchange):**
+    - Alice calls `phone.requestCall`.
+    - Server pushes `UpdatePhoneCall` to Bob.
+    - **E2E Handshake:** They perform a DH exchange *through* the server (blind relay).
+    - **Optimization:** The "Encryption Key" for the call and the "Signaling Key" are derived here.
+4.  **Transport:**
+    - Unlike Chat, Media flows over UDP (WebRTC).
+    - **Security:** The media is encrypted with the key derived in step 3 (SRTP).
+5.  **Privacy:** The Server knows a call is happening but **cannot** read the signaling packets (IPs/Ports) because they are wrapped in the E2E session key.
+
+============================================================
+6. DATABASE SCHEMA ALIGNMENT
+============================================================
+
+To support this logic, the DB structure prioritizes "Lists" of events.
+
+**Models:**
+1.  `User` / `Chat` (Entities)
+2.  `Message` (Content)
+    - `id`: Global ID
+    - `chat_id`: Destination
+    - `media_content`: JSON ref to file
+3.  `Session` (Auth)
+    - `auth_key_id`: Hash of DH Key
+    - `server_salt`: Session security param
+4.  `UpdateLog` (The Sync Table - NEW)
+    - `user_id`: Who this update is for
+    - `pts`: The Sequence ID
+    - `event_type`: "NewMessage", "ReadHistory", "UserTyping"
+    - `content`: JSON payload
+
+============================================================
+7. WORKFLOW SUMMARY
+============================================================
+
+**Scenario: Sending a Message**
+1.  **Client:**
+    - User types "Hello".
+    - Client generates random `msg_id`.
+    - Wraps `messages.sendMessage(peer=Bob, text="Hello")` in OdnixProto.
+    - Encrypts & Sends via WebSocket.
+2.  **Server (Access):**
+    - Decrypts packet. Validates `Auth_Key_ID`.
+    - Passes to Logic Layer.
+3.  **Server (Logic):**
+    - Saves Message to DB.
+    - **For Alice (Sender):** Generates `UpdateMessageSent(id=101, pts=501)`.
+    - **For Bob (Receiver):** Generates `UpdateNewMessage(id=101, pts=805)`.
+    - Writes to `UpdateLog`.
+4.  **Server (Push):**
+    - Checks if Bob has an active socket.
+    - If yes -> Encrypts `UpdateNewMessage` -> Pushes to Bob.
+    - If no -> Sends Push Notification (FCM/System).
+5.  **Client (Bob):**
+    - Receives packet. Decrypts.
+    - Checks `pts`. If sequential, applies update (UI shows message).
+    - Sends `msgs.ack` back to server.
+
+This architecture ensures Odnix is robust, secure, and synchronized, behaving like a true instant messenger rather than a simple chatroom.

@@ -8271,3 +8271,2896 @@ Traceback (most recent call last):
     raise ValueError("Data must be aligned to block boundary in ECB mode")
 ValueError: Data must be aligned to block boundary in ECB mode
 Error serving media file: Media file not found
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endfor'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1554: 'endfor', expected 'endif'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.45, 127.0.0.1:54684][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endfor'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1554: 'endfor', expected 'endif'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.29, 127.0.0.1:52349][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'elif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 960, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 960, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1615: 'elif', expected 'endif'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.34, 127.0.0.1:50047][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'else'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 960, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 960, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1615: 'else', expected 'endif'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.39, 127.0.0.1:54119][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'else'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 960, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1648: 'else', expected 'endif'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.38, 127.0.0.1:54181][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1731: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.47, 127.0.0.1:55282][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1731: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.28, 127.0.0.1:54000][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1731: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.37, 127.0.0.1:54000][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2026: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.36, 127.0.0.1:55282][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endfor'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1439: 'endfor', expected 'endblock'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.38, 127.0.0.1:62823][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2027: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.37, 127.0.0.1:62823][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2026: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.36, 127.0.0.1:62849][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2026: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.25, 127.0.0.1:51046][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 2025: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.32, 127.0.0.1:51454][0m
+Internal Server Error: /chat/chat/1/
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 502, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endif'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 534, in thread_handler
+    raise exc_info[1]
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\core\handlers\base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+        request, *callback_args, **callback_kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 479, in __call__
+    ret: _R = await loop.run_in_executor(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<9 lines>...
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 538, in thread_handler
+    return func(*args, **kwargs)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\contrib\auth\decorators.py", line 23, in _wrapper_view
+    return view_func(request, *args, **kwargs)
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 302, in chat_view
+    return render(request, 'chat/chat_detail_instagram.html', context)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\shortcuts.py", line 24, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\backends\django.py", line 33, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 175, in get_template
+    template, origin = self.find_template(template_name)
+                       ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\engine.py", line 157, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 196, in compile_nodelist
+    return parser.parse()
+           ~~~~~~~~~~~~^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 974, in do_if
+    nodelist = parser.parse(("endif",))
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 510, in parse
+    raise self.error(token, e)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 508, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\defaulttags.py", line 860, in do_for
+    nodelist_loop = parser.parse(
+        (
+    ...<2 lines>...
+        )
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 504, in parse
+    self.invalid_block_tag(token, command, parse_until)
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\django\template\base.py", line 555, in invalid_block_tag
+    raise self.error(
+    ...<8 lines>...
+    )
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 1594: 'endif', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+[35;1mHTTP GET /chat/chat/1/ 500 [0.26, 127.0.0.1:63913][0m
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Error sending call notification: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 2160, in send_call_notification
+    async_to_sync(channel_layer.group_send)(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        f'user_notify_{other_user.id}',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        }
+        ^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 277, in __call__
+    return call_result.result()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 353, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 523, in group_send
+    await connection.zremrangebyscore(
+        key, min=0, max=int(time.time()) - self.group_expiry
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Error sending call notification: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 2160, in send_call_notification
+    async_to_sync(channel_layer.group_send)(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        f'user_notify_{other_user.id}',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        }
+        ^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 277, in __call__
+    return call_result.result()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 353, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 523, in group_send
+    await connection.zremrangebyscore(
+        key, min=0, max=int(time.time()) - self.group_expiry
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+[CallConsumer] Error in connect: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\consumers.py", line 321, in connect
+    await self.channel_layer.group_add(
+    ...<2 lines>...
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 498, in group_add
+    await connection.zadd(group_key, {channel: time.time()})
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Error sending call notification: Error 10061 connecting to 127.0.0.1:6379. 10061.
+Traceback (most recent call last):
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 243, in connect
+    await self.retry.call_with_retry(
+        lambda: self._connect(), lambda error: self.disconnect()
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\retry.py", line 59, in call_with_retry
+    return await do()
+           ^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 650, in _connect
+    reader, writer = await asyncio.open_connection(
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        **self._connection_arguments()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python313\Lib\asyncio\streams.py", line 48, in open_connection
+    transport, _ = await loop.create_connection(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        lambda: protocol, host, port, **kwds)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1160, in create_connection
+    raise exceptions[0]
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1135, in create_connection
+    sock = await self._connect_sock(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+        exceptions, addrinfo, laddr_infos)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\base_events.py", line 1038, in _connect_sock
+    await self.sock_connect(sock, address)
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 641, in sock_connect
+    return await fut
+           ^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\asyncio\selector_events.py", line 681, in _sock_connect_cb
+    raise OSError(err, f'Connect call failed {address}')
+ConnectionRefusedError: [Errno 10061] Connect call failed ('127.0.0.1', 6379)
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\VulnTech3\odnix\chat\views\chat.py", line 2160, in send_call_notification
+    async_to_sync(channel_layer.group_send)(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        f'user_notify_{other_user.id}',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<7 lines>...
+        }
+        ^
+    )
+    ^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 277, in __call__
+    return call_result.result()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 449, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "C:\Program Files\Python313\Lib\concurrent\futures\_base.py", line 401, in __get_result
+    raise self._exception
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\asgiref\sync.py", line 353, in main_wrap
+    result = await self.awaitable(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\channels_redis\core.py", line 523, in group_send
+    await connection.zremrangebyscore(
+        key, min=0, max=int(time.time()) - self.group_expiry
+    )
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\client.py", line 601, in execute_command
+    conn = self.connection or await pool.get_connection(command_name, **options)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1040, in get_connection
+    await self.ensure_connection(connection)
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 1062, in ensure_connection
+    await connection.connect()
+  File "C:\Users\RITESH\AppData\Roaming\Python\Python313\site-packages\redis\asyncio\connection.py", line 251, in connect
+    raise ConnectionError(self._error_message(e))
+redis.exceptions.ConnectionError: Error 10061 connecting to 127.0.0.1:6379. 10061.

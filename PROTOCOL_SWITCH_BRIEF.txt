@@ -1,0 +1,27 @@
+ODNIX PROTOCOL VERSION SWITCHING - BRIEF GUIDE
+==============================================
+
+To switch between V1 (calls only) and V2 (Binary Protocol), modify `static/js/call.js`.
+
+SWITCHING TO V2 (CURRENT - BINARY PROTOCOL)
+-------------------------------------------
+1. Open `static/js/call.js`.
+2. Ensure WebSocket URL is `ws/odnix/`:
+   `const url = \`$\{wsScheme\}://$\{host\}/ws/odnix/\`;`
+3. Ensure Client is Binary:
+   `const proto = new OdnixBinaryClient();`
+4. Ensure `chat/consumers.py` has `OdnixGatewayConsumer` class.
+
+SWITCHING TO V1 (LEGACY - JSON WRAPPER)
+---------------------------------------
+1. Open `static/js/call.js`.
+2. Change WebSocket URL to Chat-Specific:
+   `const url = \`$\{wsScheme\}://$\{host\}/ws/call/$\{chatId\}/\`;`
+3. Change Client to Legacy:
+   `const proto = new OdnixProtoClient();`
+4. Use `ChatConsumer/CallConsumer` in backend (Default Django Channels).
+
+VERIFICATION
+------------
+- V2 Logs: "Connecting to .../ws/odnix/" + "[CallJS] V2 Binary Handshake"
+- V1 Logs: "Connecting to .../ws/call/1/" + "WebSocket connected"

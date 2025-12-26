@@ -64,7 +64,13 @@ ASGI_APPLICATION = 'odnix.asgi.application'
 # Channel layers configuration
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer"
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # Use REDIS_URL env var if provided, else localhost
+            "hosts": [
+                os.environ.get("REDIS_URL", "redis://127.0.0.1:6379")
+            ]
+        }
     }
 }
 

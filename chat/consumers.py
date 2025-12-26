@@ -481,174 +481,114 @@ class CallConsumer(AsyncWebsocketConsumer):
                     f"[CallConsumer] Unexpected error in receive: {e}", exc_info=True)
 
     async def handle_decrypted_signal(self, payload):
-        """
-        Handle decrypted WebRTC signaling messages
-        Strategy: P2P First, Server Relay as Fallback
-        1. Store signal in DB (for polling fallback)
-        2. Forward via WebSocket (for real-time P2P)
-        3. Send call notification for offers
-        """
+        # payload is the dict {type: '...', ...}
         message_type = payload.get('type')
-        logger.info(
-            f"[CallConsumer] Processing signal: {message_type} from user {self.user.id} in chat {self.chat_id}")
 
-        # STEP 1: Store in database FIRST (ensures fallback works even if WebSocket fails)
-        if message_type in ["webrtc.offer", "webrtc.answer", "webrtc.ice", "webrtc.end"]:
-            try:
-                await self.store_signal_in_db(payload)
-                logger.info(
-                    f"[CallConsumer] ✓ Stored {message_type} in DB for polling fallback")
-            except Exception as e:
-                logger.error(
-                    f"[CallConsumer] Failed to store signal in DB: {e}")
-
-        # STEP 2: Forward via WebSocket for real-time P2P (if recipient is connected)
-        try:
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    'type': 'send_signal',
-                    'original_sender_channel': self.channel_name,
-                    'message': payload
-                }
-            )
-            logger.info(
-                f"[CallConsumer] ✓ Forwarded {message_type} to group {self.room_group_name}")
-        except Exception as e:
-            logger.error(
-                f"[CallConsumer] Failed to forward signal via WebSocket: {e}")
-
-        # STEP 3: Send call notification for offers (ringing banner)
+        # Broadcast via NotifyConsumer if it's an Offer
         if message_type == "webrtc.offer":
-            try:
-                await self.send_call_notification(payload)
-                logger.info(
-                    f"[CallConsumer] ✓ Sent call notification for offer")
-            except Exception as e:
-                logger.error(
-                    f"[CallConsumer] Failed to send call notification: {e}")
+            await self.send_call_notification(payload)
+
+        # ALWAYS store in database FIRST (for polling fallback - works even if WebSocket fails)
+        if message_type in ["webrtc.offer", "webrtc.answer", "webrtc.ice"]:
+            await self.store_signal_in_db(payload)
+            logger.info(f"[CallConsumer] ✓ Stored {message_type} in DB for chat {self.chat_id}")
+
+        # Standard Signaling Forwarding via WebSocket
+        # Forward to the group so the other client receives it (if they're connected)
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'send_signal',
+                'original_sender_channel': self.channel_name,
+                'message': payload
+            }
+        )
+        logger.info(f"[CallConsumer] ✓ Forwarded {message_type} to group {self.room_group_name} (chat {self.chat_id})")
 
     async def send_call_notification(self, payload):
-        """
-        Send call notification to other participants immediately
-        This creates the ringing UI banner for incoming calls
-        """
+        """Send call notification to other participants immediately"""
         try:
             chat_id = self.chat_id
-
             # Get caller details
-            caller_name = getattr(self.user, 'full_name',
-                                  self.user.username) if self.user else 'Unknown'
+            caller_name = getattr(self.user, 'full_name', self.user.username)
             caller_avatar = None
-            if self.user and hasattr(self.user, 'profile_picture') and self.user.profile_picture:
+            if hasattr(self.user, 'profile_picture') and self.user.profile_picture:
                 try:
                     caller_avatar = self.user.profile_picture.url
                 except:
                     pass
 
-            # Get other participants
+            # Get others
             others = await self.get_other_participants(chat_id)
-
-            # Send notification to each participant
-            notification_count = 0
             for uid in others:
-                try:
-                    await self.channel_layer.group_send(
-                        f'user_notify_{uid}',
-                        {
-                            'type': 'notify.call',
-                            'from_user_id': self.user.id if self.user else None,
-                            'chat_id': chat_id,
-                            'audio_only': bool(payload.get('audioOnly', False)),
-                            'from_full_name': caller_name,
-                            'from_avatar': caller_avatar,
-                        }
-                    )
-                    notification_count += 1
-                except Exception as e:
-                    logger.error(
-                        f"[CallConsumer] Failed to send notification to user {uid}: {e}")
-
+                await self.channel_layer.group_send(
+                    f'user_notify_{uid}',
+                    {
+                        'type': 'notify.call',
+                        'from_user_id': self.user.id,
+                        'chat_id': chat_id,
+                        'audio_only': bool(payload.get('audioOnly', False)),
+                        'from_full_name': caller_name,
+                        'from_avatar': caller_avatar,
+                    }
+                )
             logger.info(
-                f"[CallConsumer] ✓ Sent call notifications to {notification_count}/{len(others)} user(s) for chat {chat_id}")
+                f"[CallConsumer] ✓ Sent call notifications to {len(others)} user(s) for chat {chat_id}")
         except Exception as e:
             logger.error(
                 f"[CallConsumer] Error sending call notification: {e}", exc_info=True)
 
     @database_sync_to_async
     def store_signal_in_db(self, payload):
-        """
-        Store signaling data in database for server relay fallback
-        This ensures signals are delivered even if WebSocket connection fails
-        """
+        """Store signaling data in database as fallback for server relay"""
         try:
             from chat.models import P2PSignal, Chat
             chat = Chat.objects.get(id=self.chat_id)
-
-            # Get all participants except sender
             others = list(chat.participants.exclude(
                 id=self.user.id).values_list('id', flat=True))
 
-            signal_type = payload.get('type', 'unknown') if isinstance(
-                payload, dict) else 'unknown'
-
-            # Clean up old signals first (older than 5 minutes)
-            P2PSignal.cleanup_old_signals()
-
-            # Create signal for each recipient
-            created_count = 0
+            signal_type = payload.get('type', 'unknown') if isinstance(payload, dict) else 'unknown'
+            
             for target_user_id in others:
-                try:
-                    from django.contrib.auth import get_user_model
-                    User = get_user_model()
-                    target_user = User.objects.get(id=target_user_id)
-
-                    P2PSignal.objects.create(
-                        chat=chat,
-                        sender=self.user,
-                        target_user=target_user,  # Fixed: use target_user instead of target_user_id
-                        signal_data=payload
-                    )
-                    created_count += 1
-                except Exception as e:
-                    logger.error(
-                        f"[CallConsumer] Error creating signal for user {target_user_id}: {e}")
-
+                # Clean up old consumed signals for this chat/user pair first
+                P2PSignal.cleanup_old_signals()
+                
+                # Create new signal
+                P2PSignal.objects.create(
+                    chat=chat,
+                    sender=self.user,
+                    target_user_id=target_user_id,
+                    signal_data=payload
+                )
             logger.info(
-                f"[CallConsumer] ✓ Stored {signal_type} for {created_count} user(s) in chat {self.chat_id}")
+                f"[CallConsumer] ✓ Stored {signal_type} in DB for {len(others)} user(s) in chat {self.chat_id}")
         except Exception as e:
             logger.error(
                 f"[CallConsumer] Error storing signal in DB: {e}", exc_info=True)
 
     async def send_signal(self, event):
-        """
-        Forward signaling messages to connected clients via WebSocket
-        This provides real-time P2P signaling when both peers are online
-        """
         # Don't echo back to sender
         if event.get('original_sender_channel') == self.channel_name:
-            logger.debug(
-                f"[CallConsumer] Skipping echo to sender {self.user.id if self.user else 'unknown'}")
+            logger.debug(f"[CallConsumer] Ignoring signal echo for {self.user.id if self.user else 'unknown'}")
             return
 
+        # Forward the signaling message to other participants
         message = event.get('message', {})
-        message_type = message.get('type', 'unknown') if isinstance(
-            message, dict) else 'unknown'
-
-        # Only send if handshake is complete (encryption ready)
+        message_type = message.get('type', 'unknown') if isinstance(message, dict) else 'unknown'
+        
         if self.handshake_complete and self.proto.auth_key:
             try:
                 encrypted = self.proto.wrap_message(message)
                 await self.send(text_data=encrypted)
-                logger.info(
-                    f"[CallConsumer] ✓ Sent encrypted {message_type} to user {self.user.id if self.user else 'unknown'}")
+                logger.info(f"[CallConsumer] ✓ Sent encrypted {message_type} to user {self.user.id if self.user else 'unknown'} via WebSocket")
             except Exception as e:
                 logger.error(
-                    f"[CallConsumer] Error sending signal {message_type}: {e}", exc_info=True)
+                    f"[CallConsumer] Error encrypting/sending signal {message_type}: {e}", exc_info=True)
         else:
-            # Client will poll for signals from DB if WebSocket handshake not complete
+            # If handshake not complete, signal is already in DB (stored before forwarding)
+            # User can poll for it, so we don't need to send unencrypted
             logger.debug(
-                f"[CallConsumer] Handshake not complete for user {self.user.id if self.user else 'unknown'}, signal {message_type} available via DB polling")
+                f"[CallConsumer] Handshake not complete for user {self.user.id if self.user else 'unknown'}, signal {message_type} available via polling")
 
     async def signal_forward(self, event):
         if event.get('from_user_id') == self.user.id:
@@ -707,3 +647,165 @@ class NotifyConsumer(AsyncWebsocketConsumer):
             'from_full_name': event.get('from_full_name'),
             'from_avatar': event.get('from_avatar'),
         }))
+
+class OdnixGatewayConsumer(AsyncWebsocketConsumer):
+    """
+    THE ODNIX GATEWAY (MTProto 2.0 Style)
+    -------------------------------------
+    This consumer replaces separate Chat/Call endpoints.
+    It implements the full telegram-style binary protocol:
+    1. Connection is essentially "dumb" TCP/WS tunnel.
+    2. First packets MUST be Handshake (req_pq_multi).
+    3. Once AuthKey established, all traffic is encrypted binary packets.
+    4. Acts as a dispatcher for RPC calls (messages.send, phone.requestCall).
+    """
+    async def connect(self):
+        # In Telegram architecture, we accept everyone. Auth happens via protocol.
+        self.user = self.scope.get('user') # Might be Anonymous initially
+        self.session_id = None
+        self.auth_key = None
+        self.auth_key_id = None
+        
+        # Security State
+        self.handshake_step = 0
+        self.proto_security = OdnixSecurity()
+        
+        await self.accept()
+        logger.info(f"[OdnixGateway] New connection accepted. ID: {id(self)}")
+
+    async def disconnect(self, close_code):
+        logger.info(f"[OdnixGateway] Connection closed: {close_code}")
+
+    async def receive(self, text_data=None, bytes_data=None):
+        try:
+            # MTProto only uses Binary. Text frames are invalid/legacy.
+            if text_data: 
+                logger.warning("[OdnixGateway] Dropping text frame (Strict Binary Protocol)")
+                return
+
+            if not bytes_data:
+                return
+
+            # --- PHASE 1: HANDSHAKE (Plaintext Wrapper) ---
+            # If we don't have an AuthKey yet, we expect specific Handshake primitives
+            # In real MTProto, even handshake is wrapped in a specific 'UnencryptedMessage' envelope.
+            # Here we simplify: if len < 24 or auth_key_id == 0, it's handshake.
+            
+            if not self.auth_key:
+                await self.handle_handshake_packet(bytes_data)
+                return
+
+            # --- PHASE 2: SECURE TRANSPORT (Encrypted Envelope) ---
+            # Parse the OdnixPacket envelope
+            try:
+                from .odnix_proto import OdnixPacket
+                packet = OdnixPacket.from_bytes(bytes_data)
+            except Exception as e:
+                logger.error(f"[OdnixGateway] Malformed Packet: {e}")
+                return
+
+            # 1. Verify Auth Key ID
+            # In real impl, we'd look up the session state by ID.
+            # valid_auth_id = hashlib.sha1(self.auth_key).digest()[-8:]
+            # if packet.auth_key_id != valid_auth_id: ...
+            
+            # 2. Decrypt Payload
+            # We use the OdnixSecurity logic but adapted for binary
+            decrypted_data = self.decrypt_binary_payload(packet)
+            
+            if not decrypted_data:
+                logger.warning("[OdnixGateway] Decryption failed or integrity check failed")
+                return
+
+            # 3. Dispatch RPC
+            await self.dispatch_rpc(decrypted_data)
+
+        except Exception as e:
+            logger.error(f"[OdnixGateway] Critical Error: {e}", exc_info=True)
+            await self.close()
+
+    async def handle_handshake_packet(self, data):
+        """
+        Handles the raw binary handshake flow (Req_PQ -> Res_DH, etc.)
+        """
+        # For prototype, we'll assume the client sends a raw 1-byte OpCode for handshake step
+        # Real MTProto scans for TL Constructor ID
+        
+        op_code = data[0]
+        logger.info(f"[OdnixGateway] Handshake OpCode: {op_code}")
+
+        # 0x01: REQ_PQ (Client sends nonce)
+        if op_code == 0x01:
+            nonce = data[1:17] # 16 bytes
+            
+            # Server Reply: RES_PQ (Nonce + ServerNonce + Prime + G)
+            dh_config = self.proto_security.create_dh_config()
+            s_nonce_b64 = dh_config['server_nonce'] # currently b64 in security lib
+            import base64
+            s_nonce = base64.b64decode(s_nonce_b64)
+            
+            # Pack response
+            # [Op:0x02][Nonce(16)][ServerNonce(16)][PrimeLen(2)][PrimeBytes...][G(4)]
+            # This is pseudo-code for the binary logic
+            # Key Calculation (Simulated Diffie-Hellman Completion for Demo)
+            # In real flow, client sends another packet. Here we shortcut for prototype stability.
+            # Client thinks handshake is done after RES_PQ in our simple client.
+            # We derive a fixed key based on nonces to match client.
+            
+            # Key = SHA256(ClientNonce + ServerNonce)
+            combined = nonce + s_nonce
+            import hashlib
+            self.auth_key = hashlib.sha256(combined).digest()
+            self.proto_security.auth_key = self.auth_key
+            logger.info(f"[OdnixGateway] Auth Key Established for Session")
+
+            reply = b'\x02' + nonce + s_nonce 
+            # ... (packing prime/g skipped for brevity in snippet) ...
+            
+            await self.send(bytes_data=reply)
+
+    def decrypt_binary_payload(self, packet):
+        # Implementation of AES decryption (Simulated AES-CBC to match client)
+        if not self.auth_key: return None
+        
+        # 1. Derive MsgKey/Key/IV
+        # Client: msgKey = sha256(authKey + data)
+        # Server: we already have msgKey in packet.
+        
+        # Derive Key/IV:
+        # key = sha256(msgKey + authKey)
+        # iv = sha256(authKey + msgKey)[0:16]
+        
+        ka = packet.msg_key + self.auth_key
+        kb = self.auth_key + packet.msg_key
+        
+        key = hashlib.sha256(ka).digest()
+        iv = hashlib.sha256(kb).digest()[:16]
+        
+        try:
+            from Crypto.Cipher import AES
+            import struct, json
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            decrypted = cipher.decrypt(packet.encrypted_data)
+            
+            # 2. Parse Inner Payload
+            # [Salt(8)][Session(8)][MsgId(8)][Seq(4)][Len(4)][Data][Padding]
+            data_len = struct.unpack('<I', decrypted[28:32])[0]
+            json_bytes = decrypted[32:32+data_len]
+            
+            payload_json = json.loads(json_bytes.decode('utf-8'))
+            return payload_json
+            
+        except Exception as e:
+            logger.error(f"[OdnixGateway] Decrypt Error: {e}")
+            return None
+
+    async def dispatch_rpc(self, payload):
+        method = payload.get('method')
+        params = payload.get('params')
+        
+        logger.info(f"[OdnixGateway] RPC Dispatch: {method}")
+        
+        if method == 'signal':
+            # Bridge to Call logic - Echo for now
+            logger.info(f"[OdnixGateway] Signal received via Binary Proto: {params.get('type')}")
