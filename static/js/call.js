@@ -43,18 +43,25 @@
         }
     }
 
+    // Debug mode - set to true to see visual status indicator
+    const DEBUG_MODE = false; // Change to true to enable visual debugging
+
+    // Debug helper
     function updateDebugStatus(status, color = '#666') {
-        let el = document.getElementById('callDebugStatus');
-        if (!el) {
-            el = document.createElement('div');
-            el.id = 'callDebugStatus';
-            el.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#fff;padding:4px 8px;border:1px solid #ccc;font-size:10px;z-index:9999;opacity:0.7;pointer-events:none;max-width:500px;max-height:200px;overflow:auto;';
-            document.body.appendChild(el);
-        }
-        const timestamp = new Date().toISOString().substr(11, 12);
-        const logLine = `[${timestamp}] ${status}`;
-        el.innerHTML = logLine + '<br>' + el.innerHTML;
         console.log('[CallWS] ' + status);
+
+        // Only show visual indicator in debug mode
+        if (DEBUG_MODE) {
+            let el = document.getElementById('callDebugStatus');
+            if (!el) {
+                el = document.createElement('div');
+                el.id = 'callDebugStatus';
+                el.style.cssText = 'position:fixed;bottom:10px;right:10px;background:#fff;padding:4px 8px;border:1px solid #ccc;font-size:10px;z-index:9999;opacity:0.7;pointer-events:none;';
+                document.body.appendChild(el);
+            }
+            el.textContent = 'WS: ' + status;
+            el.style.color = color;
+        }
     }
 
     function resolveHandshakeWaiters(err) {
@@ -361,7 +368,7 @@
         const doSend = async () => {
             try {
                 // Wait for handshake completion before sending
-                await waitForHandshakeReady(8000);
+                await waitForHandshakeReady(3000); // Reduce timeout to 3s for faster fallback
                 const msg = { type, ...payload };
                 const encrypted = proto.encrypt(msg);
                 sock.send(encrypted);
@@ -540,6 +547,10 @@
                             await onRemoteIce({
                                 candidate: signal.candidate
                             });
+                        } else if (signalType === 'webrtc.end' || signalType === 'end') {
+                            updateDebugStatus('Peer ended call (via Polling)', 'orange');
+                            stopTone();
+                            teardown('Peer ended call');
                         }
                         // Ignore file transfer signals (they have fileInfo)
                     }
@@ -552,7 +563,7 @@
                 console.error('Error polling signals:', e);
                 updateDebugStatus('Error polling: ' + e.message, 'red');
             }
-        }, 1500); // Poll every 1.5 seconds (faster than P2P handler)
+        }, 500); // Poll every 500ms for faster connection
     }
 
     function stopSignalPolling() {
@@ -592,7 +603,7 @@
                         sendViaServerRelay('webrtc.offer', { sdp: offer.sdp, type: offer.type, audioOnly });
                         startSignalPolling();
                     }
-                }, 10000); // Wait 10 seconds for handshake
+                }, 3000); // 3s timeout for WebSocket handshake is sufficient
             } catch (e) {
                 // Immediately fallback to server relay
                 updateDebugStatus('WebSocket send failed, using server relay', 'orange');
@@ -727,8 +738,15 @@
         try { await pc.addIceCandidate(new RTCIceCandidate(candidate)); } catch (_) { }
     }
 
-    function endCall() {
-        send('webrtc.end', {});
+    async function endCall() {
+        // Send termination signal
+        try {
+            send('webrtc.end', {});
+        } catch (e) {
+            console.error('Failed to send end signal via WS', e);
+            // Fallback to HTTP if WS fails, just in case
+            sendViaServerRelay('webrtc.end', {});
+        }
         teardown('Call ended');
     }
 

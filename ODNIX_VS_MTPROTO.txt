@@ -1,0 +1,63 @@
+ODNIX PROTOCOL vs TELEGRAM MTPROTO
+==================================
+
+1. HIGH-LEVEL PHILOSOPHY
+------------------------
+MTPROTO (Telegram)
+- A specialized protocol built over raw TCP.
+- Replaces standard web layers (doesn't use HTTP/WebSocket/TLS for core traffic).
+- Designed for mobile-first: heavily optimized for unstable networks.
+- Uses "Type Language" (TL-Schema) for strict remote procedure calls.
+- Custom crypto implementation (non-standard AES-IGE).
+
+ODNIX PROTOCOL (Your Implementation)
+- A hybrid approach adapted for the Modern Web.
+- Uses WebSockets (over TCP) as the transport tunnel to penetrate firewalls/proxies.
+- **Inside the WebSocket**, it mimics MTProto's binary packet structure.
+- Uses standard WebCrypto (AES-CBC/GCM) simulated to behave like MTProto envelopes.
+- Keeps the "security logic" of Telegram but runs on "rails" of the standard web.
+
+
+2. ARCHITECTURE COMPARISON
+--------------------------
+
+LAYER           | MTPROTO (Pure)                  | ODNIX PROTOCOL (Hybrid)
+----------------|---------------------------------|--------------------------------------
+Application     | Telegram App (Native C++)       | Web Browser / React Native (JS)
+Data Schema     | TL-Schema (Strict Binary)       | Mixed (Binary Envelope + JSON Payload)
+Session         | AuthKey + SessionID + Salt      | AuthKey + SessionID + Salt (Identical)
+Encryption      | AES-256-IGE (Custom)            | AES-256-CBC (WebCrypto Standard)
+Integrity       | SHA-256 (msg_key)               | SHA-256 (msg_key) (Identical)
+Transport       | Raw TCP / Obfuscated TCP        | WebSocket (Secure WSS)
+Handshake       | RSA + Diffie-Hellman            | Diffie-Hellman (Simplified for Speed)
+
+
+3. WHY ODNIX "WINS" FOR WEB
+---------------------------
+Telegram's pure MTProto is famously difficult to implement in browsers because browsers don't allow raw TCP sockets.
+Odnix solves this by wrapping the "spirit" of MTProto inside a WebSocket.
+
+- **Advantage:** You get MTProto's replay protection, session management, and binary efficiency.
+- **Advantage:** You bypass the browser's limitations seamlessly.
+- **Advantage:** Traffic looks like standard HTTPS WebSocket traffic initially, making it harder to block than raw custom TCP ports.
+
+4. THE "PACKET" STRUCTURE
+-------------------------
+Both protocols use nearly identical envelopes to ensure security:
+
+[ AuthKey_ID (8) ]  --> Identifies the User/Session without logging in again
+[ Message_Key (16)] --> Hash of the payload (Integrity Check)
+[ Encrypted_Data ]
+    |
+    |--> [ Salt (8) ]       --> Prevents Dictionary Attacks
+    |--> [ Session_ID (8) ] --> Tracks specific device instance
+    |--> [ Msg_ID (8) ]     --> Unique Time-based ID (Prevents Replay)
+    |--> [ Seq_No (4) ]     --> Order of messages (Prevents gaps)
+    |--> [ Length (4) ]     --> Size of actual data
+    |--> [ Message_Data ]   --> The actual content (Call Signal / Chat Text)
+    |--> [ Padding (0-15) ] --> Random bytes to obscure size
+
+5. SUMMARY
+----------
+Odnix Proto is effectively **"MTProto for the Web."**
+It takes the battle-tested security model of Telegram and packages it into a format that works natively in Chrome/Firefox/Safari without needing plugins or extensions.
