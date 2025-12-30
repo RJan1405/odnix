@@ -980,3 +980,19 @@ class ReelReport(models.Model):
         if self.reason == 'copyright' and self.copyright_type:
             return self.get_copyright_type_display()
         return None
+
+
+class ProfileView(models.Model):
+    """Model to track user profile views"""
+    viewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile_views_made')
+    viewed_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile_views_received')
+    viewed_at = models.DateTimeField(auto_now=True)  # Update timestamp on each view
+
+    class Meta:
+        unique_together = ('viewer', 'viewed_user')
+        ordering = ['-viewed_at']
+
+    def __str__(self):
+        return f"{self.viewer.username} viewed {self.viewed_user.username}"

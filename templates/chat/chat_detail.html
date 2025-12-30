@@ -54,10 +54,21 @@ Chat - Odnix
             <h3 class="sidebar-section-title">
                 Active Chats
             </h3>
+            <!-- Chat Filters -->
+            <div class="sidebar-filters" style="padding: 10px 15px; display: flex; gap: 8px;">
+                <button class="btn btn--small btn--primary filter-btn active"
+                    onclick="filterChats('all', this)">All</button>
+                <button class="btn btn--small btn--secondary filter-btn"
+                    onclick="filterChats('private', this)">Private</button>
+                <button class="btn btn--small btn--secondary filter-btn"
+                    onclick="filterChats('group', this)">Groups</button>
+            </div>
             <div class="sidebar-chat-list">
-                {% for user_chat in user.chats.all|slice:":10" %}
+                {% for user_chat in user.chats.all %}
                 <a href="{% url 'chat_detail' user_chat.id %}"
-                    class="sidebar-chat-item {% if user_chat.id == chat.id %}active{% endif %}">
+                    class="sidebar-chat-item {% if user_chat.id == chat.id %}active{% endif %}"
+                    data-type="{{ user_chat.chat_type }}" data-name="{{ user_chat.name|lower }}"
+                    data-following="{% if user_chat.chat_type == 'private' %}{% for p in user_chat.participants.all %}{% if p.id in following_ids %}true{% endif %}{% endfor %}{% endif %}">
                     <div class="chat-avatar-small {% if user_chat.chat_type == 'group' %}group-avatar{% endif %}">
                         {% if user_chat.chat_type == 'group' %}
                         <i data-lucide="users" class="group-icon"></i>
@@ -5974,57 +5985,57 @@ Chat - Odnix
             // Offline queue
             this.outboxKey = `odnix_chat_outbox_${this.chatId}`;
             this.outbox = this.loadOutbox();
-        // Load unsent messages from localStorage
-        loadOutbox() {
-            try {
-                const raw = localStorage.getItem(this.outboxKey);
-                return raw ? JSON.parse(raw) : [];
-            } catch (e) {
-                return [];
+            // Load unsent messages from localStorage
+            loadOutbox() {
+                try {
+                    const raw = localStorage.getItem(this.outboxKey);
+                    return raw ? JSON.parse(raw) : [];
+                } catch (e) {
+                    return [];
+                }
             }
-        }
 
-        // Save outbox to localStorage
-        saveOutbox() {
-            try {
-                localStorage.setItem(this.outboxKey, JSON.stringify(this.outbox));
-            } catch (e) {}
-        }
+            // Save outbox to localStorage
+            saveOutbox() {
+                try {
+                    localStorage.setItem(this.outboxKey, JSON.stringify(this.outbox));
+                } catch (e) { }
+            }
 
-        // Add a message to the outbox
-        queueMessage(msg) {
-            this.outbox.push(msg);
-            this.saveOutbox();
-        }
+            // Add a message to the outbox
+            queueMessage(msg) {
+                this.outbox.push(msg);
+                this.saveOutbox();
+            }
 
-        // Remove a message from the outbox by localId
-        dequeueMessage(localId) {
-            this.outbox = this.outbox.filter(m => m.localId !== localId);
-            this.saveOutbox();
-        }
+            // Remove a message from the outbox by localId
+            dequeueMessage(localId) {
+                this.outbox = this.outbox.filter(m => m.localId !== localId);
+                this.saveOutbox();
+            }
 
         // Try to send all queued messages
         async syncOutbox() {
-            if (!this.wsConnected || this.handshakeStep !== 2 || !this.outbox.length) return;
-            // Copy to avoid mutation during iteration
-            const queue = [...this.outbox];
-            for (const msg of queue) {
-                try {
-                    // Only support text for now
-                    const payload = {
-                        type: 'chat_message',
-                        message: msg.content,
-                        reply_to: msg.reply_to || null
-                    };
-                    const encryptedPackage = this.proto.encrypt(payload);
-                    this.ws.send(encryptedPackage);
-                    this.dequeueMessage(msg.localId);
-                } catch (e) {
-                    // If send fails, keep in queue
-                    break;
+                if (!this.wsConnected || this.handshakeStep !== 2 || !this.outbox.length) return;
+                // Copy to avoid mutation during iteration
+                const queue = [...this.outbox];
+                for (const msg of queue) {
+                    try {
+                        // Only support text for now
+                        const payload = {
+                            type: 'chat_message',
+                            message: msg.content,
+                            reply_to: msg.reply_to || null
+                        };
+                        const encryptedPackage = this.proto.encrypt(payload);
+                        this.ws.send(encryptedPackage);
+                        this.dequeueMessage(msg.localId);
+                    } catch (e) {
+                        // If send fails, keep in queue
+                        break;
+                    }
                 }
             }
-        }
 
             // Polling speeds (kept for fallbacks if needed, but primarily using WS)
             this.onlinePollingSpeed = 5000;
@@ -6559,157 +6570,157 @@ Chat - Odnix
 
 
         async sendMessage() {
-            const content = this.messageInput.value.trim();
-            if (!content && !this.selectedMedia) return;
+        const content = this.messageInput.value.trim();
+        if (!content && !this.selectedMedia) return;
 
-            // Disable send button and show loading state
-            this.sendBtn.disabled = true;
-            const sendIcon = this.sendBtn.querySelector('.send-icon-send');
-            const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
+        // Disable send button and show loading state
+        this.sendBtn.disabled = true;
+        const sendIcon = this.sendBtn.querySelector('.send-icon-send');
+        const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
+        if (sendIcon && loadingIcon) {
+            sendIcon.style.display = 'none';
+            loadingIcon.style.display = 'inline-block';
+        }
+
+        // If offline or WS not connected, queue message
+        if (!this.selectedMedia && (!this.wsConnected || this.handshakeStep !== 2 || !navigator.onLine)) {
+            const replyBox = document.getElementById('reply-preview');
+            const replyToId = replyBox ? replyBox.dataset.replyTo : null;
+            // Generate a localId for tracking
+            const localId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+            const msg = {
+                localId,
+                content,
+                reply_to: replyToId,
+                timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+            };
+            this.queueMessage(msg);
+            // Show in UI as pending
+            const tempMessage = this.addMessageToUI({
+                content,
+                sender_name: 'You',
+                timestamp: msg.timestamp,
+                message_type: 'text',
+                is_own: true,
+                temporary: true,
+                localId
+            });
+            tempMessage.classList.add('message-sending', 'message-offline');
+            this.messageInput.value = '';
+            this.autoResizeTextarea();
+            if (replyBox) {
+                replyBox.style.display = 'none';
+                replyBox.dataset.replyTo = '';
+            }
+            this.sendBtn.disabled = false;
             if (sendIcon && loadingIcon) {
-                sendIcon.style.display = 'none';
-                loadingIcon.style.display = 'inline-block';
+                sendIcon.style.display = 'inline-block';
+                loadingIcon.style.display = 'none';
+            }
+            if (!this.isMobile) this.messageInput.focus();
+            this.showNotification('Message queued (offline)', 'info');
+            return;
+        }
+        // If online and connected, try to sync outbox first
+        if (!this.selectedMedia) {
+            await this.syncOutbox();
+        }
+
+        try {
+            // Prepare form data for media upload (REST Fallback)
+            const formData = new FormData();
+            formData.append('chat_id', this.chatId);
+            formData.append('csrfmiddlewaretoken', this.getCSRFToken());
+            if (content) formData.append('content', content);
+            if (this.selectedMedia) formData.append('media', this.selectedMedia);
+            if (this.oneTimeEnabled) formData.append('one_time', 'true');
+
+            // Add temporary message to UI
+            const tempMessage = this.addMessageToUI({
+                content: content || '📎 Media',
+                sender_name: 'You',
+                timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
+                message_type: 'text',
+                is_own: true,
+                temporary: true,
+                one_time: this.oneTimeEnabled,
+                consumed: false
+            });
+            tempMessage.classList.add('message-sending');
+
+            // Clear input and media
+            this.messageInput.value = '';
+            this.selectedMedia = null;
+            this.closeMediaPreview();
+            this.autoResizeTextarea();
+
+            // Reset one-time toggle
+            if (this.oneTimeEnabled) {
+                this.toggleOneTime();
             }
 
-            // If offline or WS not connected, queue message
-            if (!this.selectedMedia && (!this.wsConnected || this.handshakeStep !== 2 || !navigator.onLine)) {
-                const replyBox = document.getElementById('reply-preview');
-                const replyToId = replyBox ? replyBox.dataset.replyTo : null;
-                // Generate a localId for tracking
-                const localId = 'local_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
-                const msg = {
-                    localId,
-                    content,
-                    reply_to: replyToId,
-                    timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
-                };
-                this.queueMessage(msg);
-                // Show in UI as pending
-                const tempMessage = this.addMessageToUI({
-                    content,
-                    sender_name: 'You',
-                    timestamp: msg.timestamp,
-                    message_type: 'text',
-                    is_own: true,
-                    temporary: true,
-                    localId
-                });
-                tempMessage.classList.add('message-sending', 'message-offline');
-                this.messageInput.value = '';
-                this.autoResizeTextarea();
+            // Handle reply
+            const replyBox = document.getElementById('reply-preview');
+            const replyToId = replyBox ? replyBox.dataset.replyTo : null;
+            if (replyToId) {
+                formData.append('reply_to', replyToId);
+            }
+
+            const response = await fetch('/api/send-message/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': this.getCSRFToken()
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            tempMessage.remove();
+
+            if (data.success) {
+                // Clear reply preview after successful send
                 if (replyBox) {
                     replyBox.style.display = 'none';
                     replyBox.dataset.replyTo = '';
                 }
-                this.sendBtn.disabled = false;
-                if (sendIcon && loadingIcon) {
-                    sendIcon.style.display = 'inline-block';
-                    loadingIcon.style.display = 'none';
-                }
-                if (!this.isMobile) this.messageInput.focus();
-                this.showNotification('Message queued (offline)', 'info');
-                return;
-            }
-            // If online and connected, try to sync outbox first
-            if (!this.selectedMedia) {
-                await this.syncOutbox();
-            }
 
-            try {
-                // Prepare form data for media upload (REST Fallback)
-                const formData = new FormData();
-                formData.append('chat_id', this.chatId);
-                formData.append('csrfmiddlewaretoken', this.getCSRFToken());
-                if (content) formData.append('content', content);
-                if (this.selectedMedia) formData.append('media', this.selectedMedia);
-                if (this.oneTimeEnabled) formData.append('one_time', 'true');
+                this.addMessageToUI(data.message);
+                this.lastMessageTime = new Date().toISOString();
 
-                // Add temporary message to UI
-                const tempMessage = this.addMessageToUI({
-                    content: content || '📎 Media',
-                    sender_name: 'You',
-                    timestamp: new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }),
-                    message_type: 'text',
-                    is_own: true,
-                    temporary: true,
-                    one_time: this.oneTimeEnabled,
-                    consumed: false
-                });
-                tempMessage.classList.add('message-sending');
-
-                // Clear input and media
-                this.messageInput.value = '';
-                this.selectedMedia = null;
-                this.closeMediaPreview();
-                this.autoResizeTextarea();
-
-                // Reset one-time toggle
+                // Reset one-time toggle after sending
                 if (this.oneTimeEnabled) {
                     this.toggleOneTime();
                 }
-
-                // Handle reply
-                const replyBox = document.getElementById('reply-preview');
-                const replyToId = replyBox ? replyBox.dataset.replyTo : null;
-                if (replyToId) {
-                    formData.append('reply_to', replyToId);
-                }
-
-                const response = await fetch('/api/send-message/', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': this.getCSRFToken()
-                    },
-                    body: formData
-                });
-
-                const data = await response.json();
-                tempMessage.remove();
-
-                if (data.success) {
-                    // Clear reply preview after successful send
-                    if (replyBox) {
-                        replyBox.style.display = 'none';
-                        replyBox.dataset.replyTo = '';
-                    }
-
-                    this.addMessageToUI(data.message);
-                    this.lastMessageTime = new Date().toISOString();
-
-                    // Reset one-time toggle after sending
-                    if (this.oneTimeEnabled) {
-                        this.toggleOneTime();
-                    }
-                } else {
-                    this.showNotification('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                this.showNotification('Network error. Please check your connection and try again.', 'error');
-                // Remove temporary message if it still exists
-                const tempMessage = this.messagesContainer.querySelector('.message-sending');
-                if (tempMessage) tempMessage.remove();
-            } finally {
-                this.sendBtn.disabled = false;
-                const sendIcon = this.sendBtn.querySelector('.send-icon-send');
-                const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
-                if (sendIcon && loadingIcon) {
-                    sendIcon.style.display = 'inline-block';
-                    loadingIcon.style.display = 'none';
-                } else {
-                    console.error('Send icons not found when restoring');
-                }
-                if (!this.isMobile) {
-                    this.messageInput.focus();
-                }
+            } else {
+                this.showNotification('Failed to send message: ' + (data.error || 'Unknown error'), 'error');
             }
-            // Listen for online/offline events to trigger sync
-            // (in constructor, after other event listeners)
-            window.addEventListener('online', () => {
-                this.syncOutbox();
-            });
-            // Also try to sync after WS connects
-            // (already handled in ws.onopen)
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification('Network error. Please check your connection and try again.', 'error');
+            // Remove temporary message if it still exists
+            const tempMessage = this.messagesContainer.querySelector('.message-sending');
+            if (tempMessage) tempMessage.remove();
+        } finally {
+            this.sendBtn.disabled = false;
+            const sendIcon = this.sendBtn.querySelector('.send-icon-send');
+            const loadingIcon = this.sendBtn.querySelector('.send-icon-loading');
+            if (sendIcon && loadingIcon) {
+                sendIcon.style.display = 'inline-block';
+                loadingIcon.style.display = 'none';
+            } else {
+                console.error('Send icons not found when restoring');
+            }
+            if (!this.isMobile) {
+                this.messageInput.focus();
+            }
+        }
+        // Listen for online/offline events to trigger sync
+        // (in constructor, after other event listeners)
+        window.addEventListener('online', () => {
+            this.syncOutbox();
+        });
+        // Also try to sync after WS connects
+        // (already handled in ws.onopen)
     }
 
     addMessageToUI(messageData) {
@@ -9172,15 +9183,81 @@ Chat - Odnix
         showToast('File receive cancelled', 'info');
     }
 </script>
+<script>
+    // Chat Sidebar Filtering Logic
+    function filterChats(category, btn) {
+        // Save state
+        localStorage.setItem('ig_direct_filter', category);
+
+        // Update active button visual state
+        if (btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => {
+                b.classList.remove('active');
+                b.classList.remove('btn--primary');
+                b.classList.add('btn--secondary');
+            });
+            btn.classList.add('active');
+            btn.classList.remove('btn--secondary');
+            btn.classList.add('btn--primary');
+        }
+
+        const items = document.querySelectorAll('.sidebar-chat-item');
+        items.forEach(item => {
+            const type = item.getAttribute('data-type');
+            const isFollowing = (item.getAttribute('data-following') || '').trim() === 'true';
+
+            let show = false;
+            // Normalize category for flexible matching (dashboard uses plural 'groups')
+            const cat = category.replace('groups', 'group');
+
+            if (cat === 'all') {
+                show = true;
+            } else if (cat === 'group') {
+                show = (type === 'group');
+            } else if (cat === 'private') {
+                show = (type === 'private' && isFollowing);
+            }
+
+            item.style.display = show ? 'flex' : 'none';
+        });
+    }
+
+    // Initialize state on load
+    document.addEventListener('DOMContentLoaded', () => {
+        let saved = localStorage.getItem('ig_direct_filter');
+        if (saved) {
+            // Normalize 'groups' to 'group' for this template's specific buttons
+            if (saved === 'groups') saved = 'group';
+
+            const btn = document.querySelector(`.filter-btn[onclick*="'${saved}'"]`);
+            if (btn) {
+                filterChats(saved, btn);
+            } else {
+                // Apply filter logic even if button finding fails safely
+                const items = document.querySelectorAll('.sidebar-chat-item');
+                items.forEach(item => {
+                    const type = item.getAttribute('data-type');
+                    const isFollowing = item.getAttribute('data-following') === 'true';
+                    let show = false;
+                    if (saved === 'all') show = true;
+                    else if (saved === 'group') show = (type === 'group');
+                    else if (saved === 'private') show = (type === 'private' && isFollowing);
+                    item.style.display = show ? 'flex' : 'none';
+                });
+            }
+        }
+    });
+</script>
 {% endblock %}
 <!-- Odnix Call configuration + script (added to ensure signaling for non-Instagram template) -->
 <script>
     try {
         window.OdnixCallConfig = {
-            chatId: {{ chat.id }},
-            userId: {{ request.user.id }},
-            wsScheme: (window.location.protocol === 'https:' ? 'wss' : 'ws'),
-            host: window.location.host,
+            chatId: {{ chat.id }
+    },
+    userId: { { request.user.id } },
+    wsScheme: (window.location.protocol === 'https:' ? 'wss' : 'ws'),
+        host: window.location.host,
             iceServers: []
         };
     console.log('[CallJS] Config set successfully (chat_detail):', window.OdnixCallConfig);

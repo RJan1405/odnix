@@ -1,3 +1,42 @@
+<script>
+    function updateSidebarChats() {
+        fetch('/chat/api/chats/')
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) return;
+                const chats = data.chats;
+                chats.forEach(chat => {
+                    // Find sidebar item by chat id
+                    const item = document.querySelector('.ig-direct-item[href$="/' + chat.id + '/"]');
+                    if (!item) return;
+                    // Update unread badge
+                    const imgWrap = item.querySelector('span[style*="position:relative"]');
+                    let badge = item.querySelector('.unread-badge');
+                    if (chat.unread_count > 0) {
+                        if (!badge && imgWrap) {
+                            badge = document.createElement('span');
+                            badge.className = 'unread-badge';
+                            badge.style = "position:absolute;top:-6px;right:-6px;background:#ff3b3b;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 0 0 2px #fff;z-index:2;";
+                            imgWrap.appendChild(badge);
+                        }
+                        if (badge) {
+                            badge.textContent = chat.unread_count;
+                            badge.style.display = '';
+                        }
+                    } else if (badge) {
+                        badge.style.display = 'none';
+                    }
+                    // Update last message preview
+                    const preview = item.querySelector('.ig-direct-item-preview');
+                    if (preview) {
+                        preview.textContent = chat.last_message || 'No messages yet';
+                    }
+                });
+            });
+    }
+    setInterval(updateSidebarChats, 5000); // Poll every 5 seconds
+    updateSidebarChats(); // Initial call
+</script>
 {% extends 'chat/base.html' %}
 {% load static %}
 
@@ -7,39 +46,243 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <style>
     /* Minimal styles to mirror chat layout */
-    .ig-direct { display:flex; height:100vh; max-width:100%; overflow:hidden; }
-    .ig-direct-sidebar { width:340px; max-width:340px; border-right:1px solid var(--ig-border); background:var(--ig-surface); display:flex; flex-direction:column; }
-    .ig-direct-header { display:flex; align-items:center; gap:12px; padding:12px 16px; border-bottom:1px solid var(--ig-border); }
-    .ig-direct-back { background:none; border:none; cursor:pointer; padding:8px; border-radius:50%; color:var(--ig-text-primary); }
-    .ig-direct-back:hover { background:var(--ig-surface-hover); }
-    .ig-direct-header-avatar { width:40px; height:40px; border-radius:50%; object-fit:cover; }
-    .ig-direct-header-info { flex:1; display:flex; flex-direction:column; }
-    .ig-direct-title { margin:0; font-weight:700; font-size:18px; color:var(--ig-text-primary); line-height:1.2; }
-    .ig-direct-sub { margin:0; font-size:12px; color:var(--ig-text-secondary); }
-    .ig-direct-new { background:none; border:none; cursor:pointer; padding:8px; border-radius:50%; color:var(--ig-text-primary); }
-    .ig-direct-new:hover { background:var(--ig-surface-hover); }
-    .ig-direct-list { overflow:auto; padding:6px; display:flex; flex-direction:column; gap:4px; }
-    .ig-direct-item { display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:12px; text-decoration:none; color:inherit; transition:background .15s; }
-    .ig-direct-item:hover { background:var(--ig-surface-hover); }
-    .ig-direct-item.active { background:rgba(102,126,234,.12); }
-    .ig-direct-item-avatar { width:44px; height:44px; border-radius:22%; object-fit:cover; }
-    .ig-direct-item-avatar.placeholder { display:flex; align-items:center; justify-content:center; background:var(--odnix-gradient); color:#fff; font-weight:700; }
-    .ig-direct-item-avatar.group { display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#5b6eae 0%,#8b5fc7 50%,#c471ed 100%); color:#fff; border-radius:22%; width:44px; height:44px; }
-    .ig-direct-item-info { display:flex; flex-direction:column; min-width:0; }
-    .ig-direct-item-name { font-weight:600; color:var(--ig-text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .ig-direct-item-preview { font-size:12px; color:var(--ig-text-secondary); }
-    .ig-chat { flex:1; display:flex; flex-direction:column; background:var(--ig-bg); }
-    .ig-chat-empty { flex:1; display:flex; align-items:center; justify-content:center; }
-    .ig-chat-empty-card { text-align:center; padding:32px; border:1px solid var(--ig-border); border-radius:16px; background:var(--ig-surface); color:var(--ig-text-secondary); }
-    .ig-chat-empty-card h3 { margin:0 0 8px; color:var(--ig-text-primary); }
+    .ig-direct {
+        display: flex;
+        height: 100vh;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .ig-direct-sidebar {
+        width: 340px;
+        max-width: 340px;
+        border-right: 1px solid var(--ig-border);
+        background: var(--ig-surface);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ig-direct-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--ig-border);
+    }
+
+    .ig-direct-back {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        color: var(--ig-text-primary);
+    }
+
+    .ig-direct-back:hover {
+        background: var(--ig-surface-hover);
+    }
+
+    .ig-direct-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .ig-direct-header-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ig-direct-title {
+        margin: 0;
+        font-weight: 700;
+        font-size: 18px;
+        color: var(--ig-text-primary);
+        line-height: 1.2;
+    }
+
+    .ig-direct-sub {
+        margin: 0;
+        font-size: 12px;
+        color: var(--ig-text-secondary);
+    }
+
+    .ig-direct-new {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        color: var(--ig-text-primary);
+    }
+
+    .ig-direct-new:hover {
+        background: var(--ig-surface-hover);
+    }
+
+    .ig-direct-list {
+        overflow: auto;
+        padding: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .ig-direct-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: inherit;
+        transition: background .15s;
+    }
+
+    .ig-direct-item:hover {
+        background: var(--ig-surface-hover);
+    }
+
+    .ig-direct-item.active {
+        background: rgba(102, 126, 234, .12);
+    }
+
+    .ig-direct-item-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 22%;
+        object-fit: cover;
+    }
+
+    .ig-direct-item-avatar.placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--odnix-gradient);
+        color: #fff;
+        font-weight: 700;
+    }
+
+    .ig-direct-item-avatar.group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #5b6eae 0%, #8b5fc7 50%, #c471ed 100%);
+        color: #fff;
+        border-radius: 22%;
+        width: 44px;
+        height: 44px;
+    }
+
+    .ig-direct-item-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .ig-direct-item-name {
+        font-weight: 600;
+        color: var(--ig-text-primary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .ig-direct-item-preview {
+        font-size: 12px;
+        color: var(--ig-text-secondary);
+    }
+
+    .ig-chat {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: var(--ig-bg);
+    }
+
+    .ig-chat-empty {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ig-chat-empty-card {
+        text-align: center;
+        padding: 32px;
+        border: 1px solid var(--ig-border);
+        border-radius: 16px;
+        background: var(--ig-surface);
+        color: var(--ig-text-secondary);
+    }
+
+    .ig-chat-empty-card h3 {
+        margin: 0 0 8px;
+        color: var(--ig-text-primary);
+    }
+
     /* Search + categories */
-    .ig-direct-controls { padding:10px 12px; border-bottom:1px solid var(--ig-border); }
-    .ig-search-bar { display:flex; align-items:center; gap:8px; background:var(--ig-bg); border:1px solid var(--ig-border); border-radius:12px; padding:10px 12px; }
-    .ig-search-bar input { flex:1; background:transparent; border:none; outline:none; color:var(--ig-text-primary); }
-    .ig-categories { display:flex; gap:8px; margin-top:10px; }
-    .ig-cat-btn { display:flex; align-items:center; gap:6px; padding:8px 12px; background:var(--ig-bg); border:1px solid var(--ig-border); border-radius:999px; font-size:13px; color:var(--ig-text-secondary); cursor:pointer; }
-    .ig-cat-btn.active { background:rgba(102,126,234,.12); color:var(--ig-text-primary); border-color:transparent; }
-    @media (max-width: 900px) { .ig-direct-sidebar { width:100%; max-width:100%; } .ig-chat { display:none; } }
+    .ig-direct-controls {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--ig-border);
+    }
+
+    .ig-search-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--ig-bg);
+        border: 1px solid var(--ig-border);
+        border-radius: 12px;
+        padding: 10px 12px;
+    }
+
+    .ig-search-bar input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--ig-text-primary);
+    }
+
+    .ig-categories {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    .ig-cat-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 12px;
+        background: var(--ig-bg);
+        border: 1px solid var(--ig-border);
+        border-radius: 999px;
+        font-size: 13px;
+        color: var(--ig-text-secondary);
+        cursor: pointer;
+    }
+
+    .ig-cat-btn.active {
+        background: rgba(102, 126, 234, .12);
+        color: var(--ig-text-primary);
+        border-color: transparent;
+    }
+
+    @media (max-width: 900px) {
+        .ig-direct-sidebar {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .ig-chat {
+            display: none;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -53,8 +296,8 @@
             <a href="{% url 'dashboard' %}" class="ig-direct-back" title="Back">
                 <i data-lucide="arrow-left"></i>
             </a>
-            <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}" class="ig-direct-header-avatar"
-                 onerror="this.style.display='none';">
+            <img src="{{ request.user.profile_picture_url }}" alt="{{ request.user.full_name }}"
+                class="ig-direct-header-avatar" onerror="this.style.display='none';">
             <div class="ig-direct-header-info">
                 <h2 class="ig-direct-title">Messages</h2>
                 <div class="ig-direct-sub">@{{ request.user.username }}</div>
@@ -66,37 +309,62 @@
         <div class="ig-direct-controls">
             <div class="ig-search-bar">
                 <i data-lucide="search"></i>
-                <input id="directSearchInput" type="text" placeholder="Search messages" onkeyup="filterDirectChats(event)">
+                <input id="directSearchInput" type="text" placeholder="Search messages"
+                    onkeyup="filterDirectChats(event)">
             </div>
             <div class="ig-categories">
-                <button class="ig-cat-btn active" onclick="filterDirectCategory('all', this)"><i data-lucide="inbox"></i> All</button>
-                <button class="ig-cat-btn" onclick="filterDirectCategory('private', this)"><i data-lucide="user"></i> Private</button>
-                <button class="ig-cat-btn" onclick="filterDirectCategory('group', this)"><i data-lucide="users"></i> Groups</button>
+                <button class="ig-cat-btn active" onclick="filterDirectCategory('all', this)"><i
+                        data-lucide="inbox"></i> All</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('private', this)"><i data-lucide="user"></i>
+                    Private</button>
+                <button class="ig-cat-btn" onclick="filterDirectCategory('group', this)"><i data-lucide="users"></i>
+                    Groups</button>
             </div>
         </div>
         <div class="ig-direct-list">
-            {% for user_chat in request.user.chats.all %}
-            <a href="{% url 'chat_detail' user_chat.id %}" class="ig-direct-item" data-type="{{ user_chat.chat_type }}" data-name="{% if user_chat.chat_type == 'group' %}{{ user_chat.name|lower }}{% else %}{% for participant in user_chat.participants.all %}{% if participant != request.user %}{{ participant.full_name|lower }}{% endif %}{% endfor %}{% endif %}">
-                {% if user_chat.chat_type == 'group' %}
-                <div class="ig-direct-item-avatar group">
-                    <i data-lucide="users"></i>
-                </div>
-                <div class="ig-direct-item-info">
-                    <div class="ig-direct-item-name">{{ user_chat.name }}</div>
-                    <div class="ig-direct-item-preview">{{ user_chat.participant_count }} members</div>
-                </div>
-                {% else %}
-                {% for participant in user_chat.participants.all %}
+            {% for chat in private_chats %}
+            <a href="{% url 'chat_detail' chat.id %}" class="ig-direct-item" data-type="{{ chat.chat_type }}"
+                data-name="{% for p in chat.participants.all %}{% if p != request.user %}{{ p.full_name|default:p.username }}{% endif %}{% endfor %}"
+                data-following="{% for p in chat.participants.all %}{% if p != request.user and p.id in following_ids %}true{% endif %}{% endfor %}">
+                {% for participant in chat.participants.all %}
                 {% if participant != request.user %}
-                <img src="{{ participant.profile_picture_url }}" alt="" class="ig-direct-item-avatar"
-                     onerror="this.outerHTML='\u003cdiv class=\'ig-direct-item-avatar placeholder\'\u003e{{ participant.initials }}\u003c/div\u003e'">
-                <div class="ig-direct-item-info">
-                    <div class="ig-direct-item-name">{{ participant.full_name }}</div>
-                    <div class="ig-direct-item-preview">@{{ participant.username }}</div>
-                </div>
+                <span style="position:relative;display:inline-block;">
+                    <img src="{{ participant.profile_picture_url }}" alt="" class="ig-direct-item-avatar"
+                        onerror="this.outerHTML='\u003cdiv class='ig-direct-item-avatar placeholder'\u003e{{ participant.initials }}\u003c/div\u003e'">
+                    {% if chat.unread_count > 0 %}
+                    <span
+                        style="position:absolute;top:-6px;right:-6px;background:#ff3b3b;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 0 0 2px #fff;z-index:2;">{{chat.unread_count }}</span>
+                    {% endif %}
+                </span>
                 {% endif %}
                 {% endfor %}
-                {% endif %}
+                <div class="ig-direct-item-info">
+                    <div class="ig-direct-item-name">{% for participant in chat.participants.all %}{% if participant != request.user %}{{ participant.full_name }}{% endif %}{% endfor %}</div>
+                    <div class="ig-direct-item-preview">
+                        {{ chat.last_message|default:'No messages yet' }}
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% for chat in group_chats %}
+            <a href="{% url 'chat_detail' chat.id %}" class="ig-direct-item" data-type="{{ chat.chat_type }}"
+                data-name="{{ chat.name }}">
+                <span style="position:relative;display:inline-block;">
+                    <div class="ig-direct-item-avatar group">
+                        <i data-lucide="users"></i>
+                    </div>
+                    {% if chat.unread_count > 0 %}
+                    <span
+                        style="position:absolute;top:-6px;right:-6px;background:#ff3b3b;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 0 0 2px #fff;z-index:2;">{{
+                        chat.unread_count }}</span>
+                    {% endif %}
+                </span>
+                <div class="ig-direct-item-info">
+                    <div class="ig-direct-item-name">{{ chat.name }}</div>
+                    <div class="ig-direct-item-preview">
+                        {{ chat.last_message|default:'No messages yet' }}
+                    </div>
+                </div>
             </a>
             {% empty %}
             <div class="ig-direct-item" style="justify-content:center; color:var(--ig-text-secondary);">
@@ -116,155 +384,168 @@
         </div>
     </div>
 
-<!-- Create Group Modal (reuses existing dashboard modal structure) -->
-<div id="createGroupModal" class="ig-modal-overlay" style="display: none; z-index: 12000;" onclick="closeCreateGroupModal(event)">
-    <div class="ig-modal" onclick="event.stopPropagation()">
-        <header class="ig-modal-header">
-            <h2 class="ig-modal-title">Create Group</h2>
-            <button class="ig-modal-close" onclick="closeCreateGroupModal()">
-                <i data-lucide="x"></i>
-            </button>
-        </header>
-        <div class="ig-modal-body">
-            <form id="createGroupForm">
-                <div style="margin-bottom: 16px;">
-                    <input type="text" id="groupName" class="ig-auth-input" style="padding: 12px;"
-                        placeholder="Group name" maxlength="100" required>
-                </div>
-                <div style="margin-bottom: 16px;">
-                    <textarea id="groupDescription" class="ig-auth-input"
-                        style="padding: 12px; min-height: 80px; resize: none;" placeholder="Description (optional)"
-                        maxlength="500"></textarea>
-                </div>
-                <div style="margin-bottom: 16px;">
-                    <select id="maxParticipants" class="ig-auth-input" style="padding: 12px;">
-                        <option value="10">10 members</option>
-                        <option value="25">25 members</option>
-                        <option value="50" selected>50 members</option>
-                        <option value="100">100 members</option>
-                    </select>
-                </div>
-                <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="isPublic" style="width: 18px; height: 18px;">
-                    <label for="isPublic" style="font-size: 14px;">Make group publicly discoverable</label>
-                </div>
-                <button type="button" class="ig-auth-btn" onclick="createGroup()">Create Group</button>
-            </form>
+    <!-- Create Group Modal (reuses existing dashboard modal structure) -->
+    <div id="createGroupModal" class="ig-modal-overlay" style="display: none; z-index: 12000;"
+        onclick="closeCreateGroupModal(event)">
+        <div class="ig-modal" onclick="event.stopPropagation()">
+            <header class="ig-modal-header">
+                <h2 class="ig-modal-title">Create Group</h2>
+                <button class="ig-modal-close" onclick="closeCreateGroupModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </header>
+            <div class="ig-modal-body">
+                <form id="createGroupForm">
+                    <div style="margin-bottom: 16px;">
+                        <input type="text" id="groupName" class="ig-auth-input" style="padding: 12px;"
+                            placeholder="Group name" maxlength="100" required>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <textarea id="groupDescription" class="ig-auth-input"
+                            style="padding: 12px; min-height: 80px; resize: none;" placeholder="Description (optional)"
+                            maxlength="500"></textarea>
+                    </div>
+                    <div style="margin-bottom: 16px;">
+                        <select id="maxParticipants" class="ig-auth-input" style="padding: 12px;">
+                            <option value="10">10 members</option>
+                            <option value="25">25 members</option>
+                            <option value="50" selected>50 members</option>
+                            <option value="100">100 members</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="isPublic" style="width: 18px; height: 18px;">
+                        <label for="isPublic" style="font-size: 14px;">Make group publicly discoverable</label>
+                    </div>
+                    <button type="button" class="ig-auth-btn" onclick="createGroup()">Create Group</button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-{% endblock %}
+    {% endblock %}
 
-{% block extra_js %}
-<script>
-    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-    function filterDirectChats(event) {
-        const term = (event?.target?.value || '').toLowerCase().trim();
-        document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item => {
-            const name = (item.getAttribute('data-name') || '').toLowerCase();
-            item.style.display = (!term || name.includes(term)) ? 'flex' : 'none';
-        });
-    }
-    function filterDirectCategory(category, btn){
-        document.querySelectorAll('.ig-categories .ig-cat-btn').forEach(b=>b.classList.remove('active'));
-        if(btn) btn.classList.add('active');
-        document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item=>{
-            const type = item.getAttribute('data-type');
-            const show = (category === 'all' || type === category);
-            item.style.display = show ? 'flex' : 'none';
-        });
-        const input = document.getElementById('directSearchInput');
-        if (input && input.value.trim()) filterDirectChats({target: input});
-    }
-    // Group modal helpers (messages page)
-    function getCSRFToken() {
-        const cookies = document.cookie.split(';');
-        for (let cookie of cookies) {
-            const [name, value] = cookie.trim().split('=');
-            if (name === 'csrftoken') return decodeURIComponent(value);
-        }
-        const csrfMeta = document.querySelector('meta[name="csrf-token"]');
-        if (csrfMeta) return csrfMeta.getAttribute('content');
-        const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
-        return csrfInput ? csrfInput.value : '';
-    }
-    
-    function openCreateGroupModal() {
-        const modal = document.getElementById('createGroupModal');
-        if (modal) {
-            modal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-            if (typeof lucide !== 'undefined') { lucide.createIcons(); }
-        }
-    }
-    
-    function closeCreateGroupModal(event) {
-        if (event && event.target && event.currentTarget && event.target !== event.currentTarget) return;
-        const modal = document.getElementById('createGroupModal');
-        if (modal) {
-            modal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-        const form = document.getElementById('createGroupForm');
-        if (form) form.reset();
-    }
-    
-    function createGroup() {
-        const name = document.getElementById('groupName')?.value.trim();
-        const description = document.getElementById('groupDescription')?.value.trim();
-        const maxParticipants = document.getElementById('maxParticipants')?.value;
-        const isPublic = document.getElementById('isPublic')?.checked;
-        
-        if (!name) {
-            alert('Please enter a group name');
-            return;
-        }
-        
-        const csrfToken = getCSRFToken();
-        console.log('Creating group with:', { name, description, maxParticipants, isPublic, csrfToken });
-        
-        fetch('{% url "create_group" %}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                name: name,
-                description: description,
-                max_participants: parseInt(maxParticipants) || 50,
-                is_public: isPublic || false
-            })
-        })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json().then(data => {
-                console.log('Full response:', data);
-                return { status: response.status, data: data };
+    {% block extra_js %}
+    <script>
+        if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+        function filterDirectChats(event) {
+            const term = (event?.target?.value || '').toLowerCase().trim();
+            document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item => {
+                const name = (item.getAttribute('data-name') || '').toLowerCase();
+                item.style.display = (!term || name.includes(term)) ? 'flex' : 'none';
             });
-        })
-        .then(({ status, data }) => {
-            console.log('Parsed response:', { status, data });
-            
-            if (data.success) {
-                const groupId = data.group_id || data.group?.id || data.id;
-                console.log('Group created with ID:', groupId);
-                if (groupId) {
-                    closeCreateGroupModal();
-                    window.location.href = `/chat/${groupId}/`;
-                } else {
-                    alert('Group created but ID not found in response');
+        }
+        function filterDirectCategory(category, btn) {
+            document.querySelectorAll('.ig-categories .ig-cat-btn').forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            document.querySelectorAll('.ig-direct-list .ig-direct-item').forEach(item => {
+                const type = item.getAttribute('data-type');
+                const followingVal = (item.getAttribute('data-following') || '').trim();
+                const isFollowing = followingVal.includes('true'); // Robust check
+
+                let show = false;
+                if (category === 'all') {
+                    show = true;
+                } else if (category === 'group') {
+                    show = (type === 'group');
+                } else if (category === 'private') {
+                    // Must be private AND followed
+                    show = (type === 'private' && isFollowing);
                 }
-            } else {
-                const errorMsg = data.error || data.message || JSON.stringify(data);
-                console.error('API error:', errorMsg);
-                alert('Could not create group: ' + errorMsg);
+
+                item.style.display = show ? 'flex' : 'none';
+            });
+            const input = document.getElementById('directSearchInput');
+            if (input && input.value.trim()) filterDirectChats({ target: input });
+        }
+        // Group modal helpers (messages page)
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') return decodeURIComponent(value);
             }
-        })
-        .catch(err => {
-            console.error('Create group error:', err);
-            alert('Network error: ' + err.message);
-        });
-    }
-</script>
-{% endblock %}
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            if (csrfMeta) return csrfMeta.getAttribute('content');
+            const csrfInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return csrfInput ? csrfInput.value : '';
+        }
+
+        function openCreateGroupModal() {
+            const modal = document.getElementById('createGroupModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+            }
+        }
+
+        function closeCreateGroupModal(event) {
+            if (event && event.target && event.currentTarget && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('createGroupModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+            }
+            const form = document.getElementById('createGroupForm');
+            if (form) form.reset();
+        }
+
+        function createGroup() {
+            const name = document.getElementById('groupName')?.value.trim();
+            const description = document.getElementById('groupDescription')?.value.trim();
+            const maxParticipants = document.getElementById('maxParticipants')?.value;
+            const isPublic = document.getElementById('isPublic')?.checked;
+
+            if (!name) {
+                alert('Please enter a group name');
+                return;
+            }
+
+            const csrfToken = getCSRFToken();
+            console.log('Creating group with:', { name, description, maxParticipants, isPublic, csrfToken });
+
+            fetch('{% url "create_group" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({
+                    name: name,
+                    description: description,
+                    max_participants: parseInt(maxParticipants) || 50,
+                    is_public: isPublic || false
+                })
+            })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json().then(data => {
+                        console.log('Full response:', data);
+                        return { status: response.status, data: data };
+                    });
+                })
+                .then(({ status, data }) => {
+                    console.log('Parsed response:', { status, data });
+
+                    if (data.success) {
+                        const groupId = data.group_id || data.group?.id || data.id;
+                        console.log('Group created with ID:', groupId);
+                        if (groupId) {
+                            closeCreateGroupModal();
+                            window.location.href = `/chat/${groupId}/`;
+                        } else {
+                            alert('Group created but ID not found in response');
+                        }
+                    } else {
+                        const errorMsg = data.error || data.message || JSON.stringify(data);
+                        console.error('API error:', errorMsg);
+                        alert('Could not create group: ' + errorMsg);
+                    }
+                })
+                .catch(err => {
+                    console.error('Create group error:', err);
+                    alert('Network error: ' + err.message);
+                });
+        }
+    </script>
+    {% endblock %}

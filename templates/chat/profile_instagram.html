@@ -1461,12 +1461,14 @@
                 max-width: 520px;
                 margin: 0 auto;
             }
+
             @media (max-width: 768px) {
                 #profilePostsFeed {
                     max-width: 100%;
                     gap: 20px;
                 }
             }
+
             /* Ensure individual cards don’t stretch wider on desktop */
             #profilePostsFeed .ig-post {
                 width: 100%;
@@ -1482,7 +1484,8 @@
                     <!-- Post Header -->
                     <header class="ig-post-header">
                         <a href="{% url 'user_profile' tweet.user.username %}" class="ig-post-user">
-                            <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}" class="ig-post-avatar"
+                            <img src="{{ tweet.user.profile_picture_url }}" alt="{{ tweet.user.full_name }}"
+                                class="ig-post-avatar"
                                 onerror="this.outerHTML='<div class=\'ig-post-avatar-placeholder\'>{{ tweet.user.initials }}</div>'">
                             <div class="ig-post-user-info">
                                 <span class="ig-post-username">{{ tweet.user.username }}</span>
@@ -1584,9 +1587,18 @@
             {% if reels %}
             <div class="ig-posts-grid">
                 {% for reel in reels %}
-                <div class="ig-grid-item" onclick="window.location.href='{% url 'reels' %}?reel_id={{ reel.id }}'">
+                <div class="ig-grid-item" onclick="window.location.href='{% url 'reels' %}?reel_id={{ reel.id }}'"
+                    style="position: relative;">
                     <video src="{{ reel.video_file.url }}" class="ig-grid-video"
                         style="width: 100%; height: 100%; object-fit: cover;" preload="metadata"></video>
+
+                    <!-- Permanent View Count Overlay -->
+                    <div
+                        style="position: absolute; bottom: 8px; left: 8px; color: white; display: flex; align-items: center; gap: 4px; font-weight: 600; font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,0.8); z-index: 2; pointer-events: none;">
+                        <i data-lucide="play" style="width: 14px; height: 14px; fill: white;"></i>
+                        <span>{{ reel.views_count|default:"0" }}</span>
+                    </div>
+
                     <div class="ig-grid-overlay">
                         <div class="ig-grid-stats">
                             <span><i data-lucide="heart"></i> {{ reel.likes.count }}</span>
@@ -1621,8 +1633,9 @@
                 <div class="ig-grid-item" onclick="openPostDetail({{ post.id }})">
                     {% if post.content_type == 'code_scribe' %}
                     <!-- Code Scribe Display -->
-                    <div style="width: 100%; height: 100%; background: var(--ig-surface); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
-                        <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals" 
+                    <div
+                        style="width: 100%; height: 100%; background: var(--ig-surface); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;">
+                        <iframe class="ig-code-scribe-view" sandbox="allow-scripts allow-modals"
                             data-code-bundle="{{ post.code_bundle|urlencode }}"
                             data-code-html="{{ post.code_html|default:''|urlencode }}"
                             data-code-css="{{ post.code_css|default:''|urlencode }}"
@@ -1735,7 +1748,7 @@
             <button class="ig-create-back" onclick="closeCreatePostModal()">
                 <i data-lucide="x"></i>
             </button>
-            <h2 class="ig-create-title">Create Post</h2>
+            <h2 class="ig-create-title">Create Scribe</h2>
             <button class="ig-create-next" onclick="submitPost()" id="sharePostBtn">Share</button>
         </header>
         <div class="ig-create-body">
@@ -1779,8 +1792,7 @@
                             title="Add emoji">
                             <i data-lucide="smile"></i>
                         </button>
-                        <button type="button" class="ig-create-action-btn" onclick="#"
-                            title="Create web code snippet">
+                        <button type="button" class="ig-create-action-btn" onclick="#" title="Create web code snippet">
                             <i data-lucide="code-editor"></i>
                         </button>
                     </div>
@@ -2620,7 +2632,7 @@
                 <i data-lucide="user"></i>
                 <span>Edit Profile</span>
             </a>
-            
+
             <!-- Theme Section -->
             <div class="ig-settings-section">
                 <h3 class="ig-settings-section-title">Appearance</h3>
@@ -2688,7 +2700,7 @@
             <button class="ig-create-back" onclick="closeCreatePostModal()">
                 <i data-lucide="x"></i>
             </button>
-            <h2 class="ig-create-title">Create new post</h2>
+            <h2 class="ig-create-title">Create new scribe</h2>
             <button class="ig-create-next" onclick="submitPost()" id="sharePostBtn">Share</button>
         </header>
         <div class="ig-create-body">
@@ -3763,7 +3775,10 @@
     // Followers/Following modals
     function openFollowersModal() {
         document.getElementById('followersModal').style.display = 'flex';
-        loadFollowers();
+        followersPage = 1;
+        followersHasMore = true;
+        document.getElementById('followersList').innerHTML = `<div class="ig-loading"><div class="ig-spinner"></div></div>`;
+        loadFollowers(true);
     }
 
     function closeFollowersModal(event) {
@@ -3772,30 +3787,47 @@
         }
     }
 
-    function loadFollowers() {
-        fetch('/api/profile/{{ profile_user.username }}/followers/')
+    let followersPage = 1;
+    let followersHasMore = true;
+    let followersLoading = false;
+    function loadFollowers(isFirstLoad = false) {
+        if (followersLoading || !followersHasMore) return;
+        followersLoading = true;
+        fetch(`/api/profile/{{ profile_user.username }}/followers/?page=${followersPage}`)
             .then(response => response.json())
             .then(data => {
                 const list = document.getElementById('followersList');
+                if (isFirstLoad) list.innerHTML = '';
                 if (data.followers && data.followers.length > 0) {
-                    list.innerHTML = data.followers.map(f => `
-                <a href="/profile/${f.username}/" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;">
-                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600;">${f.username}</div>
-                        <div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div>
-                    </div>
-                </a>
-            `).join('');
-                } else {
+                    data.followers.forEach(f => {
+                        const el = document.createElement('a');
+                        el.href = `/profile/${f.username}/`;
+                        el.style = 'display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;';
+                        el.innerHTML = `<img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;"><div style="flex: 1;"><div style="font-weight: 600;">${f.username}</div><div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div></div>`;
+                        list.appendChild(el);
+                    });
+                    followersHasMore = data.has_more;
+                    followersPage++;
+                } else if (isFirstLoad) {
                     list.innerHTML = '<p style="text-align: center; padding: 24px; color: var(--ig-text-secondary);">No followers yet</p>';
                 }
-            });
+            })
+            .finally(() => { followersLoading = false; });
     }
+
+    document.getElementById('followersList').addEventListener('scroll', function() {
+        const list = this;
+        if (list.scrollTop + list.clientHeight >= list.scrollHeight - 100) {
+            loadFollowers();
+        }
+    });
 
     function openFollowingModal() {
         document.getElementById('followingModal').style.display = 'flex';
-        loadFollowing();
+        followingPage = 1;
+        followingHasMore = true;
+        document.getElementById('followingList').innerHTML = `<div class="ig-loading"><div class="ig-spinner"></div></div>`;
+        loadFollowing(true);
     }
 
     function closeFollowingModal(event) {
@@ -3804,26 +3836,40 @@
         }
     }
 
-    function loadFollowing() {
-        fetch('/api/profile/{{ profile_user.username }}/following/')
+    let followingPage = 1;
+    let followingHasMore = true;
+    let followingLoading = false;
+    function loadFollowing(isFirstLoad = false) {
+        if (followingLoading || !followingHasMore) return;
+        followingLoading = true;
+        fetch(`/api/profile/{{ profile_user.username }}/following/?page=${followingPage}`)
             .then(response => response.json())
             .then(data => {
                 const list = document.getElementById('followingList');
+                if (isFirstLoad) list.innerHTML = '';
                 if (data.following && data.following.length > 0) {
-                    list.innerHTML = data.following.map(f => `
-                <a href="/profile/${f.username}/" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;">
-                    <img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600;">${f.username}</div>
-                        <div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div>
-                    </div>
-                </a>
-            `).join('');
-                } else {
+                    data.following.forEach(f => {
+                        const el = document.createElement('a');
+                        el.href = `/profile/${f.username}/`;
+                        el.style = 'display: flex; align-items: center; gap: 12px; padding: 12px 16px; text-decoration: none; color: inherit;';
+                        el.innerHTML = `<img src="${f.avatar}" alt="" style="width: 44px; height: 44px; border-radius: 22%;"><div style="flex: 1;"><div style="font-weight: 600;">${f.username}</div><div style="color: var(--ig-text-secondary); font-size: 14px;">${f.full_name}</div></div>`;
+                        list.appendChild(el);
+                    });
+                    followingHasMore = data.has_more;
+                    followingPage++;
+                } else if (isFirstLoad) {
                     list.innerHTML = '<p style="text-align: center; padding: 24px; color: var(--ig-text-secondary);">Not following anyone yet</p>';
                 }
-            });
+            })
+            .finally(() => { followingLoading = false; });
     }
+
+    document.getElementById('followingList').addEventListener('scroll', function() {
+        const list = this;
+        if (list.scrollTop + list.clientHeight >= list.scrollHeight - 100) {
+            loadFollowing();
+        }
+    });
 
     // Settings modal
     function openSettingsModal() {
@@ -4232,20 +4278,20 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
             body: JSON.stringify({ tweet_id: tweetId })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) throw new Error(data.error || 'Failed to like');
-            if (btn) btn.classList.toggle('liked', data.is_liked === true);
-            if (countEl) countEl.textContent = data.like_count;
-        })
-        .catch(err => {
-            if (btn) btn.classList.toggle('liked');
-            if (countEl) {
-                const currentCount = parseInt(countEl.textContent) || 0;
-                countEl.textContent = wasLiked ? currentCount + 1 : currentCount - 1;
-            }
-            showIGToast(err.message || 'Failed to like post', 'error');
-        });
+            .then(r => r.json())
+            .then(data => {
+                if (!data.success) throw new Error(data.error || 'Failed to like');
+                if (btn) btn.classList.toggle('liked', data.is_liked === true);
+                if (countEl) countEl.textContent = data.like_count;
+            })
+            .catch(err => {
+                if (btn) btn.classList.toggle('liked');
+                if (countEl) {
+                    const currentCount = parseInt(countEl.textContent) || 0;
+                    countEl.textContent = wasLiked ? currentCount + 1 : currentCount - 1;
+                }
+                showIGToast(err.message || 'Failed to like post', 'error');
+            });
     }
 
     function addComment(tweetId) {
@@ -4258,16 +4304,16 @@
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken() },
             body: JSON.stringify({ tweet_id: tweetId, content })
         })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                input.value = '';
-                toggleComments(tweetId);
-            } else {
-                showIGToast(data.error || 'Failed to add comment', 'error');
-            }
-        })
-        .catch(() => showIGToast('Failed to add comment', 'error'));
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    input.value = '';
+                    toggleComments(tweetId);
+                } else {
+                    showIGToast(data.error || 'Failed to add comment', 'error');
+                }
+            })
+            .catch(() => showIGToast('Failed to add comment', 'error'));
     }
 
     function toggleComments(tweetId) {
@@ -4299,7 +4345,7 @@
                     list.innerHTML = '<p style="text-align:center;color:var(--ig-text-secondary);padding:16px;">No comments yet</p>';
                 }
             })
-            .catch(() => {});
+            .catch(() => { });
     }
 </script>
 {% endblock %}

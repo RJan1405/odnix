@@ -4,8 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST, require_http_methods
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Count, Q, Max, Exists, OuterRef
-from django.core.cache import cache
+from django.db.models import Count, Q
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 import json
@@ -46,8 +45,8 @@ def dashboard(request):
     ).select_related('user', 'group').order_by('-requested_at')
 
     # Get following users
-    following_users = Follow.objects.filter(
-        follower=request.user).values_list('following', flat=True)
+    following_users = list(Follow.objects.filter(
+        follower=request.user).values_list('following', flat=True))
 
     # Get suggestions (users not followed)
     # Priority: Min 3 Female, 2 Male
@@ -211,6 +210,7 @@ def dashboard(request):
             other_participant = chat.participants.exclude(
                 id=request.user.id).first()
             chat_info['other_user'] = other_participant
+            chat_info['is_following'] = other_participant.id in following_users if other_participant else False
 
         # Get last message
         last_message = chat.messages.order_by('-timestamp').first()
@@ -252,7 +252,49 @@ def dashboard(request):
 
 @login_required
 def chat_view(request, chat_id):
+    # User chats split by type, with last_message and unread_count
+    user_chats = Chat.objects.filter(participants=request.user).select_related(
+        'admin').order_by('-updated_at')
+    private_chats = []
+    group_chats = []
+    for chat in user_chats:
+        last_message_obj = chat.messages.order_by('-timestamp').first()
+        if last_message_obj:
+            if last_message_obj.message_type == 'text':
+                last_message = last_message_obj.content
+            elif last_message_obj.message_type == 'media':
+                if last_message_obj.media_type == 'image':
+                    last_message = 'Sent an image'
+                elif last_message_obj.media_type == 'video':
+                    last_message = 'Sent a video'
+                elif last_message_obj.media_type == 'document':
+                    last_message = 'Sent a document'
+                else:
+                    last_message = 'Sent a file'
+            elif last_message_obj.message_type == 'system':
+                last_message = '[System message]'
+            else:
+                last_message = last_message_obj.content
+        else:
+            last_message = 'No messages yet'
+        unread_count = chat.messages.filter(
+            is_read=False).exclude(sender=request.user).count()
+        chat_dict = {
+            'id': chat.id,
+            'name': chat.name,
+            'chat_type': chat.chat_type,
+            'participants': chat.participants.all(),
+            'last_message': last_message,
+            'unread_count': unread_count,
+        }
+        if chat.chat_type == 'private':
+            private_chats.append(chat_dict)
+        else:
+            group_chats.append(chat_dict)
+    # Mark all unread messages as read when user opens the chat
     chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
+    chat.messages.filter(is_read=False).exclude(
+        sender=request.user).update(is_read=True)
 
     # Update current user's online status
     request.user.last_seen = timezone.now()
@@ -283,12 +325,25 @@ def chat_view(request, chat_id):
             status='pending'
         ).select_related('user').order_by('-requested_at')
 
+    # Unread count for this chat (messages not sent by user and not read)
+    chat_unread_count = chat.messages.filter(
+        is_read=False).exclude(sender=request.user).count()
+
+    # Get IDs of users the current user follows for frontend filtering
+    following_ids = list(Follow.objects.filter(
+        follower=request.user).values_list('following_id', flat=True))
+
     context = {
         'chat': chat,
         'messages': messages_list,
         'other_participants': other_participants,
         'is_admin': is_admin,
         'join_requests': join_requests,
+        'chat_unread_count': chat_unread_count,
+        'private_chats': private_chats,
+        'group_chats': group_chats,
+        'active_chat_id': chat.id,
+        'following_ids': following_ids,
     }
     # Calls feature flags and ICE servers for WebRTC
     context['calls_enabled'] = getattr(settings, 'ENABLE_CALLS', True)
@@ -305,11 +360,45 @@ def chat_view(request, chat_id):
 @login_required
 def messages_page(request):
     """Dedicated messages page to pick a chat (replaces sidebar/panel)."""
-    # User chats split by type
+    # User chats split by type, with last_message and unread_count
     user_chats = Chat.objects.filter(participants=request.user).select_related(
         'admin').order_by('-updated_at')
-    private_chats = user_chats.filter(chat_type='private')
-    group_chats = user_chats.filter(chat_type='group')
+    private_chats = []
+    group_chats = []
+    for chat in user_chats:
+        last_message_obj = chat.messages.order_by('-timestamp').first()
+        if last_message_obj:
+            if last_message_obj.message_type == 'text':
+                last_message = last_message_obj.content
+            elif last_message_obj.message_type == 'media':
+                if last_message_obj.media_type == 'image':
+                    last_message = 'Sent an image'
+                elif last_message_obj.media_type == 'video':
+                    last_message = 'Sent a video'
+                elif last_message_obj.media_type == 'document':
+                    last_message = 'Sent a document'
+                else:
+                    last_message = 'Sent a file'
+            elif last_message_obj.message_type == 'system':
+                last_message = '[System message]'
+            else:
+                last_message = last_message_obj.content
+        else:
+            last_message = 'No messages yet'
+        unread_count = chat.messages.filter(
+            is_read=False).exclude(sender=request.user).count()
+        chat_dict = {
+            'id': chat.id,
+            'name': chat.name,
+            'chat_type': chat.chat_type,
+            'participants': chat.participants.all(),
+            'last_message': last_message,
+            'unread_count': unread_count,
+        }
+        if chat.chat_type == 'private':
+            private_chats.append(chat_dict)
+        else:
+            group_chats.append(chat_dict)
 
     # Other users for search/help
     other_users = CustomUser.objects.exclude(
@@ -333,6 +422,7 @@ def messages_page(request):
         'other_users': other_users,
         'story_inbox_count': story_inbox_count,
         'unread_message_count': unread_message_count,
+        'following_ids': list(Follow.objects.filter(follower=request.user).values_list('following_id', flat=True)),
     }
 
     # Render a chat-style messages selector (two-pane layout with empty chat area)
@@ -352,7 +442,7 @@ def get_chat_messages(request, chat_id):
     if after_id:
         try:
             messages_query = messages_query.filter(id__gt=int(after_id))
-        except:
+        except Exception:
             pass
     # Fallback to time-based filtering
     elif last_message_time:
@@ -361,7 +451,7 @@ def get_chat_messages(request, chat_id):
             last_time = datetime.fromisoformat(
                 last_message_time.replace('Z', '+00:00'))
             messages_query = messages_query.filter(timestamp__gt=last_time)
-        except:
+        except Exception:
             pass
 
     messages_data = []
@@ -756,8 +846,8 @@ def _get_explore_content_batch(page=1, per_page=15):
     """Helper function to get a batch of explore content with pagination
     Optimized for production - only loads needed items from database
     Only shows scribes with images/code (no text-only scribes)"""
-    import random
     from django.core.cache import cache
+    import random
 
     # Create a cache key for the shuffled order (changes every hour)
     cache_key = 'explore_order_' + str(int(__import__('time').time()) // 3600)
@@ -876,17 +966,35 @@ def load_more_explore_content(request):
             item_data = {'type': item['type']}
 
             if item['type'] == 'scribe':
+                # Calculate time ago
+                time_diff = timezone.now() - obj.timestamp
+                if time_diff.days > 0:
+                    time_ago = f"{time_diff.days}d"
+                elif time_diff.seconds > 3600:
+                    time_ago = f"{time_diff.seconds // 3600}h"
+                else:
+                    time_ago = f"{time_diff.seconds // 60}m"
+
                 item_data.update({
                     'id': obj.id,
                     'content': obj.content,
+                    'content_type': getattr(obj, 'content_type', 'text'),
                     'image_url': obj.image.url if obj.image else None,
                     'code_bundle': obj.code_bundle,
                     'code_html': obj.code_html,
                     'code_css': obj.code_css,
                     'code_js': obj.code_js,
+                    'like_count': Like.objects.filter(tweet=obj).count(),
+                    'comment_count': Comment.objects.filter(tweet=obj).count(),
+                    'is_liked': Like.objects.filter(tweet=obj, user=request.user).exists(),
+                    'is_saved': SavedPost.objects.filter(tweet=obj, user=request.user).exists(),
+                    'time_ago': time_ago,
                     'user': {
+                        'id': obj.user.id,
                         'username': obj.user.username,
                         'full_name': obj.user.full_name,
+                        'profile_picture_url': obj.user.profile_picture_url,
+                        'initials': obj.user.initials,
                     }
                 })
             elif item['type'] == 'reel':
@@ -897,6 +1005,7 @@ def load_more_explore_content(request):
                     'user': {
                         'username': obj.user.username,
                         'full_name': obj.user.full_name,
+                        'profile_picture_url': obj.user.profile_picture_url,
                     }
                 })
             elif item['type'] == 'person':
@@ -1130,12 +1239,11 @@ def react_to_message(request, message_id):
 @require_POST
 def update_typing_status(request, chat_id):
     """Update typing status for a chat"""
+    from django.core.cache import cache
     try:
-        chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
         is_typing = request.POST.get('is_typing', 'false').lower() == 'true'
 
         # Store typing status in cache (simple implementation)
-        from django.core.cache import cache
         cache_key = f'chat_{chat_id}_typing'
 
         typing_users = cache.get(cache_key, set())
@@ -1157,10 +1265,8 @@ def update_typing_status(request, chat_id):
 @login_required
 def get_typing_status(request, chat_id):
     """Get current typing users for a chat"""
+    from django.core.cache import cache
     try:
-        chat = get_object_or_404(Chat, id=chat_id, participants=request.user)
-
-        from django.core.cache import cache
         cache_key = f'chat_{chat_id}_typing'
         typing_user_ids = cache.get(cache_key, set())
 
@@ -2071,9 +2177,8 @@ def p2p_get_signals(request, chat_id):
 
         # Get unconsumed signals for this user in this chat
         # For call signals (webrtc.*), only get recent ones (last 30 seconds) to avoid stale signals
-        from datetime import timedelta
         recent_cutoff = timezone.now() - timedelta(seconds=30)
-        
+
         signals = P2PSignal.objects.filter(
             chat=chat,
             target_user=request.user,
@@ -2085,13 +2190,14 @@ def p2p_get_signals(request, chat_id):
         call_signal_ids = []  # Track call signals separately
 
         for signal in signals:
-            signal_type = signal.signal_data.get('type', '') if isinstance(signal.signal_data, dict) else ''
+            signal_type = signal.signal_data.get(
+                'type', '') if isinstance(signal.signal_data, dict) else ''
             is_call_signal = signal_type.startswith('webrtc.')
-            
+
             # For call signals, only include recent ones
             if is_call_signal and signal.created_at < recent_cutoff:
                 continue
-                
+
             signals_data.append({
                 'sender_id': signal.sender.id,
                 'sender_name': signal.sender.full_name,
@@ -2106,18 +2212,21 @@ def p2p_get_signals(request, chat_id):
         # Mark signals as consumed (but keep call signals available for a bit longer)
         if signal_ids:
             # Mark non-call signals as consumed immediately
-            non_call_ids = [sid for sid in signal_ids if sid not in call_signal_ids]
+            non_call_ids = [
+                sid for sid in signal_ids if sid not in call_signal_ids]
             if non_call_ids:
-                P2PSignal.objects.filter(id__in=non_call_ids).update(is_consumed=True)
-            
+                P2PSignal.objects.filter(
+                    id__in=non_call_ids).update(is_consumed=True)
+
             # For call signals, mark as consumed but keep them for a short window
             # This allows User B to receive them even if they arrive late
             if call_signal_ids:
                 # Mark as consumed but don't delete yet - they'll be cleaned up by cleanup_old_signals
-                P2PSignal.objects.filter(id__in=call_signal_ids).update(is_consumed=True)
+                P2PSignal.objects.filter(
+                    id__in=call_signal_ids).update(is_consumed=True)
                 logger.info(
                     f"P2P call signals ({len(call_signal_ids)}) retrieved by user {request.user.id}")
-            
+
             logger.info(
                 f"P2P signals consumed by user {request.user.id}: {len(signal_ids)} total ({len(call_signal_ids)} call signals)")
 
@@ -2139,21 +2248,21 @@ def send_call_notification(request):
         data = json.loads(request.body)
         chat_id = data.get('chat_id')
         audio_only = data.get('audio_only', False)
-        
+
         if not chat_id:
             return JsonResponse({'success': False, 'error': 'Missing chat_id'})
-        
+
         chat = get_object_or_404(Chat, id=chat_id)
         if not chat.participants.filter(id=request.user.id).exists():
             return JsonResponse({'success': False, 'error': 'Not a participant'}, status=403)
-        
+
         # Get caller details
         caller_name = request.user.full_name
         caller_avatar = request.user.profile_picture_url
-        
+
         # Get other participants
         others = chat.participants.exclude(id=request.user.id)
-        
+
         # Send notification via channel layer (NotifyConsumer)
         channel_layer = get_channel_layer()
         for other_user in others:
@@ -2168,10 +2277,11 @@ def send_call_notification(request):
                     'from_avatar': caller_avatar,
                 }
             )
-        
-        logger.info(f"Call notification sent via HTTP for chat {chat_id} to {others.count()} users")
+
+        logger.info(
+            f"Call notification sent via HTTP for chat {chat_id} to {others.count()} users")
         return JsonResponse({'success': True, 'notified': others.count()})
-        
+
     except Exception as e:
         logger.error(f"Error sending call notification: {e}", exc_info=True)
         return JsonResponse({'success': False, 'error': str(e)})

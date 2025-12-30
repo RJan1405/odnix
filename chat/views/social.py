@@ -18,7 +18,8 @@ from django.db import models as db_models
 from chat.models import (
     CustomUser, Chat, Tweet, Comment, Like, Follow, Block, FollowRequest,
     Hashtag, TweetHashtag, Mention, StoryReply, StoryLike, Story,
-    SavedPost, PostReport, Reel, ReelLike, ReelComment, ReelReport
+    SavedPost, PostReport, Reel, ReelLike, ReelComment, ReelReport,
+    ProfileView
 )
 from chat.forms import TweetForm, ProfileUpdateForm
 
@@ -94,6 +95,15 @@ def profile_view(request, username=None):
                 )
                 follow_request.status = 'accepted'
                 follow_request.save()
+
+    # Track profile view if allowed
+    if not is_own_profile and request.user.is_authenticated and can_view_profile:
+        # Update or create to allow "latest view" tracking, preventing duplicates
+        ProfileView.objects.update_or_create(
+            viewer=request.user,
+            viewed_user=profile_user,
+            defaults={'viewed_at': timezone.now()}
+        )
 
     # Get user's tweets (only if profile is accessible)
     tweets = []
@@ -222,7 +232,8 @@ def profile_view(request, username=None):
     # Get user's active stories for highlights section
     user_stories = []
     if can_view_profile:
-        from django.utils import timezone
+        # stored globally
+
         stories = Story.objects.filter(
             user=profile_user,
             is_active=True,
@@ -1984,6 +1995,23 @@ def get_all_activity(request):
                     'caption': report.reel.caption[:50] + '...' if len(report.reel.caption) > 50 else report.reel.caption,
                 },
                 'reason': report.get_reason_display(),
+            })
+
+        # 11. Profile Views (People who viewed MY profile)
+        profile_views = ProfileView.objects.filter(
+            viewed_user=request.user
+        ).select_related('viewer').order_by('-viewed_at')[:20]
+
+        for view in profile_views:
+            activity_items.append({
+                'type': 'profile_view',
+                'timestamp': view.viewed_at,
+                'user': {
+                    'id': view.viewer.id,
+                    'username': view.viewer.username,
+                    'full_name': view.viewer.full_name,
+                    'profile_picture_url': view.viewer.profile_picture_url,
+                }
             })
 
         # Sort all activity by timestamp (newest first)

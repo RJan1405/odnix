@@ -4,10 +4,19 @@ from django.urls import path, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+
+
 from . import views
+# Import chat_ajax directly to avoid circular import
+from .views.chat_ajax import chat_partial, unread_counts
+# AJAX unread counts endpoint
+path('api/unread_counts/', unread_counts, name='unread_counts'),
 
 
 urlpatterns = [
+    # AJAX chat content endpoint
+    # path('ajax/chat/<int:chat_id>/',
+    # chat_ajax.chat_partial, name='ajax_chat_partial'),
     # Authentication URLs
     path('', views.home, name='home'),
     path('login/', views.login_view, name='login'),
@@ -189,9 +198,10 @@ urlpatterns = [
          views.p2p_get_signals, name='p2p_get_signals'),
     path('api/p2p/<int:chat_id>/participants/',
          views.get_chat_participants_for_p2p, name='p2p_participants'),
-    
+
     # Call Notifications (HTTP fallback)
-    path('api/call/notify/', views.send_call_notification, name='send_call_notification'),
+    path('api/call/notify/', views.send_call_notification,
+         name='send_call_notification'),
 
     # Reels
     path('reels/', views.reels_view, name='reels'),

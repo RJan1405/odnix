@@ -833,10 +833,15 @@
     <div class="omzo-container" id="omzoContainer">
         {% for reel in reels %}
         <div class="reel-item" data-id="{{ reel.id }}">
-            <video class="reel-video" loop playsinline autoplay {% if reel.is_muted %}muted{% endif %} src="{{ reel.url }}"
-                onclick="toggleReelPlay(this)" data-is-muted="{{ reel.is_muted|lower }}"></video>
+            <video class="reel-video lazy-reel" loop playsinline {% if reel.is_muted %}muted{% endif %}
+                data-src="{{ reel.url }}" onclick="toggleReelPlay(this)" data-is-muted="{{ reel.is_muted|lower }}"
+                poster="{{ reel.thumbnail_url|default:'' }}"></video>
 
             <div class="reel-actions">
+                <button class="action-btn" style="cursor: default;" title="Views">
+                    <i data-lucide="eye"></i>
+                    <span class="view-count">{{ reel.views }}</span>
+                </button>
                 <button class="action-btn mute-btn" onclick="toggleReelMute(this, event)" data-muted="false"
                     title="Toggle sound">
                     <i data-lucide="volume-x"></i>
@@ -983,31 +988,34 @@
                 <div class="report-reasons">
                     <!-- Copyright Option with Details Section Below -->
                     <div>
-                        <label class="report-reason-item"><input type="radio" name="reportReason" id="reportReasonCopyright" value="copyright">
+                        <label class="report-reason-item"><input type="radio" name="reportReason"
+                                id="reportReasonCopyright" value="copyright">
                             <span>Copyright Infringement</span></label>
-                        
+
                         <!-- Copyright Details Section (Hidden by default) -->
-                        <div id="copyrightDetailsSection" style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-left: 3px solid rgba(255, 165, 0, 0.6); border-radius: 6px; margin-left: 0;">
-                            <p style="font-size: 13px; margin-bottom: 10px; opacity: 0.9; margin: 0 0 10px 0;">Copyright Details:</p>
-                            
+                        <div id="copyrightDetailsSection"
+                            style="display: none; margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-left: 3px solid rgba(255, 165, 0, 0.6); border-radius: 6px; margin-left: 0;">
+                            <p style="font-size: 13px; margin-bottom: 10px; opacity: 0.9; margin: 0 0 10px 0;">Copyright
+                                Details:</p>
+
                             <!-- Copyright Type Selection -->
                             <div style="margin-bottom: 12px;">
                                 <label style="display: flex; align-items: center; margin-bottom: 8px; cursor: pointer;">
-                                    <input type="checkbox" id="isAudioCopyrightReel" style="margin-right: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="isAudioCopyrightReel"
+                                        style="margin-right: 10px; cursor: pointer;">
                                     <span style="font-size: 13px;">Audio is copyrighted</span>
                                 </label>
                                 <label style="display: flex; align-items: center; cursor: pointer;">
-                                    <input type="checkbox" id="isContentCopyrightReel" style="margin-right: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="isContentCopyrightReel"
+                                        style="margin-right: 10px; cursor: pointer;">
                                     <span style="font-size: 13px;">Content/Media is copyrighted</span>
                                 </label>
                             </div>
-                            
+
                             <!-- Copyright Description -->
                             <div style="margin-bottom: 12px;">
-                                <textarea 
-                                    id="copyrightDescriptionReel" 
-                                    placeholder="Optional: Describe the copyright infringement"
-                                    style="
+                                <textarea id="copyrightDescriptionReel"
+                                    placeholder="Optional: Describe the copyright infringement" style="
                                         width: 100%;
                                         padding: 8px 10px;
                                         background: rgba(255, 255, 255, 0.08);
@@ -1018,18 +1026,19 @@
                                         font-size: 12px;
                                         min-height: 70px;
                                         resize: vertical;
-                                    "
-                                ></textarea>
+                                    "></textarea>
                             </div>
-                            
+
                             <!-- Disable Audio Option -->
                             <div style="padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
                                 <label style="display: flex; align-items: center; cursor: pointer; margin-top: 8px;">
-                                    <input type="checkbox" id="disableAudioCheckbox" style="margin-right: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="disableAudioCheckbox"
+                                        style="margin-right: 10px; cursor: pointer;">
                                     <span style="font-size: 13px;">Disable audio for this reel</span>
                                 </label>
-                                <p style="font-size: 11px; opacity: 0.7; margin: 6px 0 0 24px;">Audio will be muted for all users</p>
-                                
+                                <p style="font-size: 11px; opacity: 0.7; margin: 6px 0 0 24px;">Audio will be muted for
+                                    all users</p>
+
                                 <!-- Admin Navigation Button -->
                                 <button id="adminNavBtn" onclick="openReelAdmin()" style="
                                     margin-top: 10px;
@@ -1044,16 +1053,15 @@
                                     align-items: center;
                                     gap: 6px;
                                     transition: all 0.3s ease;
-                                " 
-                                onmouseover="this.style.background='rgba(255, 165, 0, 0.3)'; this.style.borderColor='rgba(255, 165, 0, 0.8)';"
-                                onmouseout="this.style.background='rgba(255, 165, 0, 0.2)'; this.style.borderColor='rgba(255, 165, 0, 0.5)';">
+                                " onmouseover="this.style.background='rgba(255, 165, 0, 0.3)'; this.style.borderColor='rgba(255, 165, 0, 0.8)';"
+                                    onmouseout="this.style.background='rgba(255, 165, 0, 0.2)'; this.style.borderColor='rgba(255, 165, 0, 0.5)';">
                                     <i data-lucide="external-link" style="width: 14px; height: 14px;"></i>
                                     <span>Open in Admin</span>
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
+
                     <label class="report-reason-item"><input type="radio" name="reportReason" value="spam">
                         <span>Spam</span></label>
                     <label class="report-reason-item"><input type="radio" name="reportReason" value="inappropriate">
@@ -1095,7 +1103,7 @@
     function autoPlay(video) {
         // Check if reel is globally muted (disabled by admin)
         const isGloballyMuted = video.dataset.isMuted === 'true';
-        
+
         // If globally muted, always mute. Otherwise, try to respect preference
         if (isGloballyMuted) {
             video.muted = true;
@@ -1135,6 +1143,7 @@
     }
 
     // IntersectionObserver for reels
+    const viewedReels = new Set();
     const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             const video = entry.target.querySelector('video');
@@ -1150,12 +1159,31 @@
                 // Initial sync
                 syncMuteIcon(video);
 
+                // Track View (Real-time)
+                const reelId = video.closest('.reel-item').dataset.id;
+                if (reelId && !viewedReels.has(reelId)) {
+                    viewedReels.add(reelId);
+                    trackReelView(reelId);
+                }
+
             } else {
                 video.pause();
                 // We DO NOT reset soundUnlocked here. If user left sound on, it stays on for the next reel.
             }
         });
     }, { threshold: 0.6 });
+
+    // Track Reel View API
+    function trackReelView(reelId) {
+        fetch('/chat/api/reels/track-view/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ reel_id: reelId })
+        }).catch(err => console.error('Error tracking view:', err));
+    }
 
     // Observe all reels
     document.addEventListener('DOMContentLoaded', () => {
@@ -1559,6 +1587,45 @@
     }
 
     // ===== Auto-play on scroll =====
+    document.addEventListener('DOMContentLoaded', () => {
+        const reels = document.querySelectorAll('video.lazy-reel');
+
+        const observerOptions = {
+            root: document.getElementById('omzoContainer'), // The scroll container
+            threshold: 0.6 // Play when 60% visible
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+
+                if (entry.isIntersecting) {
+                    // 1. Lazy Load: Set src if not set
+                    if (!video.src && video.dataset.src) {
+                        video.src = video.dataset.src;
+                        video.load();
+                    }
+
+                    // 2. Play
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(error => {
+                            // Auto-play might be blocked by browser policy
+                            console.log("Auto-play prevented:", error);
+                        });
+                    }
+                } else {
+                    // 3. Pause when out of view
+                    if (!video.paused) {
+                        video.pause();
+                        video.currentTime = 0; // Optional: Reset to start
+                    }
+                }
+            });
+        }, observerOptions);
+
+        reels.forEach(video => observer.observe(video));
+    });
 
 
     // ===== Error Modal (legacy, keeping for compatibility) =====
@@ -1576,10 +1643,10 @@
         document.querySelectorAll('input[name="reportReason"]').forEach(r => r.checked = false);
         document.getElementById('reportDescription').value = '';
         document.getElementById('copyrightDetailsSection').style.display = 'none';
-        
+
         // Add event listeners to radio buttons
         document.querySelectorAll('input[name="reportReason"]').forEach(radio => {
-            radio.addEventListener('change', function() {
+            radio.addEventListener('change', function () {
                 if (this.value === 'copyright') {
                     selectReelReportReason('copyright');
                 } else {
@@ -1644,9 +1711,9 @@
                     'Content-Type': 'application/json',
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
-                body: JSON.stringify({ 
-                    reel_id: currentReelId, 
-                    reason: reason, 
+                body: JSON.stringify({
+                    reel_id: currentReelId,
+                    reason: reason,
                     description: description,
                     copyright_type: copyrightType,
                     copyright_description: copyrightDescription,
@@ -1698,7 +1765,7 @@
             console.error('Copyright section not found!');
             return;
         }
-        
+
         if (reason === 'copyright') {
             copyrightSection.style.display = 'block';
         } else {
@@ -1715,20 +1782,20 @@
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const targetReelId = urlParams.get('reel');
-        
+
         if (targetReelId) {
             // Find the reel and jump directly to it without scrolling animation
             const container = document.getElementById('omzoContainer');
             const reels = container.querySelectorAll('.reel-item');
             let targetIndex = -1;
-            
+
             // Find the index of the target reel
             reels.forEach((reel, index) => {
                 if (reel.getAttribute('data-id') === targetReelId) {
                     targetIndex = index;
                 }
             });
-            
+
             if (targetIndex !== -1) {
                 // Jump directly to the reel without scroll animation
                 // Each reel is full viewport height
@@ -1737,7 +1804,7 @@
             } else {
                 console.warn(`Reel ${targetReelId} not found in feed`);
             }
-            
+
             // Clean up the URL to hide the reel parameter
             window.history.replaceState({}, document.title, window.location.pathname);
         }
