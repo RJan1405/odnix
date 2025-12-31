@@ -1501,7 +1501,8 @@
                     {% endif %}
                     {% if chat.unread_count > 0 and chat.id != active_chat_id %}
                     <span class="unread-badge"
-                        style="position:absolute;top:-6px;right:-6px;background:#ff3b3b;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 0 0 2px #fff;z-index:2;">{{chat.unread_count }}</span>
+                        style="position:absolute;top:-6px;right:-6px;background:#ff3b3b;color:#fff;border-radius:50%;min-width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;box-shadow:0 0 0 2px #fff;z-index:2;">{{chat.unread_count
+                        }}</span>
                     {% endif %}
                 </span>
                 <div class="ig-direct-item-info">
@@ -1640,7 +1641,8 @@
                                 <path d="M12 6v6l4 2"></path>
                             </svg>
                             <span class="ig-viewonce-text">Opened</span>
-                            <span class="ig-viewonce-subtext">{% if message.media_url %}Photo{% else %}Message{%endif%}</span>
+                            <span class="ig-viewonce-subtext">{% if message.media_url %}Photo{% else
+                                %}Message{%endif%}</span>
                         </div>
                         {% elif message.sender == request.user %}
                         {# Sender's own view-once message - show as pending #}
@@ -1670,7 +1672,8 @@
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                     <circle cx="12" cy="12" r="3"></circle>
                                 </svg>
-                                <span class="ig-viewonce-text">{% if message.media_url %}Photo{% else %}Message{%endif%}</span>
+                                <span class="ig-viewonce-text">{% if message.media_url %}Photo{% else
+                                    %}Message{%endif%}</span>
                                 <span class="ig-viewonce-subtext">Tap to view</span>
                             </div>
                         </div>
@@ -2192,6 +2195,16 @@
 
     // Mark all messages in this chat as read
     function markMessagesAsRead() {
+        // Try WebSocket first
+        const unreadMsgs = document.querySelectorAll('.ig-message.received:not(.read-receipt-sent)');
+        unreadMsgs.forEach(msg => {
+            const mid = msg.dataset.messageId;
+            if (mid && wsSend({ type: 'message.read', message_id: parseInt(mid) })) {
+                msg.classList.add('read-receipt-sent');
+            }
+        });
+
+        // Also hit HTTP as fallback/sync
         fetch(`/api/chat/${chatId}/mark-read/`, {
             method: 'POST',
             headers: {
@@ -2269,21 +2282,85 @@
         return csrfToken;
     }
 
-    // Initialize messaging - HTTP polling only for stability and performance
+    // Odnix Proto Client
+    const protoClient = typeof OdnixProtoClient !== 'undefined' ? new OdnixProtoClient() : null;
+
+    // Initialize messaging
     function initMessaging() {
-        startPolling();
-        // WebSocket disabled - causes overhead without ASGI server
+        if (protoClient) {
+            tryWebSocket();
+            // Start polling as fallback - will be disabled if WS succeeds
+            startPolling();
+        } else {
+            console.warn('[Messaging] OdnixProtoClient not found, using HTTP polling only');
+            startPolling();
+        }
     }
 
-    // WebSocket stub - disabled for performance
     function tryWebSocket() {
-        // Disabled - using HTTP polling for reliability
-        useWebSocket = false;
+        if (chatSocket && (chatSocket.readyState === WebSocket.OPEN || chatSocket.readyState === WebSocket.CONNECTING)) return;
+
+        console.log('[WebSocket] Connecting...');
+        const wsScheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${wsScheme}://${window.location.host}/ws/chat/${chatId}/`;
+
+        chatSocket = new WebSocket(wsUrl);
+
+        chatSocket.onopen = function () {
+            console.log('[WebSocket] Connected');
+            useWebSocket = true;
+            reconnectAttempts = 0;
+            // Disable polling as we are now on live WS
+            stopPolling();
+            // Mark existing messages as read
+            markMessagesAsRead();
+        };
+
+        chatSocket.onmessage = function (e) {
+            try {
+                const data = JSON.parse(e.data);
+                handleSocketMessage(data);
+            } catch (err) {
+                console.error('[WebSocket] Message parsing error:', err);
+            }
+        };
+
+        chatSocket.onclose = function (e) {
+            console.log('[WebSocket] Closed', e.code, e.reason);
+            useWebSocket = false;
+
+            // Re-enable polling on disconnect
+            startPolling();
+
+            if (reconnectAttempts < maxReconnectAttempts) {
+                const delay = reconnectDelay * Math.pow(2, reconnectAttempts);
+                reconnectAttempts++;
+                console.log(`[WebSocket] Attempting reconnect in ${delay}ms...`);
+                setTimeout(tryWebSocket, delay);
+            }
+        };
+
+        chatSocket.onerror = function (err) {
+            console.error('[WebSocket] Connection error:', err);
+        };
     }
 
-    // Stub functions for WebSocket (disabled for performance)
-    function isWSReady() { return false; }
-    function wsSend(data) { return false; }
+    function isWSReady() {
+        return chatSocket && chatSocket.readyState === WebSocket.OPEN;
+    }
+
+    function wsSend(payload) {
+        if (isWSReady()) {
+            try {
+                chatSocket.send(JSON.stringify(payload));
+                return true;
+            } catch (e) {
+                console.error('[WebSocket] Send error:', e);
+                return false;
+            }
+        }
+        return false;
+    }
 
     // Fallback polling for messages - Optimized
     let pollingInterval = null;
@@ -2950,15 +3027,18 @@
             isTyping = true;
             lastTypingUpdate = now;
 
-            // Only use HTTP - simpler and more reliable
-            fetch(`/api/chat/${chatId}/typing/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCSRFToken(),
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'is_typing=true'
-            }).catch(() => { });
+            // Try WebSocket first
+            if (!wsSend({ type: 'typing', is_typing: true })) {
+                // Fallback to HTTP
+                fetch(`/api/chat/${chatId}/typing/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': getCSRFToken(),
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'is_typing=true'
+                }).catch(() => { });
+            }
         }
 
         typingTimeout = setTimeout(sendStopTyping, 3000);
@@ -2968,14 +3048,18 @@
         if (!isTyping) return;
         isTyping = false;
 
-        fetch(`/api/chat/${chatId}/typing/`, {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCSRFToken(),
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: 'is_typing=false'
-        }).catch(() => { });
+        // Try WebSocket first
+        if (!wsSend({ type: 'typing', is_typing: false })) {
+            // Fallback to HTTP
+            fetch(`/api/chat/${chatId}/typing/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCSRFToken(),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'is_typing=false'
+            }).catch(() => { });
+        }
     }
 
     // Start polling for typing status - Optimized
@@ -4619,14 +4703,16 @@
 <script>
     try {
         window.OdnixCallConfig = {
-            chatId: {{ chat.id }
-    },
-    userId: { { request.user.id } },
-    wsScheme: (window.location.protocol === 'https:' ? 'wss' : 'ws'),
-        host: window.location.host,
+            chatId: {{ chat.id|default:'null' }},
+            userId: {{ request.user.id|default:'null' }},
+            wsScheme: (window.location.protocol === 'https:' ? 'wss' : 'ws'),
+            host: window.location.host,
             iceServers: []
         };
-    console.log('[CallJS] Config set successfully:', window.OdnixCallConfig);
+        if (typeof window.OdnixCallConfig.chatId === 'undefined' || typeof window.OdnixCallConfig.userId === 'undefined' || window.OdnixCallConfig.chatId === null || window.OdnixCallConfig.userId === null) {
+            throw new Error('chatId or userId is undefined or null');
+        }
+        console.log('[CallJS] Config set successfully:', window.OdnixCallConfig);
     } catch (e) {
         console.error('[CallJS] Error setting config:', e);
         alert('Error configuring call system: ' + e.message);

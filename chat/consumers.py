@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -11,295 +12,219 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-class ChatConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.chat_id = self.scope['url_route']['kwargs']['chat_id']
-        self.chat_group_name = f'chat_{self.chat_id}'
-        self.user = self.scope['user']
-        self.typing_users = set()
+logger = logging.getLogger(__name__)
 
-        # Odnix Security Context
-        self.proto = OdnixSecurity()
-        self.handshake_complete = False
+
+class ChatConsumer(AsyncWebsocketConsumer):
+
+    # ---------------- CONNECT ----------------
+    async def connect(self):
+        self.chat_id = self.scope["url_route"]["kwargs"]["chat_id"]
+        self.group_name = f"chat_{self.chat_id}"
+        self.user = self.scope["user"]
+        self.typing_users = set()
 
         if not self.user.is_authenticated:
             await self.close()
             return
 
-        try:
-            chat = await self.get_chat(self.chat_id)
-            if not chat:
-                await self.close()
-                return
-        except Exception as e:
-            logger.error(f"Error checking chat membership: {e}")
+        chat = await self.get_chat()
+        if not chat:
             await self.close()
             return
 
         await self.channel_layer.group_add(
-            self.chat_group_name,
+            self.group_name,
             self.channel_name
         )
-
         await self.accept()
 
+    # ---------------- DISCONNECT ----------------
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(
-            self.chat_group_name,
+            self.group_name,
             self.channel_name
         )
-        if self.user.id in self.typing_users:
-            self.typing_users.remove(self.user.id)
-            await self.broadcast_typing_update()
 
+        self.typing_users.discard(self.user.id)
+        await self.broadcast_typing()
+
+    # ---------------- RECEIVE ----------------
     async def receive(self, text_data):
         try:
-            # Attempt to parse as standard JSON first for Handshake
-            try:
-                data = json.loads(text_data)
-                is_json = True
-            except json.JSONDecodeError:
-                is_json = False
+            data = json.loads(text_data)
+        except json.JSONDecodeError:
+            return
 
-            if is_json and data.get('type') == 'req_dh_params':
-                # Step 1: Client requests DH params
-                # Generate Server DH Params
-                dh_config = self.proto.create_dh_config()
-                response = {
-                    'type': 'res_dh_params',
-                    'data': dh_config
-                }
-                await self.send(text_data=json.dumps(response))
-                return
+        event = data.get("type")
 
-            if is_json and data.get('type') == 'set_client_dh_params':
-                # Step 2: Client sends their Public Key
-                client_pub = int(data.get('pub_key'), 16)
-
-                # Generate server ephemeral private/public
-                from Crypto.Util import number
-                self.server_dh_private = number.getRandomRange(
-                    1, int(self.proto.create_dh_config()['prime']) - 1)
-                dh_prime = int(self.proto.create_dh_config()['prime'])
-                dh_g = self.proto.create_dh_config()['g']
-                server_pub = pow(dh_g, self.server_dh_private, dh_prime)
-
-                self.proto.compute_shared_key(
-                    client_pub, self.server_dh_private)
-                self.handshake_complete = True
-
-                await self.send(text_data=json.dumps({
-                    'type': 'dh_gen_ok',
-                    'server_pub': hex(server_pub)[2:]
-                }))
-                return
-
-            # If Handshake complete, expect Encrypted Packet
-            if self.handshake_complete:
-                decrypted_payload = self.proto.unwrap_message(text_data)
-                if not decrypted_payload:
-                    logger.warning(
-                        "Failed to decrypt message or invalid format")
-                    return
-
-                await self.handle_decrypted_event(decrypted_payload)
-
-            else:
-                # If not handshake and not complete, generic error
-                if is_json:
-                    # Maybe it's a legacy client?
-                    pass
-                # For now, strict mode:
-                await self.send(text_data=json.dumps({'type': 'error', 'message': 'Encryption Handshake Required'}))
-
-        except Exception as e:
-            logger.error(f"Error in receive: {e}")
-
-    async def handle_decrypted_event(self, data):
-        event_type = data.get('type')
-
-        if event_type == 'message.send':
+        if event == "message.send":
             await self.handle_send_message(data)
-        elif event_type == 'typing':
+        elif event == "typing":
             await self.handle_typing(data)
-        elif event_type == 'message.read':
+        elif event == "message.read":
             await self.handle_message_read(data)
-        elif event_type == 'message.consume':
+        elif event == "message.consume":
             await self.handle_message_consume(data)
 
-    async def send_encrypted(self, data):
-        if self.handshake_complete and self.proto and hasattr(self.proto, 'wrap_message'):
-            encrypted_b64 = self.proto.wrap_message(data)
-            await self.send(text_data=encrypted_b64)
-        else:
-            # Cannot send encrypted without completed handshake
-            logger.warning(
-                f"Cannot send encrypted: handshake_complete={self.handshake_complete}")
-            pass
-
-    # Wrappers for Group sends (which trigger self.send)
-    async def message_new(self, event):
-        await self.send_encrypted(event)
+    # ---------------- EVENTS ----------------
+    async def chat_message(self, event):
+        await self.send_json(event)
 
     async def message_read(self, event):
-        await self.send_encrypted(event)
+        await self.send_json(event)
 
     async def message_consumed(self, event):
-        await self.send_encrypted(event)
+        await self.send_json(event)
 
     async def typing_update(self, event):
-        await self.send_encrypted(event)
+        await self.send_json(event)
 
-    # ... [Keep existing logic for DB operations] ...
+    # ---------------- HANDLERS ----------------
     async def handle_send_message(self, data):
-        content = data.get('content', '').strip()
-        one_time = data.get('one_time', False)
-        reply_to_id = data.get('reply_to')
-
+        content = data.get("content", "").strip()
         if not content:
-            await self.send_encrypted({'type': 'error', 'message': 'Message cannot be empty'})
             return
 
-        try:
-            message = await self.create_message(content, one_time, reply_to_id)
-            if message:
-                await self.channel_layer.group_send(
-                    self.chat_group_name,  # Changed from room_group_name to chat_group_name
-                    {
-                        'type': 'message.new',
-                        'message': await self.serialize_message(message)
-                    }
-                )
-        except Exception as e:
-            logger.error(f"Error sending message: {e}")
-            await self.send_encrypted({'type': 'error', 'message': 'Failed to send message'})
+        one_time = data.get("one_time", False)
+        reply_to_id = data.get("reply_to")
 
-    async def handle_typing(self, data):
-        is_typing = data.get('is_typing', False)
-        if is_typing:
-            self.typing_users.add(self.user.id)
-        else:
-            self.typing_users.discard(self.user.id)
-        await self.broadcast_typing_update()
+        message = await self.create_message(content, one_time, reply_to_id)
+        serialized = await self.serialize_message(message)
 
-    async def handle_message_read(self, data):
-        message_id = data.get('message_id')
-        if not message_id:
-            return
-        try:
-            await self.mark_message_read(message_id)
-            await self.channel_layer.group_send(
-                self.chat_group_name,  # Changed from room_group_name to chat_group_name
-                {
-                    'type': 'message.read',
-                    'message_id': message_id,
-                    'read_by': self.user.id,
-                    'read_at': timezone.now().isoformat()
-                }
-            )
-        except Exception as e:
-            logger.error(f"Error marking message read: {e}")
-
-    async def handle_message_consume(self, data):
-        message_id = data.get('message_id')
-        if not message_id:
-            return
-        try:
-            consumed_at = await self.consume_one_time_message(message_id)
-            if consumed_at:
-                await self.channel_layer.group_send(
-                    self.room_group_name,
-                    {
-                        'type': 'message.consumed',
-                        'message_id': message_id,
-                        'consumed_by': self.user.id,
-                        'consumed_at': consumed_at.isoformat()
-                    }
-                )
-        except Exception as e:
-            logger.error(f"Error consuming message: {e}")
-
-    async def broadcast_typing_update(self):
-        typing_users_data = []
-        for user_id in self.typing_users:
-            try:
-                user = await self.get_user(user_id)
-                if user:
-                    typing_users_data.append(
-                        {'id': user.id, 'name': user.full_name})
-            except:
-                pass
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.group_name,
             {
-                'type': 'typing.update',
-                'users': typing_users_data
+                "type": "chat_message",
+                "message": serialized
             }
         )
 
-    # Database methods
+    async def handle_typing(self, data):
+        if data.get("is_typing"):
+            self.typing_users.add(self.user.id)
+        else:
+            self.typing_users.discard(self.user.id)
+
+        await self.broadcast_typing()
+
+    async def handle_message_read(self, data):
+        message_id = data.get("message_id")
+        if not message_id:
+            return
+
+        await self.mark_message_read(message_id)
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "message_read",
+                "message_id": message_id,
+                "read_by": self.user.id,
+                "read_at": timezone.now().isoformat()
+            }
+        )
+
+    async def handle_message_consume(self, data):
+        message_id = data.get("message_id")
+        consumed_at = await self.consume_one_time_message(message_id)
+
+        if consumed_at:
+            await self.channel_layer.group_send(
+                self.group_name,
+                {
+                    "type": "message_consumed",
+                    "message_id": message_id,
+                    "consumed_by": self.user.id,
+                    "consumed_at": consumed_at.isoformat()
+                }
+            )
+
+    async def broadcast_typing(self):
+        users = []
+        for uid in self.typing_users:
+            user = await self.get_user(uid)
+            if user:
+                users.append({"id": user.id, "name": user.full_name})
+
+        await self.channel_layer.group_send(
+            self.group_name,
+            {
+                "type": "typing_update",
+                "users": users
+            }
+        )
+
+    # ---------------- DATABASE ----------------
     @database_sync_to_async
-    def get_chat(self, chat_id):
+    def get_chat(self):
         try:
-            return Chat.objects.get(id=chat_id, participants=self.user)
+            return Chat.objects.get(id=self.chat_id, participants=self.user)
         except Chat.DoesNotExist:
             return None
 
     @database_sync_to_async
     def create_message(self, content, one_time, reply_to_id):
-        chat = Chat.objects.get(id=self.chat_id, participants=self.user)
-        reply_to = None
-        if reply_to_id:
-            try:
-                reply_to = Message.objects.get(id=reply_to_id, chat=chat)
-            except Message.DoesNotExist:
-                pass
+        chat = Chat.objects.get(id=self.chat_id)
+        reply_to = Message.objects.filter(
+            id=reply_to_id).first() if reply_to_id else None
+
         return Message.objects.create(
-            chat=chat, sender=self.user, content=content, one_time=one_time, reply_to=reply_to
+            chat=chat,
+            sender=self.user,
+            content=content,
+            one_time=one_time,
+            reply_to=reply_to
         )
 
     @database_sync_to_async
     def mark_message_read(self, message_id):
-        message = Message.objects.get(id=message_id, chat_id=self.chat_id)
+        message = Message.objects.get(id=message_id)
         MessageRead.objects.get_or_create(
-            message=message, user=self.user, defaults={
-                'read_at': timezone.now()}
+            message=message,
+            user=self.user,
+            defaults={"read_at": timezone.now()}
         )
+        if message.sender_id != self.user.id:
+            message.is_read = True
+            message.save(update_fields=['is_read'])
 
     @database_sync_to_async
     def consume_one_time_message(self, message_id):
-        message = Message.objects.get(
-            id=message_id, chat_id=self.chat_id, one_time=True)
-        if hasattr(message, 'consumed_at') and message.consumed_at:
+        message = Message.objects.filter(
+            id=message_id,
+            one_time=True,
+            consumed_at__isnull=True
+        ).first()
+
+        if not message:
             return None
+
         message.consumed_at = timezone.now()
-        message.save(update_fields=['consumed_at'])
+        message.save(update_fields=["consumed_at"])
         return message.consumed_at
 
     @database_sync_to_async
     def get_user(self, user_id):
-        try:
-            return User.objects.get(id=user_id)
-        except User.DoesNotExist:
-            return None
+        return User.objects.filter(id=user_id).first()
 
     @database_sync_to_async
     def serialize_message(self, message):
         return {
-            'id': message.id,
-            'content': message.content,
-            'sender': message.sender.username,
-            'sender_name': message.sender.full_name,
-            'timestamp': message.timestamp.strftime('%H:%M'),
-            'timestamp_iso': message.timestamp.isoformat(),
-            'message_type': message.message_type,
-            'one_time': message.one_time,
-            'consumed': hasattr(message, 'consumed_at') and message.consumed_at is not None,
-            'is_own': message.sender == self.user,
-            'reply_to': {
-                'id': message.reply_to.id if message.reply_to else None,
-                'content': message.reply_to.content if message.reply_to else None,
-                'sender_name': message.reply_to.sender.full_name if message.reply_to else None,
+            "id": message.id,
+            "content": message.content,
+            "sender": message.sender.username,
+            "sender_name": message.sender.full_name,
+            "timestamp": message.timestamp.strftime("%H:%M"),
+            "timestamp_iso": message.timestamp.isoformat(),
+            "one_time": message.one_time,
+            "consumed": bool(message.consumed_at),
+            "sender_id": message.sender_id,
+            "is_own": message.sender_id == self.user.id,
+            "reply_to": {
+                "id": message.reply_to.id,
+                "content": message.reply_to.content,
+                "sender_name": message.reply_to.sender.full_name
             } if message.reply_to else None
         }
 
@@ -491,7 +416,8 @@ class CallConsumer(AsyncWebsocketConsumer):
         # ALWAYS store in database FIRST (for polling fallback - works even if WebSocket fails)
         if message_type in ["webrtc.offer", "webrtc.answer", "webrtc.ice"]:
             await self.store_signal_in_db(payload)
-            logger.info(f"[CallConsumer] ✓ Stored {message_type} in DB for chat {self.chat_id}")
+            logger.info(
+                f"[CallConsumer] ✓ Stored {message_type} in DB for chat {self.chat_id}")
 
         # Standard Signaling Forwarding via WebSocket
         # Forward to the group so the other client receives it (if they're connected)
@@ -503,7 +429,8 @@ class CallConsumer(AsyncWebsocketConsumer):
                 'message': payload
             }
         )
-        logger.info(f"[CallConsumer] ✓ Forwarded {message_type} to group {self.room_group_name} (chat {self.chat_id})")
+        logger.info(
+            f"[CallConsumer] ✓ Forwarded {message_type} to group {self.room_group_name} (chat {self.chat_id})")
 
     async def send_call_notification(self, payload):
         """Send call notification to other participants immediately"""
@@ -547,12 +474,13 @@ class CallConsumer(AsyncWebsocketConsumer):
             others = list(chat.participants.exclude(
                 id=self.user.id).values_list('id', flat=True))
 
-            signal_type = payload.get('type', 'unknown') if isinstance(payload, dict) else 'unknown'
-            
+            signal_type = payload.get('type', 'unknown') if isinstance(
+                payload, dict) else 'unknown'
+
             for target_user_id in others:
                 # Clean up old consumed signals for this chat/user pair first
                 P2PSignal.cleanup_old_signals()
-                
+
                 # Create new signal
                 P2PSignal.objects.create(
                     chat=chat,
@@ -569,18 +497,21 @@ class CallConsumer(AsyncWebsocketConsumer):
     async def send_signal(self, event):
         # Don't echo back to sender
         if event.get('original_sender_channel') == self.channel_name:
-            logger.debug(f"[CallConsumer] Ignoring signal echo for {self.user.id if self.user else 'unknown'}")
+            logger.debug(
+                f"[CallConsumer] Ignoring signal echo for {self.user.id if self.user else 'unknown'}")
             return
 
         # Forward the signaling message to other participants
         message = event.get('message', {})
-        message_type = message.get('type', 'unknown') if isinstance(message, dict) else 'unknown'
-        
+        message_type = message.get('type', 'unknown') if isinstance(
+            message, dict) else 'unknown'
+
         if self.handshake_complete and self.proto.auth_key:
             try:
                 encrypted = self.proto.wrap_message(message)
                 await self.send(text_data=encrypted)
-                logger.info(f"[CallConsumer] ✓ Sent encrypted {message_type} to user {self.user.id if self.user else 'unknown'} via WebSocket")
+                logger.info(
+                    f"[CallConsumer] ✓ Sent encrypted {message_type} to user {self.user.id if self.user else 'unknown'} via WebSocket")
             except Exception as e:
                 logger.error(
                     f"[CallConsumer] Error encrypting/sending signal {message_type}: {e}", exc_info=True)
@@ -648,6 +579,7 @@ class NotifyConsumer(AsyncWebsocketConsumer):
             'from_avatar': event.get('from_avatar'),
         }))
 
+
 class OdnixGatewayConsumer(AsyncWebsocketConsumer):
     """
     THE ODNIX GATEWAY (MTProto 2.0 Style)
@@ -659,17 +591,18 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
     3. Once AuthKey established, all traffic is encrypted binary packets.
     4. Acts as a dispatcher for RPC calls (messages.send, phone.requestCall).
     """
+
     async def connect(self):
         # In Telegram architecture, we accept everyone. Auth happens via protocol.
-        self.user = self.scope.get('user') # Might be Anonymous initially
+        self.user = self.scope.get('user')  # Might be Anonymous initially
         self.session_id = None
         self.auth_key = None
         self.auth_key_id = None
-        
+
         # Security State
         self.handshake_step = 0
         self.proto_security = OdnixSecurity()
-        
+
         await self.accept()
         logger.info(f"[OdnixGateway] New connection accepted. ID: {id(self)}")
 
@@ -679,8 +612,9 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data=None, bytes_data=None):
         try:
             # MTProto only uses Binary. Text frames are invalid/legacy.
-            if text_data: 
-                logger.warning("[OdnixGateway] Dropping text frame (Strict Binary Protocol)")
+            if text_data:
+                logger.warning(
+                    "[OdnixGateway] Dropping text frame (Strict Binary Protocol)")
                 return
 
             if not bytes_data:
@@ -690,7 +624,7 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
             # If we don't have an AuthKey yet, we expect specific Handshake primitives
             # In real MTProto, even handshake is wrapped in a specific 'UnencryptedMessage' envelope.
             # Here we simplify: if len < 24 or auth_key_id == 0, it's handshake.
-            
+
             if not self.auth_key:
                 await self.handle_handshake_packet(bytes_data)
                 return
@@ -708,13 +642,14 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
             # In real impl, we'd look up the session state by ID.
             # valid_auth_id = hashlib.sha1(self.auth_key).digest()[-8:]
             # if packet.auth_key_id != valid_auth_id: ...
-            
+
             # 2. Decrypt Payload
             # We use the OdnixSecurity logic but adapted for binary
             decrypted_data = self.decrypt_binary_payload(packet)
-            
+
             if not decrypted_data:
-                logger.warning("[OdnixGateway] Decryption failed or integrity check failed")
+                logger.warning(
+                    "[OdnixGateway] Decryption failed or integrity check failed")
                 return
 
             # 3. Dispatch RPC
@@ -730,20 +665,21 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
         """
         # For prototype, we'll assume the client sends a raw 1-byte OpCode for handshake step
         # Real MTProto scans for TL Constructor ID
-        
+
         op_code = data[0]
         logger.info(f"[OdnixGateway] Handshake OpCode: {op_code}")
 
         # 0x01: REQ_PQ (Client sends nonce)
         if op_code == 0x01:
-            nonce = data[1:17] # 16 bytes
-            
+            nonce = data[1:17]  # 16 bytes
+
             # Server Reply: RES_PQ (Nonce + ServerNonce + Prime + G)
             dh_config = self.proto_security.create_dh_config()
-            s_nonce_b64 = dh_config['server_nonce'] # currently b64 in security lib
+            # currently b64 in security lib
+            s_nonce_b64 = dh_config['server_nonce']
             import base64
             s_nonce = base64.b64decode(s_nonce_b64)
-            
+
             # Pack response
             # [Op:0x02][Nonce(16)][ServerNonce(16)][PrimeLen(2)][PrimeBytes...][G(4)]
             # This is pseudo-code for the binary logic
@@ -751,7 +687,7 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
             # In real flow, client sends another packet. Here we shortcut for prototype stability.
             # Client thinks handshake is done after RES_PQ in our simple client.
             # We derive a fixed key based on nonces to match client.
-            
+
             # Key = SHA256(ClientNonce + ServerNonce)
             combined = nonce + s_nonce
             import hashlib
@@ -759,43 +695,45 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
             self.proto_security.auth_key = self.auth_key
             logger.info(f"[OdnixGateway] Auth Key Established for Session")
 
-            reply = b'\x02' + nonce + s_nonce 
+            reply = b'\x02' + nonce + s_nonce
             # ... (packing prime/g skipped for brevity in snippet) ...
-            
+
             await self.send(bytes_data=reply)
 
     def decrypt_binary_payload(self, packet):
         # Implementation of AES decryption (Simulated AES-CBC to match client)
-        if not self.auth_key: return None
-        
+        if not self.auth_key:
+            return None
+
         # 1. Derive MsgKey/Key/IV
         # Client: msgKey = sha256(authKey + data)
         # Server: we already have msgKey in packet.
-        
+
         # Derive Key/IV:
         # key = sha256(msgKey + authKey)
         # iv = sha256(authKey + msgKey)[0:16]
-        
+
         ka = packet.msg_key + self.auth_key
         kb = self.auth_key + packet.msg_key
-        
+
         key = hashlib.sha256(ka).digest()
         iv = hashlib.sha256(kb).digest()[:16]
-        
+
         try:
             from Crypto.Cipher import AES
-            import struct, json
+            import struct
+            import json
             cipher = AES.new(key, AES.MODE_CBC, iv)
             decrypted = cipher.decrypt(packet.encrypted_data)
-            
+
             # 2. Parse Inner Payload
             # [Salt(8)][Session(8)][MsgId(8)][Seq(4)][Len(4)][Data][Padding]
             data_len = struct.unpack('<I', decrypted[28:32])[0]
             json_bytes = decrypted[32:32+data_len]
-            
+
             payload_json = json.loads(json_bytes.decode('utf-8'))
             return payload_json
-            
+
         except Exception as e:
             logger.error(f"[OdnixGateway] Decrypt Error: {e}")
             return None
@@ -803,9 +741,10 @@ class OdnixGatewayConsumer(AsyncWebsocketConsumer):
     async def dispatch_rpc(self, payload):
         method = payload.get('method')
         params = payload.get('params')
-        
+
         logger.info(f"[OdnixGateway] RPC Dispatch: {method}")
-        
+
         if method == 'signal':
             # Bridge to Call logic - Echo for now
-            logger.info(f"[OdnixGateway] Signal received via Binary Proto: {params.get('type')}")
+            logger.info(
+                f"[OdnixGateway] Signal received via Binary Proto: {params.get('type')}")

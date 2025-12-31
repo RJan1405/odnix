@@ -13,8 +13,17 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
+
 # FIXED: Site domain for clean invite links
 SITE_DOMAIN = 'http://127.0.0.1:8000'
+
+# CSRF trusted origins for cloudflare tunnel
+CSRF_TRUSTED_ORIGINS = [
+    'https://projects-character-nikon-chassis.trycloudflare.com',
+    'http://localhost',
+    'http://127.0.0.1',
+    'http://127.0.0.1:8000',
+]
 
 INSTALLED_APPS = [
     'daphne',
